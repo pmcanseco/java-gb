@@ -18,7 +18,7 @@ public class Z80 {
 		// sp = stack pointer
 	}
 	
-	// Time Clock: The Z80 hopublic static void LDs two types of clock (m and t)
+	// Time Clock: The Z80 holds two types of clock (m and t)
 	public static class Clock {
 		static int m=0;
 		static int t=0;
@@ -311,53 +311,53 @@ public class Z80 {
     public static void CPHL() { byte i=Reg.a; i-=MMU.rb((Reg.h<<8)+Reg.l); fz(i,(byte)1); if(i<0) Reg.f|=0x10; i&=255; Reg.m=2; Reg.t=8; }
     public static void CPn() { byte i=Reg.a; i-=MMU.rb(Reg.pc); Reg.pc++; fz(i,(byte)1); if(i<0) Reg.f|=0x10; i&=255; Reg.m=2; Reg.t=8; }
     
-    public static void ANDr_b() { Reg.a&=Reg.b; Reg.a&=255; fz(Reg.a); Reg.m=1; Reg.t=4; }
-    public static void ANDr_c() { Reg.a&=Reg.c; Reg.a&=255; fz(Reg.a); Reg.m=1; Reg.t=4; }
-    public static void ANDr_d() { Reg.a&=Reg.d; Reg.a&=255; fz(Reg.a); Reg.m=1; Reg.t=4; }
-    public static void ANDr_e() { Reg.a&=Reg.e; Reg.a&=255; fz(Reg.a); Reg.m=1; Reg.t=4; }
-    public static void ANDr_h() { Reg.a&=Reg.h; Reg.a&=255; fz(Reg.a); Reg.m=1; Reg.t=4; }
-    public static void ANDr_l() { Reg.a&=Reg.l; Reg.a&=255; fz(Reg.a); Reg.m=1; Reg.t=4; }
-    public static void ANDr_a() { Reg.a&=Reg.a; Reg.a&=255; fz(Reg.a); Reg.m=1; Reg.t=4; }
-    public static void ANDHL() { Reg.a&=MMU.rb((Reg.h<<8)+Reg.l); Reg.a&=255; fz(Reg.a); Reg.m=2; Reg.t=8; }
-    public static void ANDn() { Reg.a&=MMU.rb(Reg.pc); Reg.pc++; Reg.a&=255; fz(Reg.a); Reg.m=2; Reg.t=8; }
+    public static void ANDr_b() { Reg.a&=Reg.b; Reg.a&=255; fz(Reg.a, (byte)0); Reg.m=1; Reg.t=4; }
+    public static void ANDr_c() { Reg.a&=Reg.c; Reg.a&=255; fz(Reg.a, (byte)0); Reg.m=1; Reg.t=4; }
+    public static void ANDr_d() { Reg.a&=Reg.d; Reg.a&=255; fz(Reg.a, (byte)0); Reg.m=1; Reg.t=4; }
+    public static void ANDr_e() { Reg.a&=Reg.e; Reg.a&=255; fz(Reg.a, (byte)0); Reg.m=1; Reg.t=4; }
+    public static void ANDr_h() { Reg.a&=Reg.h; Reg.a&=255; fz(Reg.a, (byte)0); Reg.m=1; Reg.t=4; }
+    public static void ANDr_l() { Reg.a&=Reg.l; Reg.a&=255; fz(Reg.a, (byte)0); Reg.m=1; Reg.t=4; }
+    public static void ANDr_a() { Reg.a&=Reg.a; Reg.a&=255; fz(Reg.a, (byte)0); Reg.m=1; Reg.t=4; }
+    public static void ANDHL() { Reg.a&=MMU.rb((Reg.h<<8)+Reg.l); Reg.a&=255; fz(Reg.a, (byte)0); Reg.m=2; Reg.t=8; }
+    public static void ANDn() { Reg.a&=MMU.rb(Reg.pc); Reg.pc++; Reg.a&=255; fz(Reg.a, (byte)0); Reg.m=2; Reg.t=8; }
 
-    public static void ORr_b() { Reg.a|=Reg.b; Reg.a&=255; fz(Reg.a); Reg.m=1; Reg.t=4; }
-    public static void ORr_c() { Reg.a|=Reg.c; Reg.a&=255; fz(Reg.a); Reg.m=1; Reg.t=4; }
-    public static void ORr_d() { Reg.a|=Reg.d; Reg.a&=255; fz(Reg.a); Reg.m=1; Reg.t=4; }
-    public static void ORr_e() { Reg.a|=Reg.e; Reg.a&=255; fz(Reg.a); Reg.m=1; Reg.t=4; }
-    public static void ORr_h() { Reg.a|=Reg.h; Reg.a&=255; fz(Reg.a); Reg.m=1; Reg.t=4; }
-    public static void ORr_l() { Reg.a|=Reg.l; Reg.a&=255; fz(Reg.a); Reg.m=1; Reg.t=4; }
-    public static void ORr_a() { Reg.a|=Reg.a; Reg.a&=255; fz(Reg.a); Reg.m=1; Reg.t=4; }
-    public static void ORHL() { Reg.a|=MMU.rb((Reg.h<<8)+Reg.l); Reg.a&=255; fz(Reg.a); Reg.m=2; Reg.t=8; }
-    public static void ORn() { Reg.a|=MMU.rb(Reg.pc); Reg.pc++; Reg.a&=255; fz(Reg.a); Reg.m=2; Reg.t=8; }
+    public static void ORr_b() { Reg.a|=Reg.b; Reg.a&=255; fz(Reg.a, (byte)0); Reg.m=1; Reg.t=4; }
+    public static void ORr_c() { Reg.a|=Reg.c; Reg.a&=255; fz(Reg.a, (byte)0); Reg.m=1; Reg.t=4; }
+    public static void ORr_d() { Reg.a|=Reg.d; Reg.a&=255; fz(Reg.a, (byte)0); Reg.m=1; Reg.t=4; }
+    public static void ORr_e() { Reg.a|=Reg.e; Reg.a&=255; fz(Reg.a, (byte)0); Reg.m=1; Reg.t=4; }
+    public static void ORr_h() { Reg.a|=Reg.h; Reg.a&=255; fz(Reg.a, (byte)0); Reg.m=1; Reg.t=4; }
+    public static void ORr_l() { Reg.a|=Reg.l; Reg.a&=255; fz(Reg.a, (byte)0); Reg.m=1; Reg.t=4; }
+    public static void ORr_a() { Reg.a|=Reg.a; Reg.a&=255; fz(Reg.a, (byte)0); Reg.m=1; Reg.t=4; }
+    public static void ORHL() { Reg.a|=MMU.rb((Reg.h<<8)+Reg.l); Reg.a&=255; fz(Reg.a, (byte)0); Reg.m=2; Reg.t=8; }
+    public static void ORn() { Reg.a|=MMU.rb(Reg.pc); Reg.pc++; Reg.a&=255; fz(Reg.a, (byte)0); Reg.m=2; Reg.t=8; }
 
-    public static void XORr_b() { Reg.a^=Reg.b; Reg.a&=255; fz(Reg.a); Reg.m=1; Reg.t=4; }
-    public static void XORr_c() { Reg.a^=Reg.c; Reg.a&=255; fz(Reg.a); Reg.m=1; Reg.t=4; }
-    public static void XORr_d() { Reg.a^=Reg.d; Reg.a&=255; fz(Reg.a); Reg.m=1; Reg.t=4; }
-    public static void XORr_e() { Reg.a^=Reg.e; Reg.a&=255; fz(Reg.a); Reg.m=1; Reg.t=4; }
-    public static void XORr_h() { Reg.a^=Reg.h; Reg.a&=255; fz(Reg.a); Reg.m=1; Reg.t=4; }
-    public static void XORr_l() { Reg.a^=Reg.l; Reg.a&=255; fz(Reg.a); Reg.m=1; Reg.t=4; }
-    public static void XORr_a() { Reg.a^=Reg.a; Reg.a&=255; fz(Reg.a); Reg.m=1; Reg.t=4; }
-    public static void XORHL() { Reg.a^=MMU.rb((Reg.h<<8)+Reg.l); Reg.a&=255; fz(Reg.a); Reg.m=2; Reg.t=8; }
-    public static void XORn() { Reg.a^=MMU.rb(Reg.pc); Reg.pc++; Reg.a&=255; fz(Reg.a); Reg.m=2; Reg.t=8; }
+    public static void XORr_b() { Reg.a^=Reg.b; Reg.a&=255; fz(Reg.a, (byte)0); Reg.m=1; Reg.t=4; }
+    public static void XORr_c() { Reg.a^=Reg.c; Reg.a&=255; fz(Reg.a, (byte)0); Reg.m=1; Reg.t=4; }
+    public static void XORr_d() { Reg.a^=Reg.d; Reg.a&=255; fz(Reg.a, (byte)0); Reg.m=1; Reg.t=4; }
+    public static void XORr_e() { Reg.a^=Reg.e; Reg.a&=255; fz(Reg.a, (byte)0); Reg.m=1; Reg.t=4; }
+    public static void XORr_h() { Reg.a^=Reg.h; Reg.a&=255; fz(Reg.a, (byte)0); Reg.m=1; Reg.t=4; }
+    public static void XORr_l() { Reg.a^=Reg.l; Reg.a&=255; fz(Reg.a, (byte)0); Reg.m=1; Reg.t=4; }
+    public static void XORr_a() { Reg.a^=Reg.a; Reg.a&=255; fz(Reg.a, (byte)0); Reg.m=1; Reg.t=4; }
+    public static void XORHL() { Reg.a^=MMU.rb((Reg.h<<8)+Reg.l); Reg.a&=255; fz(Reg.a, (byte)0); Reg.m=2; Reg.t=8; }
+    public static void XORn() { Reg.a^=MMU.rb(Reg.pc); Reg.pc++; Reg.a&=255; fz(Reg.a, (byte)0); Reg.m=2; Reg.t=8; }
 
-    public static void INCr_b() { Reg.b++; Reg.b&=255; fz(Reg.b); Reg.m=1; Reg.t=4; }
-    public static void INCr_c() { Reg.c++; Reg.c&=255; fz(Reg.c); Reg.m=1; Reg.t=4; }
-    public static void INCr_d() { Reg.d++; Reg.d&=255; fz(Reg.d); Reg.m=1; Reg.t=4; }
-    public static void INCr_e() { Reg.e++; Reg.e&=255; fz(Reg.e); Reg.m=1; Reg.t=4; }
-    public static void INCr_h() { Reg.h++; Reg.h&=255; fz(Reg.h); Reg.m=1; Reg.t=4; }
-    public static void INCr_l() { Reg.l++; Reg.l&=255; fz(Reg.l); Reg.m=1; Reg.t=4; }
-    public static void INCr_a() { Reg.a++; Reg.a&=255; fz(Reg.a); Reg.m=1; Reg.t=4; }
-    public static void INCHLm() { byte i=(byte) (MMU.rb((Reg.h<<8)+Reg.l)+1); i&=255; MMU.wb((Reg.h<<8)+Reg.l,i); fz(i); Reg.m=3; Reg.t=12; }
+    public static void INCr_b() { Reg.b++; Reg.b&=255; fz(Reg.b, (byte)0); Reg.m=1; Reg.t=4; }
+    public static void INCr_c() { Reg.c++; Reg.c&=255; fz(Reg.c, (byte)0); Reg.m=1; Reg.t=4; }
+    public static void INCr_d() { Reg.d++; Reg.d&=255; fz(Reg.d, (byte)0); Reg.m=1; Reg.t=4; }
+    public static void INCr_e() { Reg.e++; Reg.e&=255; fz(Reg.e, (byte)0); Reg.m=1; Reg.t=4; }
+    public static void INCr_h() { Reg.h++; Reg.h&=255; fz(Reg.h, (byte)0); Reg.m=1; Reg.t=4; }
+    public static void INCr_l() { Reg.l++; Reg.l&=255; fz(Reg.l, (byte)0); Reg.m=1; Reg.t=4; }
+    public static void INCr_a() { Reg.a++; Reg.a&=255; fz(Reg.a, (byte)0); Reg.m=1; Reg.t=4; }
+    public static void INCHLm() { byte i=(byte) (MMU.rb((Reg.h<<8)+Reg.l)+1); i&=255; MMU.wb((Reg.h<<8)+Reg.l,i); fz(i, (byte)0); Reg.m=3; Reg.t=12; }
 
-    public static void DECr_b() { Reg.b--; Reg.b&=255; fz(Reg.b); Reg.m=1; Reg.t=4; }
-    public static void DECr_c() { Reg.c--; Reg.c&=255; fz(Reg.c); Reg.m=1; Reg.t=4; }
-    public static void DECr_d() { Reg.d--; Reg.d&=255; fz(Reg.d); Reg.m=1; Reg.t=4; }
-    public static void DECr_e() { Reg.e--; Reg.e&=255; fz(Reg.e); Reg.m=1; Reg.t=4; }
-    public static void DECr_h() { Reg.h--; Reg.h&=255; fz(Reg.h); Reg.m=1; Reg.t=4; }
-    public static void DECr_l() { Reg.l--; Reg.l&=255; fz(Reg.l); Reg.m=1; Reg.t=4; }
-    public static void DECr_a() { Reg.a--; Reg.a&=255; fz(Reg.a); Reg.m=1; Reg.t=4; }
-    public static void DECHLm() { byte i=(byte) (MMU.rb((Reg.h<<8)+Reg.l)-1); i&=255; MMU.wb((Reg.h<<8)+Reg.l,i); fz(i); Reg.m=3; Reg.t=12; }
+    public static void DECr_b() { Reg.b--; Reg.b&=255; fz(Reg.b, (byte)0); Reg.m=1; Reg.t=4; }
+    public static void DECr_c() { Reg.c--; Reg.c&=255; fz(Reg.c, (byte)0); Reg.m=1; Reg.t=4; }
+    public static void DECr_d() { Reg.d--; Reg.d&=255; fz(Reg.d, (byte)0); Reg.m=1; Reg.t=4; }
+    public static void DECr_e() { Reg.e--; Reg.e&=255; fz(Reg.e, (byte)0); Reg.m=1; Reg.t=4; }
+    public static void DECr_h() { Reg.h--; Reg.h&=255; fz(Reg.h, (byte)0); Reg.m=1; Reg.t=4; }
+    public static void DECr_l() { Reg.l--; Reg.l&=255; fz(Reg.l, (byte)0); Reg.m=1; Reg.t=4; }
+    public static void DECr_a() { Reg.a--; Reg.a&=255; fz(Reg.a, (byte)0); Reg.m=1; Reg.t=4; }
+    public static void DECHLm() { byte i=(byte) (MMU.rb((Reg.h<<8)+Reg.l)-1); i&=255; MMU.wb((Reg.h<<8)+Reg.l,i); fz(i, (byte)0); Reg.m=3; Reg.t=12; }
 
     public static void INCBC() { Reg.c=(Reg.c+1)&255; if(!Reg.c) Reg.b=(Reg.b+1)&255; Reg.m=1; Reg.t=4; }
     public static void INCDE() { Reg.e=(Reg.e+1)&255; if(!Reg.e) Reg.d=(Reg.d+1)&255; Reg.m=1; Reg.t=4; }
@@ -370,216 +370,215 @@ public class Z80 {
     public static void DECSP() { Reg.sp=(Reg.sp-1)&65535; Reg.m=1; Reg.t=4; }
 
     /*--- Bit manipulation ---*/
-    public static void BIT0b() { fz(Reg.b&0x01); Reg.m=2; Reg.t=8; }
-    public static void BIT0c() { fz(Reg.c&0x01); Reg.m=2; Reg.t=8; }
-    public static void BIT0d() { fz(Reg.d&0x01); Reg.m=2; Reg.t=8; }
-    public static void BIT0e() { fz(Reg.e&0x01); Reg.m=2; Reg.t=8; }
-    public static void BIT0h() { fz(Reg.h&0x01); Reg.m=2; Reg.t=8; }
-    public static void BIT0l() { fz(Reg.l&0x01); Reg.m=2; Reg.t=8; }
-    public static void BIT0a() { fz(Reg.a&0x01); Reg.m=2; Reg.t=8; }
+    public static void BIT0b() { fz((byte)(Reg.b&0x01), (byte)0); Reg.m=2; Reg.t=8; }
+    public static void BIT0c() { fz((byte)(Reg.c&0x01), (byte)0); Reg.m=2; Reg.t=8; }
+    public static void BIT0d() { fz((byte)(Reg.d&0x01), (byte)0); Reg.m=2; Reg.t=8; }
+    public static void BIT0e() { fz((byte)(Reg.e&0x01), (byte)0); Reg.m=2; Reg.t=8; }
+    public static void BIT0h() { fz((byte)(Reg.h&0x01), (byte)0); Reg.m=2; Reg.t=8; }
+    public static void BIT0l() { fz((byte)(Reg.l&0x01), (byte)0); Reg.m=2; Reg.t=8; }
+    public static void BIT0a() { fz((byte)(Reg.a&0x01), (byte)0); Reg.m=2; Reg.t=8; }
     public static void BIT0m() { fz(MMU.rb((Reg.h<<8)+Reg.l)&0x01); Reg.m=3; Reg.t=12; }
 
-    public static void BIT1b() { fz(Reg.b&0x02); Reg.m=2; Reg.t=8; }
-    public static void BIT1c() { fz(Reg.c&0x02); Reg.m=2; Reg.t=8; }
-    public static void BIT1d() { fz(Reg.d&0x02); Reg.m=2; Reg.t=8; }
-    public static void BIT1e() { fz(Reg.e&0x02); Reg.m=2; Reg.t=8; }
-    public static void BIT1h() { fz(Reg.h&0x02); Reg.m=2; Reg.t=8; }
-    public static void BIT1l() { fz(Reg.l&0x02); Reg.m=2; Reg.t=8; }
-    public static void BIT1a() { fz(Reg.a&0x02); Reg.m=2; Reg.t=8; }
+    public static void BIT1b() { fz((byte)(Reg.b&0x02), (byte)0); Reg.m=2; Reg.t=8; }
+    public static void BIT1c() { fz((byte)(Reg.c&0x02), (byte)0); Reg.m=2; Reg.t=8; }
+    public static void BIT1d() { fz((byte)(Reg.d&0x02), (byte)0); Reg.m=2; Reg.t=8; }
+    public static void BIT1e() { fz((byte)(Reg.e&0x02), (byte)0); Reg.m=2; Reg.t=8; }
+    public static void BIT1h() { fz((byte)(Reg.h&0x02), (byte)0); Reg.m=2; Reg.t=8; }
+    public static void BIT1l() { fz((byte)(Reg.l&0x02), (byte)0); Reg.m=2; Reg.t=8; }
+    public static void BIT1a() { fz((byte)(Reg.a&0x02), (byte)0); Reg.m=2; Reg.t=8; }
     public static void BIT1m() { fz(MMU.rb((Reg.h<<8)+Reg.l)&0x02); Reg.m=3; Reg.t=12; }
 
-    public static void BIT2b() { fz(Reg.b&0x04); Reg.m=2; Reg.t=8; }
-    public static void BIT2c() { fz(Reg.c&0x04); Reg.m=2; Reg.t=8; }
-    public static void BIT2d() { fz(Reg.d&0x04); Reg.m=2; Reg.t=8; }
-    public static void BIT2e() { fz(Reg.e&0x04); Reg.m=2; Reg.t=8; }
-    public static void BIT2h() { fz(Reg.h&0x04); Reg.m=2; Reg.t=8; }
-    public static void BIT2l() { fz(Reg.l&0x04); Reg.m=2; Reg.t=8; }
-    public static void BIT2a() { fz(Reg.a&0x04); Reg.m=2; Reg.t=8; }
-    public static void BIT2m() { fz(MMU.rb((Reg.h<<8)+Reg.l)&0x04); Reg.m=3; Reg.t=12; }
+    public static void BIT2b() { fz((byte)(Reg.b&0x04), (byte)0); Reg.m=2; Reg.t=8; }
+    public static void BIT2c() { fz((byte)(Reg.c&0x04), (byte)0); Reg.m=2; Reg.t=8; }
+    public static void BIT2d() { fz((byte)(Reg.d&0x04), (byte)0); Reg.m=2; Reg.t=8; }
+    public static void BIT2e() { fz((byte)(Reg.e&0x04), (byte)0); Reg.m=2; Reg.t=8; }
+    public static void BIT2h() { fz((byte)(Reg.h&0x04), (byte)0); Reg.m=2; Reg.t=8; }
+    public static void BIT2l() { fz((byte)(Reg.l&0x04), (byte)0); Reg.m=2; Reg.t=8; }
+    public static void BIT2a() { fz((byte)(Reg.a&0x04), (byte)0); Reg.m=2; Reg.t=8; }
+    public static void BIT2m() { fz(MMU.rb((Reg.h<<8)+Reg.l)&0x04, (byte)0); Reg.m=3; Reg.t=12; }
 
-    public static void BIT3b() { fz(Reg.b&0x08); Reg.m=2; Reg.t=8; }
-    public static void BIT3c() { fz(Reg.c&0x08); Reg.m=2; Reg.t=8; }
-    public static void BIT3d() { fz(Reg.d&0x08); Reg.m=2; Reg.t=8; }
-    public static void BIT3e() { fz(Reg.e&0x08); Reg.m=2; Reg.t=8; }
-    public static void BIT3h() { fz(Reg.h&0x08); Reg.m=2; Reg.t=8; }
-    public static void BIT3l() { fz(Reg.l&0x08); Reg.m=2; Reg.t=8; }
-    public static void BIT3a() { fz(Reg.a&0x08); Reg.m=2; Reg.t=8; }
-    public static void BIT3m() { fz(MMU.rb((Reg.h<<8)+Reg.l)&0x08); Reg.m=3; Reg.t=12; }
+    public static void BIT3b() { fz((byte)(Reg.b&0x08), (byte)0); Reg.m=2; Reg.t=8; }
+    public static void BIT3c() { fz((byte)(Reg.c&0x08), (byte)0); Reg.m=2; Reg.t=8; }
+    public static void BIT3d() { fz((byte)(Reg.d&0x08), (byte)0); Reg.m=2; Reg.t=8; }
+    public static void BIT3e() { fz((byte)(Reg.e&0x08), (byte)0); Reg.m=2; Reg.t=8; }
+    public static void BIT3h() { fz((byte)(Reg.h&0x08), (byte)0); Reg.m=2; Reg.t=8; }
+    public static void BIT3l() { fz((byte)(Reg.l&0x08), (byte)0); Reg.m=2; Reg.t=8; }
+    public static void BIT3a() { fz((byte)(Reg.a&0x08), (byte)0); Reg.m=2; Reg.t=8; }
+    public static void BIT3m() { fz(MMU.rb((Reg.h<<8)+Reg.l)&0x08, (byte)0); Reg.m=3; Reg.t=12; }
 
-    public static void BIT4b() { fz(Reg.b&0x10); Reg.m=2; Reg.t=8; }
-    public static void BIT4c() { fz(Reg.c&0x10); Reg.m=2; Reg.t=8; }
-    public static void BIT4d() { fz(Reg.d&0x10); Reg.m=2; Reg.t=8; }
-    public static void BIT4e() { fz(Reg.e&0x10); Reg.m=2; Reg.t=8; }
-    public static void BIT4h() { fz(Reg.h&0x10); Reg.m=2; Reg.t=8; }
-    public static void BIT4l() { fz(Reg.l&0x10); Reg.m=2; Reg.t=8; }
-    public static void BIT4a() { fz(Reg.a&0x10); Reg.m=2; Reg.t=8; }
-    public static void BIT4m() { fz(MMU.rb((Reg.h<<8)+Reg.l)&0x10); Reg.m=3; Reg.t=12; }
+    public static void BIT4b() { fz((byte)(Reg.b&0x10), (byte)0); Reg.m=2; Reg.t=8; }
+    public static void BIT4c() { fz((byte)(Reg.c&0x10), (byte)0); Reg.m=2; Reg.t=8; }
+    public static void BIT4d() { fz((byte)(Reg.d&0x10), (byte)0); Reg.m=2; Reg.t=8; }
+    public static void BIT4e() { fz((byte)(Reg.e&0x10), (byte)0); Reg.m=2; Reg.t=8; }
+    public static void BIT4h() { fz((byte)(Reg.h&0x10), (byte)0); Reg.m=2; Reg.t=8; }
+    public static void BIT4l() { fz((byte)(Reg.l&0x10), (byte)0); Reg.m=2; Reg.t=8; }
+    public static void BIT4a() { fz((byte)(Reg.a&0x10), (byte)0); Reg.m=2; Reg.t=8; }
+    public static void BIT4m() { fz(MMU.rb((Reg.h<<8)+Reg.l)&0x10, (byte)0); Reg.m=3; Reg.t=12; }
 
-    public static void BIT5b() { fz(Reg.b&0x20); Reg.m=2; Reg.t=8; }
-    public static void BIT5c() { fz(Reg.c&0x20); Reg.m=2; Reg.t=8; }
-    public static void BIT5d() { fz(Reg.d&0x20); Reg.m=2; Reg.t=8; }
-    public static void BIT5e() { fz(Reg.e&0x20); Reg.m=2; Reg.t=8; }
-    public static void BIT5h() { fz(Reg.h&0x20); Reg.m=2; Reg.t=8; }
-    public static void BIT5l() { fz(Reg.l&0x20); Reg.m=2; Reg.t=8; }
-    public static void BIT5a() { fz(Reg.a&0x20); Reg.m=2; Reg.t=8; }
-    public static void BIT5m() { fz(MMU.rb((Reg.h<<8)+Reg.l)&0x20); Reg.m=3; Reg.t=12; }
+    public static void BIT5b() { fz((byte)(Reg.b&0x20), (byte)0); Reg.m=2; Reg.t=8; }
+    public static void BIT5c() { fz((byte)(Reg.c&0x20), (byte)0); Reg.m=2; Reg.t=8; }
+    public static void BIT5d() { fz((byte)(Reg.d&0x20), (byte)0); Reg.m=2; Reg.t=8; }
+    public static void BIT5e() { fz((byte)(Reg.e&0x20), (byte)0); Reg.m=2; Reg.t=8; }
+    public static void BIT5h() { fz((byte)(Reg.h&0x20), (byte)0); Reg.m=2; Reg.t=8; }
+    public static void BIT5l() { fz((byte)(Reg.l&0x20), (byte)0); Reg.m=2; Reg.t=8; }
+    public static void BIT5a() { fz((byte)(Reg.a&0x20), (byte)0); Reg.m=2; Reg.t=8; }
+    public static void BIT5m() { fz(MMU.rb((Reg.h<<8)+Reg.l)&0x20, (byte)0); Reg.m=3; Reg.t=12; }
 
-    public static void BIT6b() { fz(Reg.b&0x40); Reg.m=2; Reg.t=8; }
-    public static void BIT6c() { fz(Reg.c&0x40); Reg.m=2; Reg.t=8; }
-    public static void BIT6d() { fz(Reg.d&0x40); Reg.m=2; Reg.t=8; }
-    public static void BIT6e() { fz(Reg.e&0x40); Reg.m=2; Reg.t=8; }
-    public static void BIT6h() { fz(Reg.h&0x40); Reg.m=2; Reg.t=8; }
-    public static void BIT6l() { fz(Reg.l&0x40); Reg.m=2; Reg.t=8; }
-    public static void BIT6a() { fz(Reg.a&0x40); Reg.m=2; Reg.t=8; }
-    public static void BIT6m() { fz(MMU.rb((Reg.h<<8)+Reg.l)&0x40); Reg.m=3; Reg.t=12; }
+    public static void BIT6b() { fz((byte)(Reg.b&0x40), (byte)0); Reg.m=2; Reg.t=8; }
+    public static void BIT6c() { fz((byte)(Reg.c&0x40), (byte)0); Reg.m=2; Reg.t=8; }
+    public static void BIT6d() { fz((byte)(Reg.d&0x40), (byte)0); Reg.m=2; Reg.t=8; }
+    public static void BIT6e() { fz((byte)(Reg.e&0x40), (byte)0); Reg.m=2; Reg.t=8; }
+    public static void BIT6h() { fz((byte)(Reg.h&0x40), (byte)0); Reg.m=2; Reg.t=8; }
+    public static void BIT6l() { fz((byte)(Reg.l&0x40), (byte)0); Reg.m=2; Reg.t=8; }
+    public static void BIT6a() { fz((byte)(Reg.a&0x40), (byte)0); Reg.m=2; Reg.t=8; }
+    public static void BIT6m() { fz(MMU.rb((Reg.h<<8)+Reg.l)&0x40, (byte)0); Reg.m=3; Reg.t=12; }
 
-    public static void BIT7b() { fz(Reg.b&0x80); Reg.m=2; Reg.t=8; }
-    public static void BIT7c() { fz(Reg.c&0x80); Reg.m=2; Reg.t=8; }
-    public static void BIT7d() { fz(Reg.d&0x80); Reg.m=2; Reg.t=8; }
-    public static void BIT7e() { fz(Reg.e&0x80); Reg.m=2; Reg.t=8; }
-    public static void BIT7h() { fz(Reg.h&0x80); Reg.m=2; Reg.t=8; }
-    public static void BIT7l() { fz(Reg.l&0x80); Reg.m=2; Reg.t=8; }
-    public static void BIT7a() { fz(Reg.a&0x80); Reg.m=2; Reg.t=8; }
-    public static void BIT7m() { fz(MMU.rb((Reg.h<<8)+Reg.l)&0x80); Reg.m=3; Reg.t=12; }
+    public static void BIT7b() { fz((byte)(Reg.b&0x80), (byte)0); Reg.m=2; Reg.t=8; }
+    public static void BIT7c() { fz((byte)(Reg.c&0x80), (byte)0); Reg.m=2; Reg.t=8; }
+    public static void BIT7d() { fz((byte)(Reg.d&0x80), (byte)0); Reg.m=2; Reg.t=8; }
+    public static void BIT7e() { fz((byte)(Reg.e&0x80), (byte)0); Reg.m=2; Reg.t=8; }
+    public static void BIT7h() { fz((byte)(Reg.h&0x80), (byte)0); Reg.m=2; Reg.t=8; }
+    public static void BIT7l() { fz((byte)(Reg.l&0x80), (byte)0); Reg.m=2; Reg.t=8; }
+    public static void BIT7a() { fz((byte)(Reg.a&0x80), (byte)0); Reg.m=2; Reg.t=8; }
+    public static void BIT7m() { fz(MMU.rb((Reg.h<<8)+Reg.l)&0x80, (byte)0); Reg.m=3; Reg.t=12; }
 
-    RLA() { var ci=Reg.f&0x10?1:0; var co=Reg.a&0x80?0x10:0; Reg.a=(Reg.a<<1)+ci; Reg.a&=255; Reg.f=(Reg.f&0xEF)+co; Reg.m=1; Reg.t=4; }
-    RLCA() { var ci=Reg.a&0x80?1:0; var co=Reg.a&0x80?0x10:0; Reg.a=(Reg.a<<1)+ci; Reg.a&=255; Reg.f=(Reg.f&0xEF)+co; Reg.m=1; Reg.t=4; }
-    RRA() { var ci=Reg.f&0x10?0x80:0; var co=Reg.a&1?0x10:0; Reg.a=(Reg.a>>1)+ci; Reg.a&=255; Reg.f=(Reg.f&0xEF)+co; Reg.m=1; Reg.t=4; }
-    RRCA() { var ci=Reg.a&1?0x80:0; var co=Reg.a&1?0x10:0; Reg.a=(Reg.a>>1)+ci; Reg.a&=255; Reg.f=(Reg.f&0xEF)+co; Reg.m=1; Reg.t=4; }
+    public static void RLA() { var ci=Reg.f&0x10?1:0; var co=Reg.a&0x80?0x10:0; Reg.a=(Reg.a<<1)+ci; Reg.a&=255; Reg.f=(Reg.f&0xEF)+co; Reg.m=1; Reg.t=4; }
+    public static void RLCA() { var ci=Reg.a&0x80?1:0; var co=Reg.a&0x80?0x10:0; Reg.a=(Reg.a<<1)+ci; Reg.a&=255; Reg.f=(Reg.f&0xEF)+co; Reg.m=1; Reg.t=4; }
+    public static void RRA() { var ci=Reg.f&0x10?0x80:0; var co=Reg.a&1?0x10:0; Reg.a=(Reg.a>>1)+ci; Reg.a&=255; Reg.f=(Reg.f&0xEF)+co; Reg.m=1; Reg.t=4; }
+    public static void RRCA() { var ci=Reg.a&1?0x80:0; var co=Reg.a&1?0x10:0; Reg.a=(Reg.a>>1)+ci; Reg.a&=255; Reg.f=(Reg.f&0xEF)+co; Reg.m=1; Reg.t=4; }
 
-    RLr_b() { var ci=Reg.f&0x10?1:0; var co=Reg.b&0x80?0x10:0; Reg.b=(Reg.b<<1)+ci; Reg.b&=255; fz(Reg.b); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    RLr_c() { var ci=Reg.f&0x10?1:0; var co=Reg.c&0x80?0x10:0; Reg.c=(Reg.c<<1)+ci; Reg.c&=255; fz(Reg.c); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    RLr_d() { var ci=Reg.f&0x10?1:0; var co=Reg.d&0x80?0x10:0; Reg.d=(Reg.d<<1)+ci; Reg.d&=255; fz(Reg.d); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    RLr_e() { var ci=Reg.f&0x10?1:0; var co=Reg.e&0x80?0x10:0; Reg.e=(Reg.e<<1)+ci; Reg.e&=255; fz(Reg.e); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    RLr_h() { var ci=Reg.f&0x10?1:0; var co=Reg.h&0x80?0x10:0; Reg.h=(Reg.h<<1)+ci; Reg.h&=255; fz(Reg.h); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    RLr_l() { var ci=Reg.f&0x10?1:0; var co=Reg.l&0x80?0x10:0; Reg.l=(Reg.l<<1)+ci; Reg.l&=255; fz(Reg.l); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    RLr_a() { var ci=Reg.f&0x10?1:0; var co=Reg.a&0x80?0x10:0; Reg.a=(Reg.a<<1)+ci; Reg.a&=255; fz(Reg.a); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    RLHL() { var i=MMU.rb((Reg.h<<8)+Reg.l); var ci=Reg.f&0x10?1:0; var co=i&0x80?0x10:0; i=(i<<1)+ci; i&=255; fz(i); MMU.wb((Reg.h<<8)+Reg.l,i); Reg.f=(Reg.f&0xEF)+co; Reg.m=4; Reg.t=16; }
+    public static void RLr_b() { var ci=Reg.f&0x10?1:0; var co=Reg.b&0x80?0x10:0; Reg.b=(Reg.b<<1)+ci; Reg.b&=255; fz(Reg.b); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
+    public static void RLr_c() { var ci=Reg.f&0x10?1:0; var co=Reg.c&0x80?0x10:0; Reg.c=(Reg.c<<1)+ci; Reg.c&=255; fz(Reg.c); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
+    public static void RLr_d() { var ci=Reg.f&0x10?1:0; var co=Reg.d&0x80?0x10:0; Reg.d=(Reg.d<<1)+ci; Reg.d&=255; fz(Reg.d); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
+    public static void RLr_e() { var ci=Reg.f&0x10?1:0; var co=Reg.e&0x80?0x10:0; Reg.e=(Reg.e<<1)+ci; Reg.e&=255; fz(Reg.e); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
+    public static void RLr_h() { var ci=Reg.f&0x10?1:0; var co=Reg.h&0x80?0x10:0; Reg.h=(Reg.h<<1)+ci; Reg.h&=255; fz(Reg.h); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
+    public static void RLr_l() { var ci=Reg.f&0x10?1:0; var co=Reg.l&0x80?0x10:0; Reg.l=(Reg.l<<1)+ci; Reg.l&=255; fz(Reg.l); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
+    public static void RLr_a() { var ci=Reg.f&0x10?1:0; var co=Reg.a&0x80?0x10:0; Reg.a=(Reg.a<<1)+ci; Reg.a&=255; fz(Reg.a); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
+    public static void RLHL() { var i=MMU.rb((Reg.h<<8)+Reg.l); var ci=Reg.f&0x10?1:0; var co=i&0x80?0x10:0; i=(i<<1)+ci; i&=255; fz(i); MMU.wb((Reg.h<<8)+Reg.l,i); Reg.f=(Reg.f&0xEF)+co; Reg.m=4; Reg.t=16; }
 
-    RLCr_b() { var ci=Reg.b&0x80?1:0; var co=Reg.b&0x80?0x10:0; Reg.b=(Reg.b<<1)+ci; Reg.b&=255; fz(Reg.b); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    RLCr_c() { var ci=Reg.c&0x80?1:0; var co=Reg.c&0x80?0x10:0; Reg.c=(Reg.c<<1)+ci; Reg.c&=255; fz(Reg.c); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    RLCr_d() { var ci=Reg.d&0x80?1:0; var co=Reg.d&0x80?0x10:0; Reg.d=(Reg.d<<1)+ci; Reg.d&=255; fz(Reg.d); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    RLCr_e() { var ci=Reg.e&0x80?1:0; var co=Reg.e&0x80?0x10:0; Reg.e=(Reg.e<<1)+ci; Reg.e&=255; fz(Reg.e); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    RLCr_h() { var ci=Reg.h&0x80?1:0; var co=Reg.h&0x80?0x10:0; Reg.h=(Reg.h<<1)+ci; Reg.h&=255; fz(Reg.h); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    RLCr_l() { var ci=Reg.l&0x80?1:0; var co=Reg.l&0x80?0x10:0; Reg.l=(Reg.l<<1)+ci; Reg.l&=255; fz(Reg.l); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    RLCr_a() { var ci=Reg.a&0x80?1:0; var co=Reg.a&0x80?0x10:0; Reg.a=(Reg.a<<1)+ci; Reg.a&=255; fz(Reg.a); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    RLCHL() { var i=MMU.rb((Reg.h<<8)+Reg.l); var ci=i&0x80?1:0; var co=i&0x80?0x10:0; i=(i<<1)+ci; i&=255; fz(i); MMU.wb((Reg.h<<8)+Reg.l,i); Reg.f=(Reg.f&0xEF)+co; Reg.m=4; Reg.t=16; }
+    public static void RLCr_b() { var ci=Reg.b&0x80?1:0; var co=Reg.b&0x80?0x10:0; Reg.b=(Reg.b<<1)+ci; Reg.b&=255; fz(Reg.b); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
+    public static void RLCr_c() { var ci=Reg.c&0x80?1:0; var co=Reg.c&0x80?0x10:0; Reg.c=(Reg.c<<1)+ci; Reg.c&=255; fz(Reg.c); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
+    public static void RLCr_d() { var ci=Reg.d&0x80?1:0; var co=Reg.d&0x80?0x10:0; Reg.d=(Reg.d<<1)+ci; Reg.d&=255; fz(Reg.d); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
+    public static void RLCr_e() { var ci=Reg.e&0x80?1:0; var co=Reg.e&0x80?0x10:0; Reg.e=(Reg.e<<1)+ci; Reg.e&=255; fz(Reg.e); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
+    public static void RLCr_h() { var ci=Reg.h&0x80?1:0; var co=Reg.h&0x80?0x10:0; Reg.h=(Reg.h<<1)+ci; Reg.h&=255; fz(Reg.h); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
+    public static void RLCr_l() { var ci=Reg.l&0x80?1:0; var co=Reg.l&0x80?0x10:0; Reg.l=(Reg.l<<1)+ci; Reg.l&=255; fz(Reg.l); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
+    public static void RLCr_a() { var ci=Reg.a&0x80?1:0; var co=Reg.a&0x80?0x10:0; Reg.a=(Reg.a<<1)+ci; Reg.a&=255; fz(Reg.a); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
+    public static void RLCHL() { var i=MMU.rb((Reg.h<<8)+Reg.l); var ci=i&0x80?1:0; var co=i&0x80?0x10:0; i=(i<<1)+ci; i&=255; fz(i); MMU.wb((Reg.h<<8)+Reg.l,i); Reg.f=(Reg.f&0xEF)+co; Reg.m=4; Reg.t=16; }
 
-    RRr_b() { var ci=Reg.f&0x10?0x80:0; var co=Reg.b&1?0x10:0; Reg.b=(Reg.b>>1)+ci; Reg.b&=255; fz(Reg.b); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    RRr_c() { var ci=Reg.f&0x10?0x80:0; var co=Reg.c&1?0x10:0; Reg.c=(Reg.c>>1)+ci; Reg.c&=255; fz(Reg.c); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    RRr_d() { var ci=Reg.f&0x10?0x80:0; var co=Reg.d&1?0x10:0; Reg.d=(Reg.d>>1)+ci; Reg.d&=255; fz(Reg.d); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    RRr_e() { var ci=Reg.f&0x10?0x80:0; var co=Reg.e&1?0x10:0; Reg.e=(Reg.e>>1)+ci; Reg.e&=255; fz(Reg.e); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    RRr_h() { var ci=Reg.f&0x10?0x80:0; var co=Reg.h&1?0x10:0; Reg.h=(Reg.h>>1)+ci; Reg.h&=255; fz(Reg.h); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    RRr_l() { var ci=Reg.f&0x10?0x80:0; var co=Reg.l&1?0x10:0; Reg.l=(Reg.l>>1)+ci; Reg.l&=255; fz(Reg.l); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    RRr_a() { var ci=Reg.f&0x10?0x80:0; var co=Reg.a&1?0x10:0; Reg.a=(Reg.a>>1)+ci; Reg.a&=255; fz(Reg.a); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    RRHL() { var i=MMU.rb((Reg.h<<8)+Reg.l); var ci=Reg.f&0x10?0x80:0; var co=i&1?0x10:0; i=(i>>1)+ci; i&=255; MMU.wb((Reg.h<<8)+Reg.l,i); fz(i); Reg.f=(Reg.f&0xEF)+co; Reg.m=4; Reg.t=16; }
+    public static void RRr_b() { var ci=Reg.f&0x10?0x80:0; var co=Reg.b&1?0x10:0; Reg.b=(Reg.b>>1)+ci; Reg.b&=255; fz(Reg.b); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
+    public static void RRr_c() { var ci=Reg.f&0x10?0x80:0; var co=Reg.c&1?0x10:0; Reg.c=(Reg.c>>1)+ci; Reg.c&=255; fz(Reg.c); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
+    public static void RRr_d() { var ci=Reg.f&0x10?0x80:0; var co=Reg.d&1?0x10:0; Reg.d=(Reg.d>>1)+ci; Reg.d&=255; fz(Reg.d); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
+    public static void RRr_e() { var ci=Reg.f&0x10?0x80:0; var co=Reg.e&1?0x10:0; Reg.e=(Reg.e>>1)+ci; Reg.e&=255; fz(Reg.e); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
+    public static void RRr_h() { var ci=Reg.f&0x10?0x80:0; var co=Reg.h&1?0x10:0; Reg.h=(Reg.h>>1)+ci; Reg.h&=255; fz(Reg.h); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
+    public static void RRr_l() { var ci=Reg.f&0x10?0x80:0; var co=Reg.l&1?0x10:0; Reg.l=(Reg.l>>1)+ci; Reg.l&=255; fz(Reg.l); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
+    public static void RRr_a() { var ci=Reg.f&0x10?0x80:0; var co=Reg.a&1?0x10:0; Reg.a=(Reg.a>>1)+ci; Reg.a&=255; fz(Reg.a); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
+    public static void RRHL() { var i=MMU.rb((Reg.h<<8)+Reg.l); var ci=Reg.f&0x10?0x80:0; var co=i&1?0x10:0; i=(i>>1)+ci; i&=255; MMU.wb((Reg.h<<8)+Reg.l,i); fz(i); Reg.f=(Reg.f&0xEF)+co; Reg.m=4; Reg.t=16; }
 
-    RRCr_b() { var ci=Reg.b&1?0x80:0; var co=Reg.b&1?0x10:0; Reg.b=(Reg.b>>1)+ci; Reg.b&=255; fz(Reg.b); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    RRCr_c() { var ci=Reg.c&1?0x80:0; var co=Reg.c&1?0x10:0; Reg.c=(Reg.c>>1)+ci; Reg.c&=255; fz(Reg.c); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    RRCr_d() { var ci=Reg.d&1?0x80:0; var co=Reg.d&1?0x10:0; Reg.d=(Reg.d>>1)+ci; Reg.d&=255; fz(Reg.d); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    RRCr_e() { var ci=Reg.e&1?0x80:0; var co=Reg.e&1?0x10:0; Reg.e=(Reg.e>>1)+ci; Reg.e&=255; fz(Reg.e); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    RRCr_h() { var ci=Reg.h&1?0x80:0; var co=Reg.h&1?0x10:0; Reg.h=(Reg.h>>1)+ci; Reg.h&=255; fz(Reg.h); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    RRCr_l() { var ci=Reg.l&1?0x80:0; var co=Reg.l&1?0x10:0; Reg.l=(Reg.l>>1)+ci; Reg.l&=255; fz(Reg.l); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    RRCr_a() { var ci=Reg.a&1?0x80:0; var co=Reg.a&1?0x10:0; Reg.a=(Reg.a>>1)+ci; Reg.a&=255; fz(Reg.a); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    RRCHL() { var i=MMU.rb((Reg.h<<8)+Reg.l); var ci=i&1?0x80:0; var co=i&1?0x10:0; i=(i>>1)+ci; i&=255; MMU.wb((Reg.h<<8)+Reg.l,i); fz(i); Reg.f=(Reg.f&0xEF)+co; Reg.m=4; Reg.t=16; }
+    public static void RRCr_b() { var ci=Reg.b&1?0x80:0; var co=Reg.b&1?0x10:0; Reg.b=(Reg.b>>1)+ci; Reg.b&=255; fz(Reg.b); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
+    public static void RRCr_c() { var ci=Reg.c&1?0x80:0; var co=Reg.c&1?0x10:0; Reg.c=(Reg.c>>1)+ci; Reg.c&=255; fz(Reg.c); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
+    public static void RRCr_d() { var ci=Reg.d&1?0x80:0; var co=Reg.d&1?0x10:0; Reg.d=(Reg.d>>1)+ci; Reg.d&=255; fz(Reg.d); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
+    public static void RRCr_e() { var ci=Reg.e&1?0x80:0; var co=Reg.e&1?0x10:0; Reg.e=(Reg.e>>1)+ci; Reg.e&=255; fz(Reg.e); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
+    public static void RRCr_h() { var ci=Reg.h&1?0x80:0; var co=Reg.h&1?0x10:0; Reg.h=(Reg.h>>1)+ci; Reg.h&=255; fz(Reg.h); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
+    public static void RRCr_l() { var ci=Reg.l&1?0x80:0; var co=Reg.l&1?0x10:0; Reg.l=(Reg.l>>1)+ci; Reg.l&=255; fz(Reg.l); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
+    public static void RRCr_a() { var ci=Reg.a&1?0x80:0; var co=Reg.a&1?0x10:0; Reg.a=(Reg.a>>1)+ci; Reg.a&=255; fz(Reg.a); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
+    public static void RRCHL() { var i=MMU.rb((Reg.h<<8)+Reg.l); var ci=i&1?0x80:0; var co=i&1?0x10:0; i=(i>>1)+ci; i&=255; MMU.wb((Reg.h<<8)+Reg.l,i); fz(i); Reg.f=(Reg.f&0xEF)+co; Reg.m=4; Reg.t=16; }
 
-    SLAr_b() { var co=Reg.b&0x80?0x10:0; Reg.b=(Reg.b<<1)&255; fz(Reg.b); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    SLAr_c() { var co=Reg.c&0x80?0x10:0; Reg.c=(Reg.c<<1)&255; fz(Reg.c); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    SLAr_d() { var co=Reg.d&0x80?0x10:0; Reg.d=(Reg.d<<1)&255; fz(Reg.d); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    SLAr_e() { var co=Reg.e&0x80?0x10:0; Reg.e=(Reg.e<<1)&255; fz(Reg.e); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    SLAr_h() { var co=Reg.h&0x80?0x10:0; Reg.h=(Reg.h<<1)&255; fz(Reg.h); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    SLAr_l() { var co=Reg.l&0x80?0x10:0; Reg.l=(Reg.l<<1)&255; fz(Reg.l); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    SLAr_a() { var co=Reg.a&0x80?0x10:0; Reg.a=(Reg.a<<1)&255; fz(Reg.a); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
+    public static void SLAr_b() { var co=Reg.b&0x80?0x10:0; Reg.b=(Reg.b<<1)&255; fz(Reg.b); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
+    public static void SLAr_c() { var co=Reg.c&0x80?0x10:0; Reg.c=(Reg.c<<1)&255; fz(Reg.c); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
+    public static void SLAr_d() { var co=Reg.d&0x80?0x10:0; Reg.d=(Reg.d<<1)&255; fz(Reg.d); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
+    public static void SLAr_e() { var co=Reg.e&0x80?0x10:0; Reg.e=(Reg.e<<1)&255; fz(Reg.e); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
+    public static void SLAr_h() { var co=Reg.h&0x80?0x10:0; Reg.h=(Reg.h<<1)&255; fz(Reg.h); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
+    public static void SLAr_l() { var co=Reg.l&0x80?0x10:0; Reg.l=(Reg.l<<1)&255; fz(Reg.l); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
+    public static void SLAr_a() { var co=Reg.a&0x80?0x10:0; Reg.a=(Reg.a<<1)&255; fz(Reg.a); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
 
-    SLLr_b() { var co=Reg.b&0x80?0x10:0; Reg.b=(Reg.b<<1)&255+1; fz(Reg.b); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    SLLr_c() { var co=Reg.c&0x80?0x10:0; Reg.c=(Reg.c<<1)&255+1; fz(Reg.c); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    SLLr_d() { var co=Reg.d&0x80?0x10:0; Reg.d=(Reg.d<<1)&255+1; fz(Reg.d); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    SLLr_e() { var co=Reg.e&0x80?0x10:0; Reg.e=(Reg.e<<1)&255+1; fz(Reg.e); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    SLLr_h() { var co=Reg.h&0x80?0x10:0; Reg.h=(Reg.h<<1)&255+1; fz(Reg.h); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    SLLr_l() { var co=Reg.l&0x80?0x10:0; Reg.l=(Reg.l<<1)&255+1; fz(Reg.l); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    SLLr_a() { var co=Reg.a&0x80?0x10:0; Reg.a=(Reg.a<<1)&255+1; fz(Reg.a); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
+    public static void SLLr_b() { var co=Reg.b&0x80?0x10:0; Reg.b=(Reg.b<<1)&255+1; fz(Reg.b); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
+    public static void SLLr_c() { var co=Reg.c&0x80?0x10:0; Reg.c=(Reg.c<<1)&255+1; fz(Reg.c); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
+    public static void SLLr_d() { var co=Reg.d&0x80?0x10:0; Reg.d=(Reg.d<<1)&255+1; fz(Reg.d); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
+    public static void SLLr_e() { var co=Reg.e&0x80?0x10:0; Reg.e=(Reg.e<<1)&255+1; fz(Reg.e); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
+    public static void SLLr_h() { var co=Reg.h&0x80?0x10:0; Reg.h=(Reg.h<<1)&255+1; fz(Reg.h); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
+    public static void SLLr_l() { var co=Reg.l&0x80?0x10:0; Reg.l=(Reg.l<<1)&255+1; fz(Reg.l); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
+    public static void SLLr_a() { var co=Reg.a&0x80?0x10:0; Reg.a=(Reg.a<<1)&255+1; fz(Reg.a); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
 
-    SRAr_b() { var ci=Reg.b&0x80; var co=Reg.b&1?0x10:0; Reg.b=((Reg.b>>1)+ci)&255; fz(Reg.b); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    SRAr_c() { var ci=Reg.c&0x80; var co=Reg.c&1?0x10:0; Reg.c=((Reg.c>>1)+ci)&255; fz(Reg.c); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    SRAr_d() { var ci=Reg.d&0x80; var co=Reg.d&1?0x10:0; Reg.d=((Reg.d>>1)+ci)&255; fz(Reg.d); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    SRAr_e() { var ci=Reg.e&0x80; var co=Reg.e&1?0x10:0; Reg.e=((Reg.e>>1)+ci)&255; fz(Reg.e); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    SRAr_h() { var ci=Reg.h&0x80; var co=Reg.h&1?0x10:0; Reg.h=((Reg.h>>1)+ci)&255; fz(Reg.h); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    SRAr_l() { var ci=Reg.l&0x80; var co=Reg.l&1?0x10:0; Reg.l=((Reg.l>>1)+ci)&255; fz(Reg.l); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    SRAr_a() { var ci=Reg.a&0x80; var co=Reg.a&1?0x10:0; Reg.a=((Reg.a>>1)+ci)&255; fz(Reg.a); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
+    public static void SRAr_b() { var ci=Reg.b&0x80; var co=Reg.b&1?0x10:0; Reg.b=((Reg.b>>1)+ci)&255; fz(Reg.b); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
+    public static void SRAr_c() { var ci=Reg.c&0x80; var co=Reg.c&1?0x10:0; Reg.c=((Reg.c>>1)+ci)&255; fz(Reg.c); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
+    public static void SRAr_d() { var ci=Reg.d&0x80; var co=Reg.d&1?0x10:0; Reg.d=((Reg.d>>1)+ci)&255; fz(Reg.d); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
+    public static void SRAr_e() { var ci=Reg.e&0x80; var co=Reg.e&1?0x10:0; Reg.e=((Reg.e>>1)+ci)&255; fz(Reg.e); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
+    public static void SRAr_h() { var ci=Reg.h&0x80; var co=Reg.h&1?0x10:0; Reg.h=((Reg.h>>1)+ci)&255; fz(Reg.h); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
+    public static void SRAr_l() { var ci=Reg.l&0x80; var co=Reg.l&1?0x10:0; Reg.l=((Reg.l>>1)+ci)&255; fz(Reg.l); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
+    public static void SRAr_a() { var ci=Reg.a&0x80; var co=Reg.a&1?0x10:0; Reg.a=((Reg.a>>1)+ci)&255; fz(Reg.a); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
 
-    SRLr_b() { var co=Reg.b&1?0x10:0; Reg.b=(Reg.b>>1)&255; fz(Reg.b); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    SRLr_c() { var co=Reg.c&1?0x10:0; Reg.c=(Reg.c>>1)&255; fz(Reg.c); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    SRLr_d() { var co=Reg.d&1?0x10:0; Reg.d=(Reg.d>>1)&255; fz(Reg.d); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    SRLr_e() { var co=Reg.e&1?0x10:0; Reg.e=(Reg.e>>1)&255; fz(Reg.e); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    SRLr_h() { var co=Reg.h&1?0x10:0; Reg.h=(Reg.h>>1)&255; fz(Reg.h); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    SRLr_l() { var co=Reg.l&1?0x10:0; Reg.l=(Reg.l>>1)&255; fz(Reg.l); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    SRLr_a() { var co=Reg.a&1?0x10:0; Reg.a=(Reg.a>>1)&255; fz(Reg.a); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
+    public static void SRLr_b() { var co=Reg.b&1?0x10:0; Reg.b=(Reg.b>>1)&255; fz(Reg.b); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
+    public static void SRLr_c() { var co=Reg.c&1?0x10:0; Reg.c=(Reg.c>>1)&255; fz(Reg.c); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
+    public static void SRLr_d() { var co=Reg.d&1?0x10:0; Reg.d=(Reg.d>>1)&255; fz(Reg.d); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
+    public static void SRLr_e() { var co=Reg.e&1?0x10:0; Reg.e=(Reg.e>>1)&255; fz(Reg.e); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
+    public static void SRLr_h() { var co=Reg.h&1?0x10:0; Reg.h=(Reg.h>>1)&255; fz(Reg.h); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
+    public static void SRLr_l() { var co=Reg.l&1?0x10:0; Reg.l=(Reg.l>>1)&255; fz(Reg.l); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
+    public static void SRLr_a() { var co=Reg.a&1?0x10:0; Reg.a=(Reg.a>>1)&255; fz(Reg.a); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
 
-    CPL() { Reg.a = (~Reg.a)&255; fz(Reg.a,1); Reg.m=1; Reg.t=4; }
-    NEG() { Reg.a=0-Reg.a; fz(Reg.a,1); if(Reg.a<0) Reg.f|=0x10; Reg.a&=255; Reg.m=2; Reg.t=8; }
+    public static void CPL() { Reg.a = (~Reg.a)&255; fz(Reg.a,1); Reg.m=1; Reg.t=4; }
+    public static void NEG() { Reg.a=0-Reg.a; fz(Reg.a,1); if(Reg.a<0) Reg.f|=0x10; Reg.a&=255; Reg.m=2; Reg.t=8; }
 
-    CCF() { var ci=Reg.f&0x10?0:0x10; Reg.f=(Reg.f&0xEF)+ci; Reg.m=1; Reg.t=4; }
-    SCF() { Reg.f|=0x10; Reg.m=1; Reg.t=4; }
+    public static void CCF() { var ci=Reg.f&0x10?0:0x10; Reg.f=(Reg.f&0xEF)+ci; Reg.m=1; Reg.t=4; }
+    public static void SCF() { Reg.f|=0x10; Reg.m=1; Reg.t=4; }
 
     /*--- Stack ---*/
-    PUSHBC() { Reg.sp--; MMU.wb(Reg.sp,Reg.b); Reg.sp--; MMU.wb(Reg.sp,Reg.c); Reg.m=3; Reg.t=12; }
-    PUSHDE() { Reg.sp--; MMU.wb(Reg.sp,Reg.d); Reg.sp--; MMU.wb(Reg.sp,Reg.e); Reg.m=3; Reg.t=12; }
-    PUSHHL() { Reg.sp--; MMU.wb(Reg.sp,Reg.h); Reg.sp--; MMU.wb(Reg.sp,Reg.l); Reg.m=3; Reg.t=12; }
-    PUSHAF() { Reg.sp--; MMU.wb(Reg.sp,Reg.a); Reg.sp--; MMU.wb(Reg.sp,Reg.f); Reg.m=3; Reg.t=12; }
+    public static void PUSHBC() { Reg.sp--; MMU.wb(Reg.sp,Reg.b); Reg.sp--; MMU.wb(Reg.sp,Reg.c); Reg.m=3; Reg.t=12; }
+    public static void PUSHDE() { Reg.sp--; MMU.wb(Reg.sp,Reg.d); Reg.sp--; MMU.wb(Reg.sp,Reg.e); Reg.m=3; Reg.t=12; }
+    public static void PUSHHL() { Reg.sp--; MMU.wb(Reg.sp,Reg.h); Reg.sp--; MMU.wb(Reg.sp,Reg.l); Reg.m=3; Reg.t=12; }
+    public static void PUSHAF() { Reg.sp--; MMU.wb(Reg.sp,Reg.a); Reg.sp--; MMU.wb(Reg.sp,Reg.f); Reg.m=3; Reg.t=12; }
 
-    POPBC() { Reg.c=MMU.rb(Reg.sp); Reg.sp++; Reg.b=MMU.rb(Reg.sp); Reg.sp++; Reg.m=3; Reg.t=12; }
-    POPDE() { Reg.e=MMU.rb(Reg.sp); Reg.sp++; Reg.d=MMU.rb(Reg.sp); Reg.sp++; Reg.m=3; Reg.t=12; }
-    POPHL() { Reg.l=MMU.rb(Reg.sp); Reg.sp++; Reg.h=MMU.rb(Reg.sp); Reg.sp++; Reg.m=3; Reg.t=12; }
-    POPAF() { Reg.f=MMU.rb(Reg.sp); Reg.sp++; Reg.a=MMU.rb(Reg.sp); Reg.sp++; Reg.m=3; Reg.t=12; }
+    public static void POPBC() { Reg.c=MMU.rb(Reg.sp); Reg.sp++; Reg.b=MMU.rb(Reg.sp); Reg.sp++; Reg.m=3; Reg.t=12; }
+    public static void POPDE() { Reg.e=MMU.rb(Reg.sp); Reg.sp++; Reg.d=MMU.rb(Reg.sp); Reg.sp++; Reg.m=3; Reg.t=12; }
+    public static void POPHL() { Reg.l=MMU.rb(Reg.sp); Reg.sp++; Reg.h=MMU.rb(Reg.sp); Reg.sp++; Reg.m=3; Reg.t=12; }
+    public static void POPAF() { Reg.f=MMU.rb(Reg.sp); Reg.sp++; Reg.a=MMU.rb(Reg.sp); Reg.sp++; Reg.m=3; Reg.t=12; }
 
     /*--- Jump ---*/
-    JPnn() { Reg.pc = MMU.rw(Reg.pc); Reg.m=3; Reg.t=12; }
-    JPHL() { Reg.pc=Reg.hl; Reg.m=1; Reg.t=4; }
-    JPNZnn() { Reg.m=3; Reg.t=12; if((Reg.f&0x80)==0x00) { Reg.pc=MMU.rw(Reg.pc); Reg.m++; Reg.t+=4; } else Reg.pc+=2; }
-    JPZnn()  { Reg.m=3; Reg.t=12; if((Reg.f&0x80)==0x80) { Reg.pc=MMU.rw(Reg.pc); Reg.m++; Reg.t+=4; } else Reg.pc+=2; }
-    JPNCnn() { Reg.m=3; Reg.t=12; if((Reg.f&0x10)==0x00) { Reg.pc=MMU.rw(Reg.pc); Reg.m++; Reg.t+=4; } else Reg.pc+=2; }
-    JPCnn()  { Reg.m=3; Reg.t=12; if((Reg.f&0x10)==0x10) { Reg.pc=MMU.rw(Reg.pc); Reg.m++; Reg.t+=4; } else Reg.pc+=2; }
+    public static void JPnn() { Reg.pc = MMU.rw(Reg.pc); Reg.m=3; Reg.t=12; }
+    public static void JPHL() { Reg.pc=Reg.hl; Reg.m=1; Reg.t=4; }
+    public static void JPNZnn() { Reg.m=3; Reg.t=12; if((Reg.f&0x80)==0x00) { Reg.pc=MMU.rw(Reg.pc); Reg.m++; Reg.t+=4; } else Reg.pc+=2; }
+    public static void JPZnn()  { Reg.m=3; Reg.t=12; if((Reg.f&0x80)==0x80) { Reg.pc=MMU.rw(Reg.pc); Reg.m++; Reg.t+=4; } else Reg.pc+=2; }
+    public static void JPNCnn() { Reg.m=3; Reg.t=12; if((Reg.f&0x10)==0x00) { Reg.pc=MMU.rw(Reg.pc); Reg.m++; Reg.t+=4; } else Reg.pc+=2; }
+    public static void JPCnn()  { Reg.m=3; Reg.t=12; if((Reg.f&0x10)==0x10) { Reg.pc=MMU.rw(Reg.pc); Reg.m++; Reg.t+=4; } else Reg.pc+=2; }
 
-    JRn() { var i=MMU.rb(Reg.pc); if(i>127) i=-((~i+1)&255); Reg.pc++; Reg.m=2; Reg.t=8; Reg.pc+=i; Reg.m++; Reg.t+=4; }
-    JRNZn() { var i=MMU.rb(Reg.pc); if(i>127) i=-((~i+1)&255); Reg.pc++; Reg.m=2; Reg.t=8; if((Reg.f&0x80)==0x00) { Reg.pc+=i; Reg.m++; Reg.t+=4; } }
-    JRZn()  { var i=MMU.rb(Reg.pc); if(i>127) i=-((~i+1)&255); Reg.pc++; Reg.m=2; Reg.t=8; if((Reg.f&0x80)==0x80) { Reg.pc+=i; Reg.m++; Reg.t+=4; } }
-    JRNCn() { var i=MMU.rb(Reg.pc); if(i>127) i=-((~i+1)&255); Reg.pc++; Reg.m=2; Reg.t=8; if((Reg.f&0x10)==0x00) { Reg.pc+=i; Reg.m++; Reg.t+=4; } }
-    JRCn()  { var i=MMU.rb(Reg.pc); if(i>127) i=-((~i+1)&255); Reg.pc++; Reg.m=2; Reg.t=8; if((Reg.f&0x10)==0x10) { Reg.pc+=i; Reg.m++; Reg.t+=4; } }
+    public static void JRn() { var i=MMU.rb(Reg.pc); if(i>127) i=-((~i+1)&255); Reg.pc++; Reg.m=2; Reg.t=8; Reg.pc+=i; Reg.m++; Reg.t+=4; }
+    public static void JRNZn() { var i=MMU.rb(Reg.pc); if(i>127) i=-((~i+1)&255); Reg.pc++; Reg.m=2; Reg.t=8; if((Reg.f&0x80)==0x00) { Reg.pc+=i; Reg.m++; Reg.t+=4; } }
+    public static void JRZn()  { var i=MMU.rb(Reg.pc); if(i>127) i=-((~i+1)&255); Reg.pc++; Reg.m=2; Reg.t=8; if((Reg.f&0x80)==0x80) { Reg.pc+=i; Reg.m++; Reg.t+=4; } }
+    public static void JRNCn() { var i=MMU.rb(Reg.pc); if(i>127) i=-((~i+1)&255); Reg.pc++; Reg.m=2; Reg.t=8; if((Reg.f&0x10)==0x00) { Reg.pc+=i; Reg.m++; Reg.t+=4; } }
+    public static void JRCn()  { var i=MMU.rb(Reg.pc); if(i>127) i=-((~i+1)&255); Reg.pc++; Reg.m=2; Reg.t=8; if((Reg.f&0x10)==0x10) { Reg.pc+=i; Reg.m++; Reg.t+=4; } }
 
-    DJNZn() { var i=MMU.rb(Reg.pc); if(i>127) i=-((~i+1)&255); Reg.pc++; Reg.m=2; Reg.t=8; Reg.b--; if(Reg.b) { Reg.pc+=i; Reg.m++; Reg.t+=4; } }
+    public static void DJNZn() { var i=MMU.rb(Reg.pc); if(i>127) i=-((~i+1)&255); Reg.pc++; Reg.m=2; Reg.t=8; Reg.b--; if(Reg.b) { Reg.pc+=i; Reg.m++; Reg.t+=4; } }
 
-    CALLnn() { Reg.sp-=2; MMU.ww(Reg.sp,Reg.pc+2); Reg.pc=MMU.rw(Reg.pc); Reg.m=5; Reg.t=20; }
-    CALLNZnn() { Reg.m=3; Reg.t=12; if((Reg.f&0x80)==0x00) { Reg.sp-=2; MMU.ww(Reg.sp,Reg.pc+2); Reg.pc=MMU.rw(Reg.pc); Reg.m+=2; Reg.t+=8; } else Reg.pc+=2; }
-    CALLZnn() { Reg.m=3; Reg.t=12; if((Reg.f&0x80)==0x80) { Reg.sp-=2; MMU.ww(Reg.sp,Reg.pc+2); Reg.pc=MMU.rw(Reg.pc); Reg.m+=2; Reg.t+=8; } else Reg.pc+=2; }
-    CALLNCnn() { Reg.m=3; Reg.t=12; if((Reg.f&0x10)==0x00) { Reg.sp-=2; MMU.ww(Reg.sp,Reg.pc+2); Reg.pc=MMU.rw(Reg.pc); Reg.m+=2; Reg.t+=8; } else Reg.pc+=2; }
-    CALLCnn() { Reg.m=3; Reg.t=12; if((Reg.f&0x10)==0x10) { Reg.sp-=2; MMU.ww(Reg.sp,Reg.pc+2); Reg.pc=MMU.rw(Reg.pc); Reg.m+=2; Reg.t+=8; } else Reg.pc+=2; }
+    public static void CALLnn() { Reg.sp-=2; MMU.ww(Reg.sp,Reg.pc+2); Reg.pc=MMU.rw(Reg.pc); Reg.m=5; Reg.t=20; }
+    public static void CALLNZnn() { Reg.m=3; Reg.t=12; if((Reg.f&0x80)==0x00) { Reg.sp-=2; MMU.ww(Reg.sp,Reg.pc+2); Reg.pc=MMU.rw(Reg.pc); Reg.m+=2; Reg.t+=8; } else Reg.pc+=2; }
+    public static void CALLZnn() { Reg.m=3; Reg.t=12; if((Reg.f&0x80)==0x80) { Reg.sp-=2; MMU.ww(Reg.sp,Reg.pc+2); Reg.pc=MMU.rw(Reg.pc); Reg.m+=2; Reg.t+=8; } else Reg.pc+=2; }
+    public static void CALLNCnn() { Reg.m=3; Reg.t=12; if((Reg.f&0x10)==0x00) { Reg.sp-=2; MMU.ww(Reg.sp,Reg.pc+2); Reg.pc=MMU.rw(Reg.pc); Reg.m+=2; Reg.t+=8; } else Reg.pc+=2; }
+    public static void CALLCnn() { Reg.m=3; Reg.t=12; if((Reg.f&0x10)==0x10) { Reg.sp-=2; MMU.ww(Reg.sp,Reg.pc+2); Reg.pc=MMU.rw(Reg.pc); Reg.m+=2; Reg.t+=8; } else Reg.pc+=2; }
 
-    RET() { Reg.pc=MMU.rw(Reg.sp); Reg.sp+=2; Reg.m=3; Reg.t=12; }
-    RETI() { Reg.ime=1; Reg.pc=MMU.rw(Reg.sp); Reg.sp+=2; Reg.m=3; Reg.t=12; }
-    RETNZ() { Reg.m=1; Reg.t=4; if((Reg.f&0x80)==0x00) { Reg.pc=MMU.rw(Reg.sp); Reg.sp+=2; Reg.m+=2; Reg.t+=8; } }
-    RETZ() { Reg.m=1; Reg.t=4; if((Reg.f&0x80)==0x80) { Reg.pc=MMU.rw(Reg.sp); Reg.sp+=2; Reg.m+=2; Reg.t+=8; } }
-    RETNC() { Reg.m=1; Reg.t=4; if((Reg.f&0x10)==0x00) { Reg.pc=MMU.rw(Reg.sp); Reg.sp+=2; Reg.m+=2; Reg.t+=8; } }
-    RETC() { Reg.m=1; Reg.t=4; if((Reg.f&0x10)==0x10) { Reg.pc=MMU.rw(Reg.sp); Reg.sp+=2; Reg.m+=2; Reg.t+=8; } }
+    public static void RET() { Reg.pc=MMU.rw(Reg.sp); Reg.sp+=2; Reg.m=3; Reg.t=12; }
+    public static void RETI() { Reg.ime=1; Reg.pc=MMU.rw(Reg.sp); Reg.sp+=2; Reg.m=3; Reg.t=12; }
+    public static void RETNZ() { Reg.m=1; Reg.t=4; if((Reg.f&0x80)==0x00) { Reg.pc=MMU.rw(Reg.sp); Reg.sp+=2; Reg.m+=2; Reg.t+=8; } }
+    public static void RETZ() { Reg.m=1; Reg.t=4; if((Reg.f&0x80)==0x80) { Reg.pc=MMU.rw(Reg.sp); Reg.sp+=2; Reg.m+=2; Reg.t+=8; } }
+    public static void RETNC() { Reg.m=1; Reg.t=4; if((Reg.f&0x10)==0x00) { Reg.pc=MMU.rw(Reg.sp); Reg.sp+=2; Reg.m+=2; Reg.t+=8; } }
+    public static void RETC() { Reg.m=1; Reg.t=4; if((Reg.f&0x10)==0x10) { Reg.pc=MMU.rw(Reg.sp); Reg.sp+=2; Reg.m+=2; Reg.t+=8; } }
 
-    RST00() { Reg.sp-=2; MMU.ww(Reg.sp,Reg.pc); Reg.pc=0x00; Reg.m=3; Reg.t=12; }
-    RST08() { Reg.sp-=2; MMU.ww(Reg.sp,Reg.pc); Reg.pc=0x08; Reg.m=3; Reg.t=12; }
-    RST10() { Reg.sp-=2; MMU.ww(Reg.sp,Reg.pc); Reg.pc=0x10; Reg.m=3; Reg.t=12; }
-    RST18() { Reg.sp-=2; MMU.ww(Reg.sp,Reg.pc); Reg.pc=0x18; Reg.m=3; Reg.t=12; }
-    RST20() { Reg.sp-=2; MMU.ww(Reg.sp,Reg.pc); Reg.pc=0x20; Reg.m=3; Reg.t=12; }
-    RST28() { Reg.sp-=2; MMU.ww(Reg.sp,Reg.pc); Reg.pc=0x28; Reg.m=3; Reg.t=12; }
-    RST30() { Reg.sp-=2; MMU.ww(Reg.sp,Reg.pc); Reg.pc=0x30; Reg.m=3; Reg.t=12; }
-    RST38() { Reg.sp-=2; MMU.ww(Reg.sp,Reg.pc); Reg.pc=0x38; Reg.m=3; Reg.t=12; }
-    RST40() { Reg.sp-=2; MMU.ww(Reg.sp,Reg.pc); Reg.pc=0x40; Reg.m=3; Reg.t=12; }
-    RST48() { Reg.sp-=2; MMU.ww(Reg.sp,Reg.pc); Reg.pc=0x48; Reg.m=3; Reg.t=12; }
-    RST50() { Reg.sp-=2; MMU.ww(Reg.sp,Reg.pc); Reg.pc=0x50; Reg.m=3; Reg.t=12; }
-    RST58() { Reg.sp-=2; MMU.ww(Reg.sp,Reg.pc); Reg.pc=0x58; Reg.m=3; Reg.t=12; }
-    RST60() { Reg.sp-=2; MMU.ww(Reg.sp,Reg.pc); Reg.pc=0x60; Reg.m=3; Reg.t=12; }
+    public static void RST00() { Reg.sp-=2; MMU.ww(Reg.sp,Reg.pc); Reg.pc=0x00; Reg.m=3; Reg.t=12; }
+    public static void RST08() { Reg.sp-=2; MMU.ww(Reg.sp,Reg.pc); Reg.pc=0x08; Reg.m=3; Reg.t=12; }
+    public static void RST10() { Reg.sp-=2; MMU.ww(Reg.sp,Reg.pc); Reg.pc=0x10; Reg.m=3; Reg.t=12; }
+    public static void RST18() { Reg.sp-=2; MMU.ww(Reg.sp,Reg.pc); Reg.pc=0x18; Reg.m=3; Reg.t=12; }
+    public static void RST20() { Reg.sp-=2; MMU.ww(Reg.sp,Reg.pc); Reg.pc=0x20; Reg.m=3; Reg.t=12; }
+    public static void RST28() { Reg.sp-=2; MMU.ww(Reg.sp,Reg.pc); Reg.pc=0x28; Reg.m=3; Reg.t=12; }
+    public static void RST30() { Reg.sp-=2; MMU.ww(Reg.sp,Reg.pc); Reg.pc=0x30; Reg.m=3; Reg.t=12; }
+    public static void RST38() { Reg.sp-=2; MMU.ww(Reg.sp,Reg.pc); Reg.pc=0x38; Reg.m=3; Reg.t=12; }
+    public static void RST40() { Reg.sp-=2; MMU.ww(Reg.sp,Reg.pc); Reg.pc=0x40; Reg.m=3; Reg.t=12; }
+    public static void RST48() { Reg.sp-=2; MMU.ww(Reg.sp,Reg.pc); Reg.pc=0x48; Reg.m=3; Reg.t=12; }
+    public static void RST50() { Reg.sp-=2; MMU.ww(Reg.sp,Reg.pc); Reg.pc=0x50; Reg.m=3; Reg.t=12; }
+    public static void RST58() { Reg.sp-=2; MMU.ww(Reg.sp,Reg.pc); Reg.pc=0x58; Reg.m=3; Reg.t=12; }
+    public static void RST60() { Reg.sp-=2; MMU.ww(Reg.sp,Reg.pc); Reg.pc=0x60; Reg.m=3; Reg.t=12; }
 
-    NOP() { Reg.m=1; Reg.t=4; }
-    HALT() { Z80._halt=1; Reg.m=1; Reg.t=4; }
+    public static void HALT() { Z80._halt=1; Reg.m=1; Reg.t=4; }
 
-    DI() { Reg.ime=0; Reg.m=1; Reg.t=4; }
-    EI() { Reg.ime=1; Reg.m=1; Reg.t=4; }
+    public static void DI() { Reg.ime=0; Reg.m=1; Reg.t=4; }
+    public static void EI() { Reg.ime=1; Reg.m=1; Reg.t=4; }
 
     
     
