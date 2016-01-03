@@ -5,7 +5,9 @@ public class Z80 {
 	// Register set
 	public static class Reg {
 		public static byte a=0, b=0, c=0, d=0, e=0, h=0, l=0, f=0; // 8-bit registers
-		public static short pc=0, sp=0, i=0, r=0, // 16-bit registers
+		
+		public static short 
+				pc=0, sp=0, i=0, r=0, // 16-bit registers
 				m=0, t=0, // clock for last instruction
 				ime=0; // TODO IME ?
 		// f = flags
@@ -359,15 +361,15 @@ public class Z80 {
     public static void DECr_a() { Reg.a--; Reg.a&=255; fz(Reg.a, (byte)0); Reg.m=1; Reg.t=4; }
     public static void DECHLm() { byte i=(byte) (MMU.rb((Reg.h<<8)+Reg.l)-1); i&=255; MMU.wb((Reg.h<<8)+Reg.l,i); fz(i, (byte)0); Reg.m=3; Reg.t=12; }
 
-    public static void INCBC() { Reg.c=(Reg.c+1)&255; if(!Reg.c) Reg.b=(Reg.b+1)&255; Reg.m=1; Reg.t=4; }
-    public static void INCDE() { Reg.e=(Reg.e+1)&255; if(!Reg.e) Reg.d=(Reg.d+1)&255; Reg.m=1; Reg.t=4; }
-    public static void INCHL() { Reg.l=(Reg.l+1)&255; if(!Reg.l) Reg.h=(Reg.h+1)&255; Reg.m=1; Reg.t=4; }
-    public static void INCSP() { Reg.sp=(Reg.sp+1)&65535; Reg.m=1; Reg.t=4; }
+    public static void INCBC() { Reg.c=(byte) ((Reg.c+1)&255); if(Reg.c == 0) Reg.b=(byte) ((Reg.b+1)&255); Reg.m=1; Reg.t=4; }
+    public static void INCDE() { Reg.e=(byte) ((Reg.e+1)&255); if(Reg.e == 0) Reg.d=(byte) ((Reg.d+1)&255); Reg.m=1; Reg.t=4; }
+    public static void INCHL() { Reg.l=(byte) ((Reg.l+1)&255); if(Reg.l == 0) Reg.h=(byte) ((Reg.h+1)&255); Reg.m=1; Reg.t=4; }
+    public static void INCSP() { Reg.sp=(short) ((Reg.sp+1)&65535); Reg.m=1; Reg.t=4; }
 
-    public static void DECBC() { Reg.c=(Reg.c-1)&255; if(Reg.c==255) Reg.b=(Reg.b-1)&255; Reg.m=1; Reg.t=4; }
-    public static void DECDE() { Reg.e=(Reg.e-1)&255; if(Reg.e==255) Reg.d=(Reg.d-1)&255; Reg.m=1; Reg.t=4; }
-    public static void DECHL() { Reg.l=(Reg.l-1)&255; if(Reg.l==255) Reg.h=(Reg.h-1)&255; Reg.m=1; Reg.t=4; }
-    public static void DECSP() { Reg.sp=(Reg.sp-1)&65535; Reg.m=1; Reg.t=4; }
+    public static void DECBC() { Reg.c=(byte) ((Reg.c-1)&255); if(Reg.c==255) Reg.b=(byte) ((Reg.b-1)&255); Reg.m=1; Reg.t=4; }
+    public static void DECDE() { Reg.e=(byte) ((Reg.e-1)&255); if(Reg.e==255) Reg.d=(byte) ((Reg.d-1)&255); Reg.m=1; Reg.t=4; }
+    public static void DECHL() { Reg.l=(byte) ((Reg.l-1)&255); if(Reg.l==255) Reg.h=(byte) ((Reg.h-1)&255); Reg.m=1; Reg.t=4; }
+    public static void DECSP() { Reg.sp=(short) ((Reg.sp-1)&65535); Reg.m=1; Reg.t=4; }
 
     /*--- Bit manipulation ---*/
     public static void BIT0b() { fz((byte)(Reg.b&0x01), (byte)0); Reg.m=2; Reg.t=8; }
@@ -442,83 +444,83 @@ public class Z80 {
     public static void BIT7a() { fz((byte)(Reg.a&0x80), (byte)0); Reg.m=2; Reg.t=8; }
     public static void BIT7m() { fz(MMU.rb((Reg.h<<8)+Reg.l)&0x80, (byte)0); Reg.m=3; Reg.t=12; }
 
-    public static void RLA() { var ci=Reg.f&0x10?1:0; var co=Reg.a&0x80?0x10:0; Reg.a=(Reg.a<<1)+ci; Reg.a&=255; Reg.f=(Reg.f&0xEF)+co; Reg.m=1; Reg.t=4; }
-    public static void RLCA() { var ci=Reg.a&0x80?1:0; var co=Reg.a&0x80?0x10:0; Reg.a=(Reg.a<<1)+ci; Reg.a&=255; Reg.f=(Reg.f&0xEF)+co; Reg.m=1; Reg.t=4; }
-    public static void RRA() { var ci=Reg.f&0x10?0x80:0; var co=Reg.a&1?0x10:0; Reg.a=(Reg.a>>1)+ci; Reg.a&=255; Reg.f=(Reg.f&0xEF)+co; Reg.m=1; Reg.t=4; }
-    public static void RRCA() { var ci=Reg.a&1?0x80:0; var co=Reg.a&1?0x10:0; Reg.a=(Reg.a>>1)+ci; Reg.a&=255; Reg.f=(Reg.f&0xEF)+co; Reg.m=1; Reg.t=4; }
+    public static void RLA()  { byte ci=(byte) (((Reg.f&0x10)!=0)?1:0); byte co=(byte) ((Reg.a&0x80)!=0?0x10:0); Reg.a=(byte) ((Reg.a<<1)+ci); Reg.a&=255; Reg.f=(byte) ((Reg.f&0xEF)+co); Reg.m=1; Reg.t=4; }
+    public static void RLCA() { byte ci=(byte) (((Reg.a&0x80)!=0)?1:0); byte co=(byte) ((Reg.a&0x80)!=0?0x10:0); Reg.a=(byte) ((Reg.a<<1)+ci); Reg.a&=255; Reg.f=(byte) ((Reg.f&0xEF)+co); Reg.m=1; Reg.t=4; }
+    public static void RRA()  { byte ci=(byte) (((Reg.f&0x10)!=0)?0x80:0); byte co=(byte) ((Reg.a&1)!=0?0x10:0); Reg.a=(byte) ((Reg.a>>1)+ci); Reg.a&=255; Reg.f=(byte) ((Reg.f&0xEF)+co); Reg.m=1; Reg.t=4; }
+    public static void RRCA() { byte ci=(byte) (((Reg.a&1)!=0)?0x80:0); byte co=(byte) ((Reg.a&1)!=0?0x10:0); Reg.a=(byte) ((Reg.a>>1)+ci); Reg.a&=255; Reg.f=(byte) ((Reg.f&0xEF)+co); Reg.m=1; Reg.t=4; }
 
-    public static void RLr_b() { var ci=Reg.f&0x10?1:0; var co=Reg.b&0x80?0x10:0; Reg.b=(Reg.b<<1)+ci; Reg.b&=255; fz(Reg.b); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    public static void RLr_c() { var ci=Reg.f&0x10?1:0; var co=Reg.c&0x80?0x10:0; Reg.c=(Reg.c<<1)+ci; Reg.c&=255; fz(Reg.c); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    public static void RLr_d() { var ci=Reg.f&0x10?1:0; var co=Reg.d&0x80?0x10:0; Reg.d=(Reg.d<<1)+ci; Reg.d&=255; fz(Reg.d); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    public static void RLr_e() { var ci=Reg.f&0x10?1:0; var co=Reg.e&0x80?0x10:0; Reg.e=(Reg.e<<1)+ci; Reg.e&=255; fz(Reg.e); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    public static void RLr_h() { var ci=Reg.f&0x10?1:0; var co=Reg.h&0x80?0x10:0; Reg.h=(Reg.h<<1)+ci; Reg.h&=255; fz(Reg.h); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    public static void RLr_l() { var ci=Reg.f&0x10?1:0; var co=Reg.l&0x80?0x10:0; Reg.l=(Reg.l<<1)+ci; Reg.l&=255; fz(Reg.l); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    public static void RLr_a() { var ci=Reg.f&0x10?1:0; var co=Reg.a&0x80?0x10:0; Reg.a=(Reg.a<<1)+ci; Reg.a&=255; fz(Reg.a); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    public static void RLHL() { var i=MMU.rb((Reg.h<<8)+Reg.l); var ci=Reg.f&0x10?1:0; var co=i&0x80?0x10:0; i=(i<<1)+ci; i&=255; fz(i); MMU.wb((Reg.h<<8)+Reg.l,i); Reg.f=(Reg.f&0xEF)+co; Reg.m=4; Reg.t=16; }
+    public static void RLr_b() { byte ci=(byte) (((Reg.f&0x10)!=0)?1:0); byte co=(byte) ((Reg.b&0x80)!=0?0x10:0); Reg.b=(byte) ((Reg.b<<1)+ci); Reg.b&=255; fz(Reg.b); Reg.f=(byte) ((Reg.f&0xEF)+co); Reg.m=2; Reg.t=8; }
+    public static void RLr_c() { byte ci=(byte) (((Reg.f&0x10)!=0)?1:0); byte co=(byte) ((Reg.c&0x80)!=0?0x10:0); Reg.c=(byte) ((Reg.c<<1)+ci); Reg.c&=255; fz(Reg.c); Reg.f=(byte) ((Reg.f&0xEF)+co); Reg.m=2; Reg.t=8; }
+    public static void RLr_d() { byte ci=(byte) (((Reg.f&0x10)!=0)?1:0); byte co=(byte) ((Reg.d&0x80)!=0?0x10:0); Reg.d=(byte) ((Reg.d<<1)+ci); Reg.d&=255; fz(Reg.d); Reg.f=(byte) ((Reg.f&0xEF)+co); Reg.m=2; Reg.t=8; }
+    public static void RLr_e() { byte ci=(byte) (((Reg.f&0x10)!=0)?1:0); byte co=(byte) ((Reg.e&0x80)!=0?0x10:0); Reg.e=(byte) ((Reg.e<<1)+ci); Reg.e&=255; fz(Reg.e); Reg.f=(byte) ((Reg.f&0xEF)+co); Reg.m=2; Reg.t=8; }
+    public static void RLr_h() { byte ci=(byte) (((Reg.f&0x10)!=0)?1:0); byte co=(byte) ((Reg.h&0x80)!=0?0x10:0); Reg.h=(byte) ((Reg.h<<1)+ci); Reg.h&=255; fz(Reg.h); Reg.f=(byte) ((Reg.f&0xEF)+co); Reg.m=2; Reg.t=8; }
+    public static void RLr_l() { byte ci=(byte) (((Reg.f&0x10)!=0)?1:0); byte co=(byte) ((Reg.l&0x80)!=0?0x10:0); Reg.l=(byte) ((Reg.l<<1)+ci); Reg.l&=255; fz(Reg.l); Reg.f=(byte) ((Reg.f&0xEF)+co); Reg.m=2; Reg.t=8; }
+    public static void RLr_a() { byte ci=(byte) (((Reg.f&0x10)!=0)?1:0); byte co=(byte) ((Reg.a&0x80)!=0?0x10:0); Reg.a=(byte) ((Reg.a<<1)+ci); Reg.a&=255; fz(Reg.a); Reg.f=(byte) ((Reg.f&0xEF)+co); Reg.m=2; Reg.t=8; }
+    public static void RLHL() { byte i=MMU.rb((Reg.h<<8)+Reg.l); byte ci=(byte) ((Reg.f&0x10)!=0?1:0); byte co=(byte) ((i&0x80)!=0?0x10:0); i=(byte) ((i<<1)+ci); i&=255; fz(i); MMU.wb((Reg.h<<8)+Reg.l,i); Reg.f=(byte) ((Reg.f&0xEF)+co); Reg.m=4; Reg.t=16; }
 
-    public static void RLCr_b() { var ci=Reg.b&0x80?1:0; var co=Reg.b&0x80?0x10:0; Reg.b=(Reg.b<<1)+ci; Reg.b&=255; fz(Reg.b); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    public static void RLCr_c() { var ci=Reg.c&0x80?1:0; var co=Reg.c&0x80?0x10:0; Reg.c=(Reg.c<<1)+ci; Reg.c&=255; fz(Reg.c); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    public static void RLCr_d() { var ci=Reg.d&0x80?1:0; var co=Reg.d&0x80?0x10:0; Reg.d=(Reg.d<<1)+ci; Reg.d&=255; fz(Reg.d); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    public static void RLCr_e() { var ci=Reg.e&0x80?1:0; var co=Reg.e&0x80?0x10:0; Reg.e=(Reg.e<<1)+ci; Reg.e&=255; fz(Reg.e); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    public static void RLCr_h() { var ci=Reg.h&0x80?1:0; var co=Reg.h&0x80?0x10:0; Reg.h=(Reg.h<<1)+ci; Reg.h&=255; fz(Reg.h); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    public static void RLCr_l() { var ci=Reg.l&0x80?1:0; var co=Reg.l&0x80?0x10:0; Reg.l=(Reg.l<<1)+ci; Reg.l&=255; fz(Reg.l); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    public static void RLCr_a() { var ci=Reg.a&0x80?1:0; var co=Reg.a&0x80?0x10:0; Reg.a=(Reg.a<<1)+ci; Reg.a&=255; fz(Reg.a); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    public static void RLCHL() { var i=MMU.rb((Reg.h<<8)+Reg.l); var ci=i&0x80?1:0; var co=i&0x80?0x10:0; i=(i<<1)+ci; i&=255; fz(i); MMU.wb((Reg.h<<8)+Reg.l,i); Reg.f=(Reg.f&0xEF)+co; Reg.m=4; Reg.t=16; }
+    public static void RLCr_b() { byte ci=(byte) (((Reg.b&0x80)!=0)?1:0); byte co=(byte) ((Reg.b&0x80)!=0?0x10:0); Reg.b=(byte) ((Reg.b<<1)+ci); Reg.b&=255; fz(Reg.b); Reg.f=(byte) ((Reg.f&0xEF)+co); Reg.m=2; Reg.t=8; }
+    public static void RLCr_c() { byte ci=(byte) (((Reg.c&0x80)!=0)?1:0); byte co=(byte) ((Reg.c&0x80)!=0?0x10:0); Reg.c=(byte) ((Reg.c<<1)+ci); Reg.c&=255; fz(Reg.c); Reg.f=(byte) ((Reg.f&0xEF)+co); Reg.m=2; Reg.t=8; }
+    public static void RLCr_d() { byte ci=(byte) (((Reg.d&0x80)!=0)?1:0); byte co=(byte) ((Reg.d&0x80)!=0?0x10:0); Reg.d=(byte) ((Reg.d<<1)+ci); Reg.d&=255; fz(Reg.d); Reg.f=(byte) ((Reg.f&0xEF)+co); Reg.m=2; Reg.t=8; }
+    public static void RLCr_e() { byte ci=(byte) (((Reg.e&0x80)!=0)?1:0); byte co=(byte) ((Reg.e&0x80)!=0?0x10:0); Reg.e=(byte) ((Reg.e<<1)+ci); Reg.e&=255; fz(Reg.e); Reg.f=(byte) ((Reg.f&0xEF)+co); Reg.m=2; Reg.t=8; }
+    public static void RLCr_h() { byte ci=(byte) (((Reg.h&0x80)!=0)?1:0); byte co=(byte) ((Reg.h&0x80)!=0?0x10:0); Reg.h=(byte) ((Reg.h<<1)+ci); Reg.h&=255; fz(Reg.h); Reg.f=(byte) ((Reg.f&0xEF)+co); Reg.m=2; Reg.t=8; }
+    public static void RLCr_l() { byte ci=(byte) (((Reg.l&0x80)!=0)?1:0); byte co=(byte) ((Reg.l&0x80)!=0?0x10:0); Reg.l=(byte) ((Reg.l<<1)+ci); Reg.l&=255; fz(Reg.l); Reg.f=(byte) ((Reg.f&0xEF)+co); Reg.m=2; Reg.t=8; }
+    public static void RLCr_a() { byte ci=(byte) (((Reg.a&0x80)!=0)?1:0); byte co=(byte) ((Reg.a&0x80)!=0?0x10:0); Reg.a=(byte) ((Reg.a<<1)+ci); Reg.a&=255; fz(Reg.a); Reg.f=(byte) ((Reg.f&0xEF)+co); Reg.m=2; Reg.t=8; }
+    public static void RLCHL() { byte i=MMU.rb((Reg.h<<8)+Reg.l); byte ci=(byte) ((i&0x80)!=0?1:0); byte co=(byte) ((i&0x80)!=0?0x10:0); i=(byte) ((i<<1)+ci); i&=255; fz(i); MMU.wb((Reg.h<<8)+Reg.l,i); Reg.f=(byte) ((Reg.f&0xEF)+co); Reg.m=4; Reg.t=16; }
 
-    public static void RRr_b() { var ci=Reg.f&0x10?0x80:0; var co=Reg.b&1?0x10:0; Reg.b=(Reg.b>>1)+ci; Reg.b&=255; fz(Reg.b); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    public static void RRr_c() { var ci=Reg.f&0x10?0x80:0; var co=Reg.c&1?0x10:0; Reg.c=(Reg.c>>1)+ci; Reg.c&=255; fz(Reg.c); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    public static void RRr_d() { var ci=Reg.f&0x10?0x80:0; var co=Reg.d&1?0x10:0; Reg.d=(Reg.d>>1)+ci; Reg.d&=255; fz(Reg.d); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    public static void RRr_e() { var ci=Reg.f&0x10?0x80:0; var co=Reg.e&1?0x10:0; Reg.e=(Reg.e>>1)+ci; Reg.e&=255; fz(Reg.e); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    public static void RRr_h() { var ci=Reg.f&0x10?0x80:0; var co=Reg.h&1?0x10:0; Reg.h=(Reg.h>>1)+ci; Reg.h&=255; fz(Reg.h); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    public static void RRr_l() { var ci=Reg.f&0x10?0x80:0; var co=Reg.l&1?0x10:0; Reg.l=(Reg.l>>1)+ci; Reg.l&=255; fz(Reg.l); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    public static void RRr_a() { var ci=Reg.f&0x10?0x80:0; var co=Reg.a&1?0x10:0; Reg.a=(Reg.a>>1)+ci; Reg.a&=255; fz(Reg.a); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    public static void RRHL() { var i=MMU.rb((Reg.h<<8)+Reg.l); var ci=Reg.f&0x10?0x80:0; var co=i&1?0x10:0; i=(i>>1)+ci; i&=255; MMU.wb((Reg.h<<8)+Reg.l,i); fz(i); Reg.f=(Reg.f&0xEF)+co; Reg.m=4; Reg.t=16; }
+    public static void RRr_b() { byte ci=(byte) (((Reg.f&0x10)!=0)?0x80:0); byte co=(byte) ((Reg.b&1)!=0?0x10:0); Reg.b=(byte) ((Reg.b>>1)+ci); Reg.b&=255; fz(Reg.b); Reg.f=(byte) ((Reg.f&0xEF)+co); Reg.m=2; Reg.t=8; }
+    public static void RRr_c() { byte ci=(byte) (((Reg.f&0x10)!=0)?0x80:0); byte co=(byte) ((Reg.c&1)!=0?0x10:0); Reg.c=(byte) ((Reg.c>>1)+ci); Reg.c&=255; fz(Reg.c); Reg.f=(byte) ((Reg.f&0xEF)+co); Reg.m=2; Reg.t=8; }
+    public static void RRr_d() { byte ci=(byte) (((Reg.f&0x10)!=0)?0x80:0); byte co=(byte) ((Reg.d&1)!=0?0x10:0); Reg.d=(byte) ((Reg.d>>1)+ci); Reg.d&=255; fz(Reg.d); Reg.f=(byte) ((Reg.f&0xEF)+co); Reg.m=2; Reg.t=8; }
+    public static void RRr_e() { byte ci=(byte) (((Reg.f&0x10)!=0)?0x80:0); byte co=(byte) ((Reg.e&1)!=0?0x10:0); Reg.e=(byte) ((Reg.e>>1)+ci); Reg.e&=255; fz(Reg.e); Reg.f=(byte) ((Reg.f&0xEF)+co); Reg.m=2; Reg.t=8; }
+    public static void RRr_h() { byte ci=(byte) (((Reg.f&0x10)!=0)?0x80:0); byte co=(byte) ((Reg.h&1)!=0?0x10:0); Reg.h=(byte) ((Reg.h>>1)+ci); Reg.h&=255; fz(Reg.h); Reg.f=(byte) ((Reg.f&0xEF)+co); Reg.m=2; Reg.t=8; }
+    public static void RRr_l() { byte ci=(byte) (((Reg.f&0x10)!=0)?0x80:0); byte co=(byte) ((Reg.l&1)!=0?0x10:0); Reg.l=(byte) ((Reg.l>>1)+ci); Reg.l&=255; fz(Reg.l); Reg.f=(byte) ((Reg.f&0xEF)+co); Reg.m=2; Reg.t=8; }
+    public static void RRr_a() { byte ci=(byte) (((Reg.f&0x10)!=0)?0x80:0); byte co=(byte) ((Reg.a&1)!=0?0x10:0); Reg.a=(byte) ((Reg.a>>1)+ci); Reg.a&=255; fz(Reg.a); Reg.f=(byte) ((Reg.f&0xEF)+co); Reg.m=2; Reg.t=8; }
+    public static void RRHL() { byte i=MMU.rb((Reg.h<<8)+Reg.l); byte ci=(byte) ((Reg.f&0x10)!=0?0x80:0); byte co=(byte) ((i&1)!=0?0x10:0); i=(byte) ((i>>1)+ci); i&=255; MMU.wb((Reg.h<<8)+Reg.l,i); fz(i); Reg.f=(byte) ((Reg.f&0xEF)+co); Reg.m=4; Reg.t=16; }
 
-    public static void RRCr_b() { var ci=Reg.b&1?0x80:0; var co=Reg.b&1?0x10:0; Reg.b=(Reg.b>>1)+ci; Reg.b&=255; fz(Reg.b); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    public static void RRCr_c() { var ci=Reg.c&1?0x80:0; var co=Reg.c&1?0x10:0; Reg.c=(Reg.c>>1)+ci; Reg.c&=255; fz(Reg.c); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    public static void RRCr_d() { var ci=Reg.d&1?0x80:0; var co=Reg.d&1?0x10:0; Reg.d=(Reg.d>>1)+ci; Reg.d&=255; fz(Reg.d); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    public static void RRCr_e() { var ci=Reg.e&1?0x80:0; var co=Reg.e&1?0x10:0; Reg.e=(Reg.e>>1)+ci; Reg.e&=255; fz(Reg.e); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    public static void RRCr_h() { var ci=Reg.h&1?0x80:0; var co=Reg.h&1?0x10:0; Reg.h=(Reg.h>>1)+ci; Reg.h&=255; fz(Reg.h); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    public static void RRCr_l() { var ci=Reg.l&1?0x80:0; var co=Reg.l&1?0x10:0; Reg.l=(Reg.l>>1)+ci; Reg.l&=255; fz(Reg.l); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    public static void RRCr_a() { var ci=Reg.a&1?0x80:0; var co=Reg.a&1?0x10:0; Reg.a=(Reg.a>>1)+ci; Reg.a&=255; fz(Reg.a); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    public static void RRCHL() { var i=MMU.rb((Reg.h<<8)+Reg.l); var ci=i&1?0x80:0; var co=i&1?0x10:0; i=(i>>1)+ci; i&=255; MMU.wb((Reg.h<<8)+Reg.l,i); fz(i); Reg.f=(Reg.f&0xEF)+co; Reg.m=4; Reg.t=16; }
+    public static void RRCr_b() { byte ci=(byte) ((Reg.b&1)!=0?0x80:0); byte co=(byte) ((Reg.b&1)!=0?0x10:0); Reg.b=(byte) ((Reg.b>>1)+ci); Reg.b&=255; fz(Reg.b); Reg.f=(byte) ((Reg.f&0xEF)+co); Reg.m=2; Reg.t=8; }
+    public static void RRCr_c() { byte ci=(byte) ((Reg.c&1)!=0?0x80:0); byte co=(byte) ((Reg.c&1)!=0?0x10:0); Reg.c=(byte) ((Reg.c>>1)+ci); Reg.c&=255; fz(Reg.c); Reg.f=(byte) ((Reg.f&0xEF)+co); Reg.m=2; Reg.t=8; }
+    public static void RRCr_d() { byte ci=(byte) ((Reg.d&1)!=0?0x80:0); byte co=(byte) ((Reg.d&1)!=0?0x10:0); Reg.d=(byte) ((Reg.d>>1)+ci); Reg.d&=255; fz(Reg.d); Reg.f=(byte) ((Reg.f&0xEF)+co); Reg.m=2; Reg.t=8; }
+    public static void RRCr_e() { byte ci=(byte) ((Reg.e&1)!=0?0x80:0); byte co=(byte) ((Reg.e&1)!=0?0x10:0); Reg.e=(byte) ((Reg.e>>1)+ci); Reg.e&=255; fz(Reg.e); Reg.f=(byte) ((Reg.f&0xEF)+co); Reg.m=2; Reg.t=8; }
+    public static void RRCr_h() { byte ci=(byte) ((Reg.h&1)!=0?0x80:0); byte co=(byte) ((Reg.h&1)!=0?0x10:0); Reg.h=(byte) ((Reg.h>>1)+ci); Reg.h&=255; fz(Reg.h); Reg.f=(byte) ((Reg.f&0xEF)+co); Reg.m=2; Reg.t=8; }
+    public static void RRCr_l() { byte ci=(byte) ((Reg.l&1)!=0?0x80:0); byte co=(byte) ((Reg.l&1)!=0?0x10:0); Reg.l=(byte) ((Reg.l>>1)+ci); Reg.l&=255; fz(Reg.l); Reg.f=(byte) ((Reg.f&0xEF)+co); Reg.m=2; Reg.t=8; }
+    public static void RRCr_a() { byte ci=(byte) ((Reg.a&1)!=0?0x80:0); byte co=(byte) ((Reg.a&1)!=0?0x10:0); Reg.a=(byte) ((Reg.a>>1)+ci); Reg.a&=255; fz(Reg.a); Reg.f=(byte) ((Reg.f&0xEF)+co); Reg.m=2; Reg.t=8; }
+    public static void RRCHL() { byte i=MMU.rb((Reg.h<<8)+Reg.l); byte ci=(byte) (((i&1)!=0)?0x80:0); byte co=(byte) ((i&1)!=0?0x10:0); i=(byte) ((i>>1)+ci); i&=255; MMU.wb((Reg.h<<8)+Reg.l,i); fz(i); Reg.f=(byte) ((Reg.f&0xEF)+co); Reg.m=4; Reg.t=16; }
 
-    public static void SLAr_b() { var co=Reg.b&0x80?0x10:0; Reg.b=(Reg.b<<1)&255; fz(Reg.b); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    public static void SLAr_c() { var co=Reg.c&0x80?0x10:0; Reg.c=(Reg.c<<1)&255; fz(Reg.c); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    public static void SLAr_d() { var co=Reg.d&0x80?0x10:0; Reg.d=(Reg.d<<1)&255; fz(Reg.d); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    public static void SLAr_e() { var co=Reg.e&0x80?0x10:0; Reg.e=(Reg.e<<1)&255; fz(Reg.e); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    public static void SLAr_h() { var co=Reg.h&0x80?0x10:0; Reg.h=(Reg.h<<1)&255; fz(Reg.h); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    public static void SLAr_l() { var co=Reg.l&0x80?0x10:0; Reg.l=(Reg.l<<1)&255; fz(Reg.l); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    public static void SLAr_a() { var co=Reg.a&0x80?0x10:0; Reg.a=(Reg.a<<1)&255; fz(Reg.a); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
+    public static void SLAr_b() { byte co=(byte) (((Reg.b&0x80)!=0)?0x10:0); Reg.b=(byte) ((Reg.b<<1)&255); fz(Reg.b); Reg.f=(byte) ((Reg.f&0xEF)+co); Reg.m=2; Reg.t=8; }
+    public static void SLAr_c() { byte co=(byte) (((Reg.c&0x80)!=0)?0x10:0); Reg.c=(byte) ((Reg.c<<1)&255); fz(Reg.c); Reg.f=(byte) ((Reg.f&0xEF)+co); Reg.m=2; Reg.t=8; }
+    public static void SLAr_d() { byte co=(byte) (((Reg.d&0x80)!=0)?0x10:0); Reg.d=(byte) ((Reg.d<<1)&255); fz(Reg.d); Reg.f=(byte) ((Reg.f&0xEF)+co); Reg.m=2; Reg.t=8; }
+    public static void SLAr_e() { byte co=(byte) (((Reg.e&0x80)!=0)?0x10:0); Reg.e=(byte) ((Reg.e<<1)&255); fz(Reg.e); Reg.f=(byte) ((Reg.f&0xEF)+co); Reg.m=2; Reg.t=8; }
+    public static void SLAr_h() { byte co=(byte) (((Reg.h&0x80)!=0)?0x10:0); Reg.h=(byte) ((Reg.h<<1)&255); fz(Reg.h); Reg.f=(byte) ((Reg.f&0xEF)+co); Reg.m=2; Reg.t=8; }
+    public static void SLAr_l() { byte co=(byte) (((Reg.l&0x80)!=0)?0x10:0); Reg.l=(byte) ((Reg.l<<1)&255); fz(Reg.l); Reg.f=(byte) ((Reg.f&0xEF)+co); Reg.m=2; Reg.t=8; }
+    public static void SLAr_a() { byte co=(byte) (((Reg.a&0x80)!=0)?0x10:0); Reg.a=(byte) ((Reg.a<<1)&255); fz(Reg.a); Reg.f=(byte) ((Reg.f&0xEF)+co); Reg.m=2; Reg.t=8; }
 
-    public static void SLLr_b() { var co=Reg.b&0x80?0x10:0; Reg.b=(Reg.b<<1)&255+1; fz(Reg.b); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    public static void SLLr_c() { var co=Reg.c&0x80?0x10:0; Reg.c=(Reg.c<<1)&255+1; fz(Reg.c); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    public static void SLLr_d() { var co=Reg.d&0x80?0x10:0; Reg.d=(Reg.d<<1)&255+1; fz(Reg.d); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    public static void SLLr_e() { var co=Reg.e&0x80?0x10:0; Reg.e=(Reg.e<<1)&255+1; fz(Reg.e); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    public static void SLLr_h() { var co=Reg.h&0x80?0x10:0; Reg.h=(Reg.h<<1)&255+1; fz(Reg.h); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    public static void SLLr_l() { var co=Reg.l&0x80?0x10:0; Reg.l=(Reg.l<<1)&255+1; fz(Reg.l); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    public static void SLLr_a() { var co=Reg.a&0x80?0x10:0; Reg.a=(Reg.a<<1)&255+1; fz(Reg.a); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
+    public static void SLLr_b() { byte co=(byte) ((Reg.b&0x80)!=0?0x10:0); Reg.b=(byte) ((Reg.b<<1)&255+1); fz(Reg.b); Reg.f=(byte) ((Reg.f&0xEF)+co); Reg.m=2; Reg.t=8; }
+    public static void SLLr_c() { byte co=(byte) ((Reg.c&0x80)!=0?0x10:0); Reg.c=(byte) ((Reg.c<<1)&255+1); fz(Reg.c); Reg.f=(byte) ((Reg.f&0xEF)+co); Reg.m=2; Reg.t=8; }
+    public static void SLLr_d() { byte co=(byte) ((Reg.d&0x80)!=0?0x10:0); Reg.d=(byte) ((Reg.d<<1)&255+1); fz(Reg.d); Reg.f=(byte) ((Reg.f&0xEF)+co); Reg.m=2; Reg.t=8; }
+    public static void SLLr_e() { byte co=(byte) ((Reg.e&0x80)!=0?0x10:0); Reg.e=(byte) ((Reg.e<<1)&255+1); fz(Reg.e); Reg.f=(byte) ((Reg.f&0xEF)+co); Reg.m=2; Reg.t=8; }
+    public static void SLLr_h() { byte co=(byte) ((Reg.h&0x80)!=0?0x10:0); Reg.h=(byte) ((Reg.h<<1)&255+1); fz(Reg.h); Reg.f=(byte) ((Reg.f&0xEF)+co); Reg.m=2; Reg.t=8; }
+    public static void SLLr_l() { byte co=(byte) ((Reg.l&0x80)!=0?0x10:0); Reg.l=(byte) ((Reg.l<<1)&255+1); fz(Reg.l); Reg.f=(byte) ((Reg.f&0xEF)+co); Reg.m=2; Reg.t=8; }
+    public static void SLLr_a() { byte co=(byte) ((Reg.a&0x80)!=0?0x10:0); Reg.a=(byte) ((Reg.a<<1)&255+1); fz(Reg.a); Reg.f=(byte) ((Reg.f&0xEF)+co); Reg.m=2; Reg.t=8; }
 
-    public static void SRAr_b() { var ci=Reg.b&0x80; var co=Reg.b&1?0x10:0; Reg.b=((Reg.b>>1)+ci)&255; fz(Reg.b); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    public static void SRAr_c() { var ci=Reg.c&0x80; var co=Reg.c&1?0x10:0; Reg.c=((Reg.c>>1)+ci)&255; fz(Reg.c); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    public static void SRAr_d() { var ci=Reg.d&0x80; var co=Reg.d&1?0x10:0; Reg.d=((Reg.d>>1)+ci)&255; fz(Reg.d); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    public static void SRAr_e() { var ci=Reg.e&0x80; var co=Reg.e&1?0x10:0; Reg.e=((Reg.e>>1)+ci)&255; fz(Reg.e); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    public static void SRAr_h() { var ci=Reg.h&0x80; var co=Reg.h&1?0x10:0; Reg.h=((Reg.h>>1)+ci)&255; fz(Reg.h); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    public static void SRAr_l() { var ci=Reg.l&0x80; var co=Reg.l&1?0x10:0; Reg.l=((Reg.l>>1)+ci)&255; fz(Reg.l); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    public static void SRAr_a() { var ci=Reg.a&0x80; var co=Reg.a&1?0x10:0; Reg.a=((Reg.a>>1)+ci)&255; fz(Reg.a); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
+    public static void SRAr_b() { byte ci=(byte) (Reg.b&0x80); byte co=(byte) (((Reg.b&1)!=0)?0x10:0); Reg.b=(byte) (((Reg.b>>1)+ci)&255); fz(Reg.b); Reg.f=(byte) ((Reg.f&0xEF)+co); Reg.m=2; Reg.t=8; }
+    public static void SRAr_c() { byte ci=(byte) (Reg.c&0x80); byte co=(byte) (((Reg.c&1)!=0)?0x10:0); Reg.c=(byte) (((Reg.c>>1)+ci)&255); fz(Reg.c); Reg.f=(byte) ((Reg.f&0xEF)+co); Reg.m=2; Reg.t=8; }
+    public static void SRAr_d() { byte ci=(byte) (Reg.d&0x80); byte co=(byte) (((Reg.d&1)!=0)?0x10:0); Reg.d=(byte) (((Reg.d>>1)+ci)&255); fz(Reg.d); Reg.f=(byte) ((Reg.f&0xEF)+co); Reg.m=2; Reg.t=8; }
+    public static void SRAr_e() { byte ci=(byte) (Reg.e&0x80); byte co=(byte) (((Reg.e&1)!=0)?0x10:0); Reg.e=(byte) (((Reg.e>>1)+ci)&255); fz(Reg.e); Reg.f=(byte) ((Reg.f&0xEF)+co); Reg.m=2; Reg.t=8; }
+    public static void SRAr_h() { byte ci=(byte) (Reg.h&0x80); byte co=(byte) (((Reg.h&1)!=0)?0x10:0); Reg.h=(byte) (((Reg.h>>1)+ci)&255); fz(Reg.h); Reg.f=(byte) ((Reg.f&0xEF)+co); Reg.m=2; Reg.t=8; }
+    public static void SRAr_l() { byte ci=(byte) (Reg.l&0x80); byte co=(byte) (((Reg.l&1)!=0)?0x10:0); Reg.l=(byte) (((Reg.l>>1)+ci)&255); fz(Reg.l); Reg.f=(byte) ((Reg.f&0xEF)+co); Reg.m=2; Reg.t=8; }
+    public static void SRAr_a() { byte ci=(byte) (Reg.a&0x80); byte co=(byte) (((Reg.a&1)!=0)?0x10:0); Reg.a=(byte) (((Reg.a>>1)+ci)&255); fz(Reg.a); Reg.f=(byte) ((Reg.f&0xEF)+co); Reg.m=2; Reg.t=8; }
 
-    public static void SRLr_b() { var co=Reg.b&1?0x10:0; Reg.b=(Reg.b>>1)&255; fz(Reg.b); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    public static void SRLr_c() { var co=Reg.c&1?0x10:0; Reg.c=(Reg.c>>1)&255; fz(Reg.c); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    public static void SRLr_d() { var co=Reg.d&1?0x10:0; Reg.d=(Reg.d>>1)&255; fz(Reg.d); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    public static void SRLr_e() { var co=Reg.e&1?0x10:0; Reg.e=(Reg.e>>1)&255; fz(Reg.e); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    public static void SRLr_h() { var co=Reg.h&1?0x10:0; Reg.h=(Reg.h>>1)&255; fz(Reg.h); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    public static void SRLr_l() { var co=Reg.l&1?0x10:0; Reg.l=(Reg.l>>1)&255; fz(Reg.l); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
-    public static void SRLr_a() { var co=Reg.a&1?0x10:0; Reg.a=(Reg.a>>1)&255; fz(Reg.a); Reg.f=(Reg.f&0xEF)+co; Reg.m=2; Reg.t=8; }
+    public static void SRLr_b() { byte co=(byte) (((Reg.b&1)!=0)?0x10:0); Reg.b=(byte) ((Reg.b>>1)&255); fz(Reg.b); Reg.f=(byte) ((Reg.f&0xEF)+co); Reg.m=2; Reg.t=8; }
+    public static void SRLr_c() { byte co=(byte) (((Reg.c&1)!=0)?0x10:0); Reg.c=(byte) ((Reg.c>>1)&255); fz(Reg.c); Reg.f=(byte) ((Reg.f&0xEF)+co); Reg.m=2; Reg.t=8; }
+    public static void SRLr_d() { byte co=(byte) (((Reg.d&1)!=0)?0x10:0); Reg.d=(byte) ((Reg.d>>1)&255); fz(Reg.d); Reg.f=(byte) ((Reg.f&0xEF)+co); Reg.m=2; Reg.t=8; }
+    public static void SRLr_e() { byte co=(byte) (((Reg.e&1)!=0)?0x10:0); Reg.e=(byte) ((Reg.e>>1)&255); fz(Reg.e); Reg.f=(byte) ((Reg.f&0xEF)+co); Reg.m=2; Reg.t=8; }
+    public static void SRLr_h() { byte co=(byte) (((Reg.h&1)!=0)?0x10:0); Reg.h=(byte) ((Reg.h>>1)&255); fz(Reg.h); Reg.f=(byte) ((Reg.f&0xEF)+co); Reg.m=2; Reg.t=8; }
+    public static void SRLr_l() { byte co=(byte) (((Reg.l&1)!=0)?0x10:0); Reg.l=(byte) ((Reg.l>>1)&255); fz(Reg.l); Reg.f=(byte) ((Reg.f&0xEF)+co); Reg.m=2; Reg.t=8; }
+    public static void SRLr_a() { byte co=(byte) (((Reg.a&1)!=0)?0x10:0); Reg.a=(byte) ((Reg.a>>1)&255); fz(Reg.a); Reg.f=(byte) ((Reg.f&0xEF)+co); Reg.m=2; Reg.t=8; }
 
-    public static void CPL() { Reg.a = (~Reg.a)&255; fz(Reg.a,1); Reg.m=1; Reg.t=4; }
-    public static void NEG() { Reg.a=0-Reg.a; fz(Reg.a,1); if(Reg.a<0) Reg.f|=0x10; Reg.a&=255; Reg.m=2; Reg.t=8; }
+    public static void CPL() { Reg.a = (byte) ((~Reg.a)&255); fz(Reg.a,(byte) 1); Reg.m=1; Reg.t=4; }
+    public static void NEG() { Reg.a=(byte) (0-Reg.a); fz(Reg.a,(byte) 1); if(Reg.a<0) Reg.f|=0x10; Reg.a&=255; Reg.m=2; Reg.t=8; }
 
-    public static void CCF() { var ci=Reg.f&0x10?0:0x10; Reg.f=(Reg.f&0xEF)+ci; Reg.m=1; Reg.t=4; }
+    public static void CCF() { byte ci=(byte)(((Reg.f&0x10) !=0)?0:0x10); Reg.f=(byte) ((Reg.f&0xEF)+ci); Reg.m=1; Reg.t=4; }
     public static void SCF() { Reg.f|=0x10; Reg.m=1; Reg.t=4; }
 
     /*--- Stack ---*/
@@ -534,25 +536,25 @@ public class Z80 {
 
     /*--- Jump ---*/
     public static void JPnn() { Reg.pc = MMU.rw(Reg.pc); Reg.m=3; Reg.t=12; }
-    public static void JPHL() { Reg.pc=Reg.hl; Reg.m=1; Reg.t=4; }
+    public static void JPHL() { Reg.pc=(short) ((Reg.h<<8)+Reg.l); Reg.m=1;  }
     public static void JPNZnn() { Reg.m=3; Reg.t=12; if((Reg.f&0x80)==0x00) { Reg.pc=MMU.rw(Reg.pc); Reg.m++; Reg.t+=4; } else Reg.pc+=2; }
     public static void JPZnn()  { Reg.m=3; Reg.t=12; if((Reg.f&0x80)==0x80) { Reg.pc=MMU.rw(Reg.pc); Reg.m++; Reg.t+=4; } else Reg.pc+=2; }
     public static void JPNCnn() { Reg.m=3; Reg.t=12; if((Reg.f&0x10)==0x00) { Reg.pc=MMU.rw(Reg.pc); Reg.m++; Reg.t+=4; } else Reg.pc+=2; }
     public static void JPCnn()  { Reg.m=3; Reg.t=12; if((Reg.f&0x10)==0x10) { Reg.pc=MMU.rw(Reg.pc); Reg.m++; Reg.t+=4; } else Reg.pc+=2; }
 
-    public static void JRn() { var i=MMU.rb(Reg.pc); if(i>127) i=-((~i+1)&255); Reg.pc++; Reg.m=2; Reg.t=8; Reg.pc+=i; Reg.m++; Reg.t+=4; }
-    public static void JRNZn() { var i=MMU.rb(Reg.pc); if(i>127) i=-((~i+1)&255); Reg.pc++; Reg.m=2; Reg.t=8; if((Reg.f&0x80)==0x00) { Reg.pc+=i; Reg.m++; Reg.t+=4; } }
-    public static void JRZn()  { var i=MMU.rb(Reg.pc); if(i>127) i=-((~i+1)&255); Reg.pc++; Reg.m=2; Reg.t=8; if((Reg.f&0x80)==0x80) { Reg.pc+=i; Reg.m++; Reg.t+=4; } }
-    public static void JRNCn() { var i=MMU.rb(Reg.pc); if(i>127) i=-((~i+1)&255); Reg.pc++; Reg.m=2; Reg.t=8; if((Reg.f&0x10)==0x00) { Reg.pc+=i; Reg.m++; Reg.t+=4; } }
-    public static void JRCn()  { var i=MMU.rb(Reg.pc); if(i>127) i=-((~i+1)&255); Reg.pc++; Reg.m=2; Reg.t=8; if((Reg.f&0x10)==0x10) { Reg.pc+=i; Reg.m++; Reg.t+=4; } }
+    public static void JRn() { byte i=MMU.rb(Reg.pc); if(i>127) i=(byte) -((~i+1)&255); Reg.pc++; Reg.m=2; Reg.t=8; Reg.pc+=i; Reg.m++; Reg.t+=4; }
+    public static void JRNZn() { byte i=MMU.rb(Reg.pc); if(i>127) i=(byte) -((~i+1)&255); Reg.pc++; Reg.m=2; Reg.t=8; if((Reg.f&0x80)==0x00) { Reg.pc+=i; Reg.m++; Reg.t+=4; } }
+    public static void JRZn()  { byte i=MMU.rb(Reg.pc); if(i>127) i=(byte) -((~i+1)&255); Reg.pc++; Reg.m=2; Reg.t=8; if((Reg.f&0x80)==0x80) { Reg.pc+=i; Reg.m++; Reg.t+=4; } }
+    public static void JRNCn() { byte i=MMU.rb(Reg.pc); if(i>127) i=(byte) -((~i+1)&255); Reg.pc++; Reg.m=2; Reg.t=8; if((Reg.f&0x10)==0x00) { Reg.pc+=i; Reg.m++; Reg.t+=4; } }
+    public static void JRCn()  { byte i=MMU.rb(Reg.pc); if(i>127) i=(byte) -((~i+1)&255); Reg.pc++; Reg.m=2; Reg.t=8; if((Reg.f&0x10)==0x10) { Reg.pc+=i; Reg.m++; Reg.t+=4; } }
 
-    public static void DJNZn() { var i=MMU.rb(Reg.pc); if(i>127) i=-((~i+1)&255); Reg.pc++; Reg.m=2; Reg.t=8; Reg.b--; if(Reg.b) { Reg.pc+=i; Reg.m++; Reg.t+=4; } }
+    public static void DJNZn() { byte i=MMU.rb(Reg.pc); if(i>127) i=(byte) -((~i+1)&255); Reg.pc++; Reg.m=2; Reg.t=8; Reg.b--; if(Reg.b != 0) { Reg.pc+=i; Reg.m++; Reg.t+=4; } }
 
-    public static void CALLnn() { Reg.sp-=2; MMU.ww(Reg.sp,Reg.pc+2); Reg.pc=MMU.rw(Reg.pc); Reg.m=5; Reg.t=20; }
-    public static void CALLNZnn() { Reg.m=3; Reg.t=12; if((Reg.f&0x80)==0x00) { Reg.sp-=2; MMU.ww(Reg.sp,Reg.pc+2); Reg.pc=MMU.rw(Reg.pc); Reg.m+=2; Reg.t+=8; } else Reg.pc+=2; }
-    public static void CALLZnn() { Reg.m=3; Reg.t=12; if((Reg.f&0x80)==0x80) { Reg.sp-=2; MMU.ww(Reg.sp,Reg.pc+2); Reg.pc=MMU.rw(Reg.pc); Reg.m+=2; Reg.t+=8; } else Reg.pc+=2; }
-    public static void CALLNCnn() { Reg.m=3; Reg.t=12; if((Reg.f&0x10)==0x00) { Reg.sp-=2; MMU.ww(Reg.sp,Reg.pc+2); Reg.pc=MMU.rw(Reg.pc); Reg.m+=2; Reg.t+=8; } else Reg.pc+=2; }
-    public static void CALLCnn() { Reg.m=3; Reg.t=12; if((Reg.f&0x10)==0x10) { Reg.sp-=2; MMU.ww(Reg.sp,Reg.pc+2); Reg.pc=MMU.rw(Reg.pc); Reg.m+=2; Reg.t+=8; } else Reg.pc+=2; }
+    public static void CALLnn() { Reg.sp-=2; MMU.ww(Reg.sp,(short) (Reg.pc+2)); Reg.pc=MMU.rw(Reg.pc); Reg.m=5; Reg.t=20; }
+    public static void CALLNZnn() { Reg.m=3; Reg.t=12; if((Reg.f&0x80)==0x00) { Reg.sp-=2; MMU.ww(Reg.sp,(short) (Reg.pc+2)); Reg.pc=MMU.rw(Reg.pc); Reg.m+=2; Reg.t+=8; } else Reg.pc+=2; }
+    public static void CALLZnn() { Reg.m=3; Reg.t=12; if((Reg.f&0x80)==0x80) { Reg.sp-=2; MMU.ww(Reg.sp,(short) (Reg.pc+2)); Reg.pc=MMU.rw(Reg.pc); Reg.m+=2; Reg.t+=8; } else Reg.pc+=2; }
+    public static void CALLNCnn() { Reg.m=3; Reg.t=12; if((Reg.f&0x10)==0x00) { Reg.sp-=2; MMU.ww(Reg.sp,(short) (Reg.pc+2)); Reg.pc=MMU.rw(Reg.pc); Reg.m+=2; Reg.t+=8; } else Reg.pc+=2; }
+    public static void CALLCnn() { Reg.m=3; Reg.t=12; if((Reg.f&0x10)==0x10) { Reg.sp-=2; MMU.ww(Reg.sp,(short) (Reg.pc+2)); Reg.pc=MMU.rw(Reg.pc); Reg.m+=2; Reg.t+=8; } else Reg.pc+=2; }
 
     public static void RET() { Reg.pc=MMU.rw(Reg.sp); Reg.sp+=2; Reg.m=3; Reg.t=12; }
     public static void RETI() { Reg.ime=1; Reg.pc=MMU.rw(Reg.sp); Reg.sp+=2; Reg.m=3; Reg.t=12; }
@@ -575,7 +577,10 @@ public class Z80 {
     public static void RST58() { Reg.sp-=2; MMU.ww(Reg.sp,Reg.pc); Reg.pc=0x58; Reg.m=3; Reg.t=12; }
     public static void RST60() { Reg.sp-=2; MMU.ww(Reg.sp,Reg.pc); Reg.pc=0x60; Reg.m=3; Reg.t=12; }
 
-    public static void HALT() { Z80._halt=1; Reg.m=1; Reg.t=4; }
+    public static void HALT() { 
+    	//Z80._halt=1; 
+    	Reg.m=1; Reg.t=4; 
+    }
 
     public static void DI() { Reg.ime=0; Reg.m=1; Reg.t=4; }
     public static void EI() { Reg.ime=1; Reg.m=1; Reg.t=4; }
@@ -639,10 +644,13 @@ public class Z80 {
 	// helper functions
 	public static void fz(byte i, byte as) { 
 		Reg.f = 0; // clear flags 
-		if((i&255)!=0)  // if i masked to 8 bites isn't zero
+		if((i&255)!=0)  // if i masked to 8 bits isn't zero
 			Reg.f|=128; // set flag register to 128
-		Reg.f|=(as!=0)?0x40:0; 
+		Reg.f|=(as!=0)?0x40:0; // TODO some funky shite
 	}
+	public static void fz(byte i) {fz(i, (byte)0);}
+	public static void fz(int i) {fz((byte) i, (byte) 0);}
+	public static void fz(int i, byte as) { fz((byte) i, as);}
 	
 	
 	///// RESET /////
