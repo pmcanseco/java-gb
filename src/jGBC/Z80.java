@@ -152,7 +152,23 @@ public class Z80 {
 	}
 	
 	////////////   OPCODES AS FUNCTIONS //////////////
-    public static void LDrr_bb() { /*Reg.b=Reg.b;*/ Reg.m=1; Reg.t=4; }
+
+    /*
+        Loads a value from one register into another
+        r1 = destination
+        r2 = source
+    */
+    public static void LD(Reg r1, Reg r2)
+    {
+        r1 = r2;
+        // All loads take one 1 memory clock and 4 cpu clocks
+        Reg.m = 1;
+        Reg.t = 4;
+    }
+
+    /* Replaced by LD function
+
+    public static void LDrr_bb() { /*Reg.b=Reg.b;/ Reg.m=1; Reg.t=4; }
     public static void LDrr_bc() { Reg.b=Reg.c; Reg.m=1; Reg.t=4; }
     public static void LDrr_bd() { Reg.b=Reg.d; Reg.m=1; Reg.t=4; }
     public static void LDrr_be() { Reg.b=Reg.e; Reg.m=1; Reg.t=4; }
@@ -160,7 +176,7 @@ public class Z80 {
     public static void LDrr_bl() { Reg.b=Reg.l; Reg.m=1; Reg.t=4; }
     public static void LDrr_ba() { Reg.b=Reg.a; Reg.m=1; Reg.t=4; }
     public static void LDrr_cb() { Reg.c=Reg.b; Reg.m=1; Reg.t=4; }
-    public static void LDrr_cc() { /*Reg.c=Reg.c;*/ Reg.m=1; Reg.t=4; }
+    public static void LDrr_cc() { /*Reg.c=Reg.c;/ Reg.m=1; Reg.t=4; }
     public static void LDrr_cd() { Reg.c=Reg.d; Reg.m=1; Reg.t=4; }
     public static void LDrr_ce() { Reg.c=Reg.e; Reg.m=1; Reg.t=4; }
     public static void LDrr_ch() { Reg.c=Reg.h; Reg.m=1; Reg.t=4; }
@@ -168,7 +184,7 @@ public class Z80 {
     public static void LDrr_ca() { Reg.c=Reg.a; Reg.m=1; Reg.t=4; }
     public static void LDrr_db() { Reg.d=Reg.b; Reg.m=1; Reg.t=4; }
     public static void LDrr_dc() { Reg.d=Reg.c; Reg.m=1; Reg.t=4; }
-    public static void LDrr_dd() { /*Reg.d=Reg.d;*/ Reg.m=1; Reg.t=4; }
+    public static void LDrr_dd() { /*Reg.d=Reg.d;/ Reg.m=1; Reg.t=4; }
     public static void LDrr_de() { Reg.d=Reg.e; Reg.m=1; Reg.t=4; }
     public static void LDrr_dh() { Reg.d=Reg.h; Reg.m=1; Reg.t=4; }
     public static void LDrr_dl() { Reg.d=Reg.l; Reg.m=1; Reg.t=4; }
@@ -176,7 +192,7 @@ public class Z80 {
     public static void LDrr_eb() { Reg.e=Reg.b; Reg.m=1; Reg.t=4; }
     public static void LDrr_ec() { Reg.e=Reg.c; Reg.m=1; Reg.t=4; }
     public static void LDrr_ed() { Reg.e=Reg.d; Reg.m=1; Reg.t=4; }
-    public static void LDrr_ee() {  /*Reg.e=Reg.e;*/ Reg.m=1; Reg.t=4; }
+    public static void LDrr_ee() {  /*Reg.e=Reg.e;/ Reg.m=1; Reg.t=4; }
     public static void LDrr_eh() { Reg.e=Reg.h; Reg.m=1; Reg.t=4; }
     public static void LDrr_el() { Reg.e=Reg.l; Reg.m=1; Reg.t=4; }
     public static void LDrr_ea() { Reg.e=Reg.a; Reg.m=1; Reg.t=4; }
@@ -184,7 +200,7 @@ public class Z80 {
     public static void LDrr_hc() { Reg.h=Reg.c; Reg.m=1; Reg.t=4; }
     public static void LDrr_hd() { Reg.h=Reg.d; Reg.m=1; Reg.t=4; }
     public static void LDrr_he() { Reg.h=Reg.e; Reg.m=1; Reg.t=4; }
-    public static void LDrr_hh() {  /*Reg.h=Reg.h;*/ Reg.m=1; Reg.t=4; }
+    public static void LDrr_hh() {  /*Reg.h=Reg.h;/ Reg.m=1; Reg.t=4; }
     public static void LDrr_hl() { Reg.h=Reg.l; Reg.m=1; Reg.t=4; }
     public static void LDrr_ha() { Reg.h=Reg.a; Reg.m=1; Reg.t=4; }
     public static void LDrr_lb() { Reg.l=Reg.b; Reg.m=1; Reg.t=4; }
@@ -192,7 +208,7 @@ public class Z80 {
     public static void LDrr_ld() { Reg.l=Reg.d; Reg.m=1; Reg.t=4; }
     public static void LDrr_le() { Reg.l=Reg.e; Reg.m=1; Reg.t=4; }
     public static void LDrr_lh() { Reg.l=Reg.h; Reg.m=1; Reg.t=4; }
-    public static void LDrr_ll() {  /*Reg.l=Reg.l;*/ Reg.m=1; Reg.t=4; }
+    public static void LDrr_ll() {  /*Reg.l=Reg.l;/ Reg.m=1; Reg.t=4; }
     public static void LDrr_la() { Reg.l=Reg.a; Reg.m=1; Reg.t=4; }
     public static void LDrr_ab() { Reg.a=Reg.b; Reg.m=1; Reg.t=4; }
     public static void LDrr_ac() { Reg.a=Reg.c; Reg.m=1; Reg.t=4; }
@@ -200,7 +216,10 @@ public class Z80 {
     public static void LDrr_ae() { Reg.a=Reg.e; Reg.m=1; Reg.t=4; }
     public static void LDrr_ah() { Reg.a=Reg.h; Reg.m=1; Reg.t=4; }
     public static void LDrr_al() { Reg.a=Reg.l; Reg.m=1; Reg.t=4; }
-    public static void LDrr_aa() {  /*Reg.a=Reg.a;*/ Reg.m=1; Reg.t=4; }
+    public static void LDrr_aa() {  /*Reg.a=Reg.a;/ Reg.m=1; Reg.t=4; }
+
+    Replaced by LD function */
+
     public static void LDrHLm_b() { Reg.b=MMU.rb((Reg.h<<8)+Reg.l); Reg.m=2; Reg.t=8; }
     public static void LDrHLm_c() { Reg.c=MMU.rb((Reg.h<<8)+Reg.l); Reg.m=2; Reg.t=8; }
     public static void LDrHLm_d() { Reg.d=MMU.rb((Reg.h<<8)+Reg.l); Reg.m=2; Reg.t=8; }
@@ -208,6 +227,7 @@ public class Z80 {
     public static void LDrHLm_h() { Reg.h=MMU.rb((Reg.h<<8)+Reg.l); Reg.m=2; Reg.t=8; }
     public static void LDrHLm_l() { Reg.l=MMU.rb((Reg.h<<8)+Reg.l); Reg.m=2; Reg.t=8; }
     public static void LDrHLm_a() { Reg.a=MMU.rb((Reg.h<<8)+Reg.l); Reg.m=2; Reg.t=8; }
+
     public static void LDHLmr_b() { MMU.wb((Reg.h<<8)+Reg.l,Reg.b); Reg.m=2; Reg.t=8; }
     public static void LDHLmr_c() { MMU.wb((Reg.h<<8)+Reg.l,Reg.c); Reg.m=2; Reg.t=8; }
     public static void LDHLmr_d() { MMU.wb((Reg.h<<8)+Reg.l,Reg.d); Reg.m=2; Reg.t=8; }
@@ -215,6 +235,7 @@ public class Z80 {
     public static void LDHLmr_h() { MMU.wb((Reg.h<<8)+Reg.l,Reg.h); Reg.m=2; Reg.t=8; }
     public static void LDHLmr_l() { MMU.wb((Reg.h<<8)+Reg.l,Reg.l); Reg.m=2; Reg.t=8; }
     public static void LDHLmr_a() { MMU.wb((Reg.h<<8)+Reg.l,Reg.a); Reg.m=2; Reg.t=8; }
+
     public static void LDrn_b() { Reg.b=MMU.rb(Reg.pc); Reg.pc++; Reg.m=2; Reg.t=8; }
     public static void LDrn_c() { Reg.c=MMU.rb(Reg.pc); Reg.pc++; Reg.m=2; Reg.t=8; }
     public static void LDrn_d() { Reg.d=MMU.rb(Reg.pc); Reg.pc++; Reg.m=2; Reg.t=8; }
@@ -222,6 +243,7 @@ public class Z80 {
     public static void LDrn_h() { Reg.h=MMU.rb(Reg.pc); Reg.pc++; Reg.m=2; Reg.t=8; }
     public static void LDrn_l() { Reg.l=MMU.rb(Reg.pc); Reg.pc++; Reg.m=2; Reg.t=8; }
     public static void LDrn_a() { Reg.a=MMU.rb(Reg.pc); Reg.pc++; Reg.m=2; Reg.t=8; }
+
     public static void LDHLmn() { MMU.wb((Reg.h<<8)+Reg.l, MMU.rb(Reg.pc)); Reg.pc++; Reg.m=3; Reg.t=12; }
     public static void LDBCmA() { MMU.wb((Reg.b<<8)+Reg.c, Reg.a); Reg.m=2; Reg.t=8; }
     public static void LDDEmA() { MMU.wb((Reg.d<<8)+Reg.e, Reg.a); Reg.m=2; Reg.t=8; }
