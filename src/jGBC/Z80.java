@@ -1,6 +1,20 @@
 package jGBC;
 
-public class Z80 {
+public class Z80
+{
+    Register a, b, c, d, e, h, l ,f;
+
+    public Z80()
+    {
+        a = new Register();
+        b = new Register();
+        c = new Register();
+        d = new Register();
+        e = new Register();
+        h = new Register();
+        l = new Register();
+        f = new Register();
+    }
 
 	// Register set
 	public static class Reg {
@@ -19,6 +33,11 @@ public class Z80 {
 		
 		// sp = stack pointer
 	}
+
+    public class Register
+    {
+        public byte value  = 0;
+    }
 	
 	// Time Clock: The Z80 holds two types of clock (m and t)
 	public static class Clock {
@@ -153,14 +172,15 @@ public class Z80 {
 	
 	////////////   OPCODES AS FUNCTIONS //////////////
 
+    ////////////          LOADS        //////////////
     /*
         Loads a value from one register into another
         r1 = destination
         r2 = source
     */
-    public static void LD(Reg r1, Reg r2)
+    public static void LD(Register r1, Register r2)
     {
-        r1 = r2;
+        r1.value = r2.value;
         // All loads take one 1 memory clock and 4 cpu clocks
         Reg.m = 1;
         Reg.t = 4;
@@ -220,6 +240,8 @@ public class Z80 {
 
     Replaced by LD function */
 
+
+    // Load 8 bit register in to 16 bit register HL
     public static void LDrHLm_b() { Reg.b=MMU.rb((Reg.h<<8)+Reg.l); Reg.m=2; Reg.t=8; }
     public static void LDrHLm_c() { Reg.c=MMU.rb((Reg.h<<8)+Reg.l); Reg.m=2; Reg.t=8; }
     public static void LDrHLm_d() { Reg.d=MMU.rb((Reg.h<<8)+Reg.l); Reg.m=2; Reg.t=8; }
@@ -281,6 +303,29 @@ public class Z80 {
     public static void SWAPr_a() { byte tr=Reg.a; Reg.a=MMU.rb((Reg.h<<8)+Reg.l); MMU.wb((Reg.h<<8)+Reg.l,tr); Reg.m=4; Reg.t=16; }
 	
     /*--- Data processing ---*/
+
+    /*   8 Bit ALU  */
+
+    /*
+        Adds a value from byte b to Reg.a byte value should be loaded from a register to properly emulate Z80
+        b = byte to add
+     */
+    public static void ADD(byte b)
+    {
+        Reg.a += b;
+        fz(Reg.a, (byte)0);
+        if(Reg.a>255)
+        {
+            Reg.f |= 0x10;
+        }
+        Reg.a&=255;
+
+        // Add operation takes 1 memory cycle and 4 cpu cycles
+        Reg.m = 1;
+        Reg.t = 4;
+    }
+
+    /* Replaced by ADD
     public static void ADDr_b() { Reg.a+=Reg.b; fz(Reg.a, (byte)0); if(Reg.a>255) Reg.f|=0x10; Reg.a&=255; Reg.m=1; Reg.t=4; }
     public static void ADDr_c() { Reg.a+=Reg.c; fz(Reg.a, (byte)0); if(Reg.a>255) Reg.f|=0x10; Reg.a&=255; Reg.m=1; Reg.t=4; }
     public static void ADDr_d() { Reg.a+=Reg.d; fz(Reg.a, (byte)0); if(Reg.a>255) Reg.f|=0x10; Reg.a&=255; Reg.m=1; Reg.t=4; }
@@ -288,6 +333,8 @@ public class Z80 {
     public static void ADDr_h() { Reg.a+=Reg.h; fz(Reg.a, (byte)0); if(Reg.a>255) Reg.f|=0x10; Reg.a&=255; Reg.m=1; Reg.t=4; }
     public static void ADDr_l() { Reg.a+=Reg.l; fz(Reg.a, (byte)0); if(Reg.a>255) Reg.f|=0x10; Reg.a&=255; Reg.m=1; Reg.t=4; }
     public static void ADDr_a() { Reg.a+=Reg.a; fz(Reg.a, (byte)0); if(Reg.a>255) Reg.f|=0x10; Reg.a&=255; Reg.m=1; Reg.t=4; }
+      Replaced by ADD*/
+
     public static void ADDHL() { Reg.a+=MMU.rb((Reg.h<<8)+Reg.l); fz(Reg.a, (byte)0); if(Reg.a>255) Reg.f|=0x10; Reg.a&=255; Reg.m=2; Reg.t=8; }
     public static void ADDn() { Reg.a+=MMU.rb(Reg.pc); Reg.pc++; fz(Reg.a, (byte)0); if(Reg.a>255) Reg.f|=0x10; Reg.a&=255; Reg.m=2; Reg.t=8; }
     public static void ADDHLBC() { byte hl=(byte) ((Reg.h<<8)+Reg.l); hl+=(Reg.b<<8)+Reg.c; if(hl>65535) Reg.f|=0x10; else Reg.f&=0xEF; Reg.h=(byte) ((hl>>8)&255); Reg.l=(byte) (hl&255); Reg.m=3; Reg.t=12; }
