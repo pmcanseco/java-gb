@@ -114,13 +114,13 @@ public class GPU extends JPanel{
 		int sx;
 		for(int x=0; x<8; x++) {
 			sx = 1 << (7-x); // find bit index for this pixel
-			tileset[tile][y][x] = (byte) ((((vram[addr] & sx)!=0) ? 1 : 0) + (((vram[addr+1] & sx)!=0) ? 2 : 0));
+			tileset[tile][y][x] =  ((((vram[addr] & sx)!=0) ? 1 : 0) + (((vram[addr+1] & sx)!=0) ? 2 : 0));
 		}
 	}
 
 	public static void renderscan() {
 		// VRAM offset for the tile map
-		int mapOffsets = (byte) (bgmap!=0 ? 0x1C00 : 0x1800);
+		int mapOffsets =  (bgmap!=0 ? 0x1C00 : 0x1800);
 		
 		// which line of tiles to use in the map
 		mapOffsets += ((line + scy) & 255) >> 3;
@@ -159,7 +159,7 @@ public class GPU extends JPanel{
 			x++;
 			if(x==8) {
 				x=0;
-				lineOffsets = (byte) ((lineOffsets + 1) & 31);
+				lineOffsets =  ((lineOffsets + 1) & 31);
 				tile = vram[mapOffsets + lineOffsets];
 				if(bgtile == 1 && tile < 128) tile += 256;
 			}
@@ -170,7 +170,7 @@ public class GPU extends JPanel{
 		switch(addr) {
 		// LCD Control
 		case 0xFF40:
-			return  (byte) 
+			return   
 				   ((switchbg!=0  ? 0x01 : 0x00) |
 				    (bgmap!=0     ? 0x08 : 0x00) |
 				    (bgtile!=0    ? 0x10 : 0x00) |
@@ -238,7 +238,7 @@ public class GPU extends JPanel{
 	
 	public void drawScreen() {
        //for(int i=0; i<160*144*4; i++){
-       // 	screen[i] = (byte) 255;
+       // 	screen[i] =  255;
        // }
 
 		for(int i=0; i<160; i++) {
