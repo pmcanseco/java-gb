@@ -286,7 +286,7 @@ public class GPU extends JPanel{
         Z80.reset();
         
         try {
-			MMU.load("C:\\Users\\Pablo\\Desktop\\TESTGAME.GB");
+			MMU.load("C:\\roms\\TESTGAME.GB");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
