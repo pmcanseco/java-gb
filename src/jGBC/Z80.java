@@ -114,7 +114,7 @@ public class Z80 {
     public static void LDSPnn() { Reg.sp=MMU.rw(Reg.pc); Reg.pc+=2; Reg.m=3; Reg.t=12; }
 
     public static void LDHLmm() { int i=MMU.rw(Reg.pc); Reg.pc+=2; Reg.l=MMU.rb(i); Reg.h=MMU.rb(i+1); Reg.m=5; Reg.t=20; }
-    public static void LDmmHL() { int i=MMU.rw(Reg.pc); Reg.pc+=2; MMU.ww(i,(short) ((Reg.h<<8)+Reg.l)); Reg.m=5; Reg.t=20; }
+    public static void LDmmHL() { int i=MMU.rw(Reg.pc); Reg.pc+=2; MMU.ww(i, ((Reg.h<<8)+Reg.l)); Reg.m=5; Reg.t=20; }
 
     public static void LDHLIA() { MMU.wb((Reg.h<<8)+Reg.l, Reg.a); Reg.l= ((Reg.l+1)&255); if(Reg.l==0) Reg.h= ((Reg.h+1)&255); Reg.m=2; Reg.t=8; }
     public static void LDAHLI() { Reg.a=MMU.rb((Reg.h<<8)+Reg.l); Reg.l= ((Reg.l+1)&255); if(Reg.l==0) Reg.h=((Reg.h+1)&255); Reg.m=2; Reg.t=8; }
@@ -243,12 +243,12 @@ public class Z80 {
     public static void INCBC() { Reg.c= ((Reg.c+1)&255); if(Reg.c == 0) Reg.b= ((Reg.b+1)&255); Reg.m=1; Reg.t=4; }
     public static void INCDE() { Reg.e= ((Reg.e+1)&255); if(Reg.e == 0) Reg.d= ((Reg.d+1)&255); Reg.m=1; Reg.t=4; }
     public static void INCHL() { Reg.l= ((Reg.l+1)&255); if(Reg.l == 0) Reg.h= ((Reg.h+1)&255); Reg.m=1; Reg.t=4; }
-    public static void INCSP() { Reg.sp=(short) ((Reg.sp+1)&65535); Reg.m=1; Reg.t=4; }
+    public static void INCSP() { Reg.sp= ((Reg.sp+1)&65535); Reg.m=1; Reg.t=4; }
 
     public static void DECBC() { Reg.c= ((Reg.c-1)&255); if(Reg.c==255) Reg.b= ((Reg.b-1)&255); Reg.m=1; Reg.t=4; }
     public static void DECDE() { Reg.e= ((Reg.e-1)&255); if(Reg.e==255) Reg.d= ((Reg.d-1)&255); Reg.m=1; Reg.t=4; }
     public static void DECHL() { Reg.l= ((Reg.l-1)&255); if(Reg.l==255) Reg.h= ((Reg.h-1)&255); Reg.m=1; Reg.t=4; }
-    public static void DECSP() { Reg.sp=(short) ((Reg.sp-1)&65535); Reg.m=1; Reg.t=4; }
+    public static void DECSP() { Reg.sp= ((Reg.sp-1)&65535); Reg.m=1; Reg.t=4; }
 
     /*--- Bit manipulation ---*/
     public static void BIT0b() { fz((Reg.b&0x01), 0); Reg.m=2; Reg.t=8; }
@@ -415,7 +415,7 @@ public class Z80 {
 
     /*--- Jump ---*/
     public static void JPnn() { Reg.pc = MMU.rw(Reg.pc); Reg.m=3; Reg.t=12; }
-    public static void JPHL() { Reg.pc=(short) ((Reg.h<<8)+Reg.l); Reg.m=1;  }
+    public static void JPHL() { Reg.pc= ((Reg.h<<8)+Reg.l); Reg.m=1;  }
     public static void JPNZnn() { Reg.m=3; Reg.t=12; if((Reg.f&0x80)==0x00) { Reg.pc=MMU.rw(Reg.pc); Reg.m++; Reg.t+=4; } else Reg.pc+=2; }
     public static void JPZnn()  { Reg.m=3; Reg.t=12; if((Reg.f&0x80)==0x80) { Reg.pc=MMU.rw(Reg.pc); Reg.m++; Reg.t+=4; } else Reg.pc+=2; }
     public static void JPNCnn() { Reg.m=3; Reg.t=12; if((Reg.f&0x10)==0x00) { Reg.pc=MMU.rw(Reg.pc); Reg.m++; Reg.t+=4; } else Reg.pc+=2; }
@@ -429,11 +429,11 @@ public class Z80 {
 
     public static void DJNZn() { int i=MMU.rb(Reg.pc); if(i>127) i= -((~i+1)&255); Reg.pc++; Reg.m=2; Reg.t=8; Reg.b--; if(Reg.b != 0) { Reg.pc+=i; Reg.m++; Reg.t+=4; } }
 
-    public static void CALLnn() { Reg.sp-=2; MMU.ww(Reg.sp,(short) (Reg.pc+2)); Reg.pc=MMU.rw(Reg.pc); Reg.m=5; Reg.t=20; }
-    public static void CALLNZnn() { Reg.m=3; Reg.t=12; if((Reg.f&0x80)==0x00) { Reg.sp-=2; MMU.ww(Reg.sp,(short) (Reg.pc+2)); Reg.pc=MMU.rw(Reg.pc); Reg.m+=2; Reg.t+=8; } else Reg.pc+=2; }
-    public static void CALLZnn() { Reg.m=3; Reg.t=12; if((Reg.f&0x80)==0x80) { Reg.sp-=2; MMU.ww(Reg.sp,(short) (Reg.pc+2)); Reg.pc=MMU.rw(Reg.pc); Reg.m+=2; Reg.t+=8; } else Reg.pc+=2; }
-    public static void CALLNCnn() { Reg.m=3; Reg.t=12; if((Reg.f&0x10)==0x00) { Reg.sp-=2; MMU.ww(Reg.sp,(short) (Reg.pc+2)); Reg.pc=MMU.rw(Reg.pc); Reg.m+=2; Reg.t+=8; } else Reg.pc+=2; }
-    public static void CALLCnn() { Reg.m=3; Reg.t=12; if((Reg.f&0x10)==0x10) { Reg.sp-=2; MMU.ww(Reg.sp,(short) (Reg.pc+2)); Reg.pc=MMU.rw(Reg.pc); Reg.m+=2; Reg.t+=8; } else Reg.pc+=2; }
+    public static void CALLnn() { Reg.sp-=2; MMU.ww(Reg.sp, (Reg.pc+2)); Reg.pc=MMU.rw(Reg.pc); Reg.m=5; Reg.t=20; }
+    public static void CALLNZnn() { Reg.m=3; Reg.t=12; if((Reg.f&0x80)==0x00) { Reg.sp-=2; MMU.ww(Reg.sp, (Reg.pc+2)); Reg.pc=MMU.rw(Reg.pc); Reg.m+=2; Reg.t+=8; } else Reg.pc+=2; }
+    public static void CALLZnn() { Reg.m=3; Reg.t=12; if((Reg.f&0x80)==0x80) { Reg.sp-=2; MMU.ww(Reg.sp, (Reg.pc+2)); Reg.pc=MMU.rw(Reg.pc); Reg.m+=2; Reg.t+=8; } else Reg.pc+=2; }
+    public static void CALLNCnn() { Reg.m=3; Reg.t=12; if((Reg.f&0x10)==0x00) { Reg.sp-=2; MMU.ww(Reg.sp, (Reg.pc+2)); Reg.pc=MMU.rw(Reg.pc); Reg.m+=2; Reg.t+=8; } else Reg.pc+=2; }
+    public static void CALLCnn() { Reg.m=3; Reg.t=12; if((Reg.f&0x10)==0x10) { Reg.sp-=2; MMU.ww(Reg.sp, (Reg.pc+2)); Reg.pc=MMU.rw(Reg.pc); Reg.m+=2; Reg.t+=8; } else Reg.pc+=2; }
 
     public static void RET() { Reg.pc=MMU.rw(Reg.sp); Reg.sp+=2; Reg.m=3; Reg.t=12; }
     public static void RETI() { Reg.ime=1; Reg.pc=MMU.rw(Reg.sp); Reg.sp+=2; Reg.m=3; Reg.t=12; }
@@ -515,13 +515,17 @@ public class Z80 {
 		Reg.a = MMU.rb(addr); // read from address
 		Reg.m = 4; Reg.t = 16; // 4 M-times taken;
 	}
+
+    public static void LDmmSP() {
+        System.out.println("LDmmSP called, currently unimplemented.");
+    }
 	
 		
 	// helper functions
 	private static void MAPcb() {
 		int i=MMU.rb(Reg.pc); Reg.pc++;
 		Reg.pc &= 65535;
-        final ServiceMethod serviceMethod = cbInstructionMap.get(i);
+        final ServiceMethod serviceMethod = cbInstructionMap.get(i+51968);
         if(serviceMethod != null) {
             serviceMethod.execute();
         }
@@ -545,7 +549,7 @@ public class Z80 {
         instructionMap.put( 0x05, Z80::DECr_b);
         instructionMap.put( 0x06, Z80::LDrn_b);
         instructionMap.put( 0x07, Z80::RLCA);
-        //instructionMap.put( 0x08, Z80::LDmmSP); /// todo unimplemented O_o
+        instructionMap.put( 0x08, Z80::LDmmSP); /// todo unimplemented O_o
         instructionMap.put( 0x09, Z80::ADDHLBC);
         instructionMap.put( 0x0a, Z80::LDABCm);
         instructionMap.put( 0x0b, Z80::DECBC);
@@ -740,7 +744,7 @@ public class Z80 {
         instructionMap.put( 0xc8, Z80::RETZ);
         instructionMap.put( 0xc9, Z80::RET);
         instructionMap.put( 0xca, Z80::JPZnn);
-        instructionMap.put( 0xcb, Z80::MAPcb); // todo unimplemented?
+        instructionMap.put( 0xcb, Z80::MAPcb);
         instructionMap.put( 0xcc, Z80::CALLZnn);
         instructionMap.put( 0xcd, Z80::CALLnn);
         instructionMap.put( 0xce, Z80::ADCn);
@@ -1089,6 +1093,7 @@ public class Z80 {
 			// run corresponding function TODO
             final ServiceMethod serviceMethod = instructionMap.get(op);
             if(serviceMethod != null) {
+                System.out.println("Executing OpCode: 0x" + Integer.toHexString(op) + "   Function: " + instructionMap.get(op));
                 serviceMethod.execute();
             }
 			Reg.pc &= 65535; //mask program counter to 16bits

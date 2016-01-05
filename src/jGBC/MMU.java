@@ -7,8 +7,10 @@ import java.io.IOException;
 
 public class MMU {
 
-	private static final int CONST_RAM_SIZE = 8192;
-	public static final int CONST_ROM_SIZE = 49153;
+	private static final int CONST_WRAM_SIZE = 8192;
+	private static final int CONST_ERAM_SIZE = 32768;
+	private static final int CONST_ZRAM_SIZE = 127;
+	public static final int CONST_ROM_SIZE = 32768;
 
 	// Flag indicating the BIOS is still mapped
 	// BIOS is unmapped with first instruction above 0x00FF
@@ -17,9 +19,9 @@ public class MMU {
 	// Memory Regions
 	static int[]
 		rom = new int[CONST_ROM_SIZE], // Cartridge ROM
-		wram = new int[CONST_RAM_SIZE], // Working RAM
-		eram = new int[CONST_RAM_SIZE], // External RAM
-		zram = new int[256]; // Zero-page RAM
+		wram = new int[CONST_WRAM_SIZE], // Working RAM
+		eram = new int[CONST_ERAM_SIZE], // External RAM
+		zram = new int[CONST_ZRAM_SIZE]; // Zero-page RAM
 
 	static int[] bios = hexStringToByteArray(
 			"31FEFFAF21FF9F32CB7C20FB2126FF0E"+
@@ -40,29 +42,24 @@ public class MMU {
 	        "F506197886230520FB8620FE3E01E050".toLowerCase());
 	        
 	public static void reset() {
-		for(int i=0; i<CONST_RAM_SIZE; i++) {
-			wram[i] = 0;
-			eram[i] = 0;
-			if(i<127) zram[i] = 0;
-		}
+		for(int i=0; i<CONST_WRAM_SIZE; i++) wram[i] = 0;
+		for(int i=0; i<CONST_ERAM_SIZE; i++) eram[i] = 0;
+		for(int i=0; i<CONST_ZRAM_SIZE; i++) zram[i] = 0;
 		inBios = true;
-		for(int i=0; i<bios.length; i++) {
-			int x = bios[i];
-			x &= 0xFF;
-			bios[i] = x;
-		}
-		System.out.println("MMU Reset.");
+		System.out.println("MMU Reset. BIOS (Expected 49, 80): " + bios[0] + " " + bios[255]);
+
+
 	}
 	
 	public static int rb(int addr) {
 		/* Read 8-bit byte from a given address */
+		System.out.println("Reading rb(addr: " + addr + ")");
 		switch(addr & 0xF000) {
 		
 		// BIOS (256b) ROM 0 
 		case 0x0000: 
 			if(inBios) {
-				if(addr < 0x0100)
-					return bios[addr];
+				if(addr < 0x0100) return bios[addr];
 				else if(Z80.Reg.pc == 0x0100) {
 					inBios = false;
 					System.out.println("We've departed the BIOS!");
@@ -124,17 +121,21 @@ public class MMU {
 		    		// currently unhandled TODO
 		    		return 0;
 		    	}
-		    	
+
+			// Zeropage RAM, I/O, Interrupts
 		    case 0xF00:
 		    	if(addr >= 0xFF80) return zram[addr & 0x7F];
 		    	else {
 		    		// I/O control handling
 		    		switch(addr & 0x00F0) {
-		    		//GPU's 64 registers
+					case 0x10: case 0x20: case 0x30:
+						return 0;
+
+
+					//GPU's 64 registers
 		    		case 0x40: case 0x50: case 0x60: case 0x70:
 					    return GPU.rb(addr);
 		    		}
-		    		return 0;
 		    	}
 			}
 		}
@@ -142,11 +143,11 @@ public class MMU {
 		return 0;
 	}
 	
-	public static short rw(int addr) {
+	public static int rw(int addr) {
 		/* Read 16-bit word from a given address */
 		// this just reads the requested address and
 		// adds the next address to the 8 MSB's to create 16 bits
-		return (short) (rb(addr) + (rb(addr+1) << 8));
+		return (rb(addr) + (rb(addr+1) << 8));
 	}
 	
 	public static void wb(int addr, int val) {
