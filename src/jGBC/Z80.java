@@ -106,7 +106,12 @@ public class Z80 {
     public static void LDDEmA() { MMU.wb((Reg.d<<8)+Reg.e, Reg.a); Reg.m=2; Reg.t=8; }
     public static void LDmmA() { MMU.wb(MMU.rw(Reg.pc), Reg.a); Reg.pc+=2; Reg.m=4; Reg.t=16; }
     public static void LDABCm() { Reg.a=MMU.rb((Reg.b<<8)+Reg.c); Reg.m=2; Reg.t=8; }
-    public static void LDADEm() { Reg.a=MMU.rb((Reg.d<<8)+Reg.e); Reg.m=2; Reg.t=8; }
+    public static void LDADEm()
+    {
+        Reg.a=MMU.rb((Reg.d<<8)+Reg.e);
+        Reg.m=2;
+        Reg.t=8;
+    }
     public static void LDAmm() { Reg.a=MMU.rb(MMU.rw(Reg.pc)); Reg.pc+=2; Reg.m=4; Reg.t=16; }
     public static void LDBCnn() { Reg.c=MMU.rb(Reg.pc); Reg.b=MMU.rb(Reg.pc+1); Reg.pc+=2; Reg.m=3; Reg.t=12; }
     public static void LDDEnn() { Reg.e=MMU.rb(Reg.pc); Reg.d=MMU.rb(Reg.pc+1); Reg.pc+=2; Reg.m=3; Reg.t=12; }
@@ -337,7 +342,16 @@ public class Z80 {
     public static void RLr_a() { int ci= (((Reg.f&0x10)!=0)?1:0); int co= ((Reg.a&0x80)!=0?0x10:0); Reg.a= ((Reg.a<<1)+ci); Reg.a&=255; fz(Reg.a); Reg.f= ((Reg.f&0xEF)+co); Reg.m=2; Reg.t=8; }
     public static void RLHL() { int i=MMU.rb((Reg.h<<8)+Reg.l); int ci= ((Reg.f&0x10)!=0?1:0); int co= ((i&0x80)!=0?0x10:0); i= ((i<<1)+ci); i&=255; fz(i); MMU.wb((Reg.h<<8)+Reg.l,i); Reg.f= ((Reg.f&0xEF)+co); Reg.m=4; Reg.t=16; }
 
-    public static void RLCr_b() { int ci= (((Reg.b&0x80)!=0)?1:0); int co= ((Reg.b&0x80)!=0?0x10:0); Reg.b= ((Reg.b<<1)+ci); Reg.b&=255; fz(Reg.b); Reg.f= ((Reg.f&0xEF)+co); Reg.m=2; Reg.t=8; }
+    public static void RLCr_b()
+    {
+        int ci= (((Reg.b&0x80)!=0)?1:0);
+        int co= ((Reg.b&0x80)!=0?0x10:0);
+        Reg.b= ((Reg.b<<1)+ci);
+        Reg.b&=255; fz(Reg.b);
+        Reg.f= ((Reg.f&0xEF)+co);
+        Reg.m=2;
+        Reg.t=8;
+    }
     public static void RLCr_c() { int ci= (((Reg.c&0x80)!=0)?1:0); int co= ((Reg.c&0x80)!=0?0x10:0); Reg.c= ((Reg.c<<1)+ci); Reg.c&=255; fz(Reg.c); Reg.f= ((Reg.f&0xEF)+co); Reg.m=2; Reg.t=8; }
     public static void RLCr_d() { int ci= (((Reg.d&0x80)!=0)?1:0); int co= ((Reg.d&0x80)!=0?0x10:0); Reg.d= ((Reg.d<<1)+ci); Reg.d&=255; fz(Reg.d); Reg.f= ((Reg.f&0xEF)+co); Reg.m=2; Reg.t=8; }
     public static void RLCr_e() { int ci= (((Reg.e&0x80)!=0)?1:0); int co= ((Reg.e&0x80)!=0?0x10:0); Reg.e= ((Reg.e<<1)+ci); Reg.e&=255; fz(Reg.e); Reg.f= ((Reg.f&0xEF)+co); Reg.m=2; Reg.t=8; }
@@ -422,7 +436,21 @@ public class Z80 {
     public static void JPCnn()  { Reg.m=3; Reg.t=12; if((Reg.f&0x10)==0x10) { Reg.pc=MMU.rw(Reg.pc); Reg.m++; Reg.t+=4; } else Reg.pc+=2; }
 
     public static void JRn() { int i=MMU.rb(Reg.pc); if(i>127) i= -((~i+1)&255); Reg.pc++; Reg.m=2; Reg.t=8; Reg.pc+=i; Reg.m++; Reg.t+=4; }
-    public static void JRNZn() { int i=MMU.rb(Reg.pc); if(i>127) i= -((~i+1)&255); Reg.pc++; Reg.m=2; Reg.t=8; if((Reg.f&0x80)==0x00) { Reg.pc+=i; Reg.m++; Reg.t+=4; } }
+    public static void JRNZn()
+    {
+        int i=MMU.rb(Reg.pc);
+        if(i>127)
+            i= -((~i+1)&255);
+        Reg.pc++;
+        Reg.m=2;
+        Reg.t=8;
+        if((Reg.f&0x80)==0x00)
+        {
+            Reg.pc+=i;
+            Reg.m++;
+            Reg.t+=4;
+        }
+    }
     public static void JRZn()  { int i=MMU.rb(Reg.pc); if(i>127) i= -((~i+1)&255); Reg.pc++; Reg.m=2; Reg.t=8; if((Reg.f&0x80)==0x80) { Reg.pc+=i; Reg.m++; Reg.t+=4; } }
     public static void JRNCn() { int i=MMU.rb(Reg.pc); if(i>127) i= -((~i+1)&255); Reg.pc++; Reg.m=2; Reg.t=8; if((Reg.f&0x10)==0x00) { Reg.pc+=i; Reg.m++; Reg.t+=4; } }
     public static void JRCn()  { int i=MMU.rb(Reg.pc); if(i>127) i= -((~i+1)&255); Reg.pc++; Reg.m=2; Reg.t=8; if((Reg.f&0x10)==0x10) { Reg.pc+=i; Reg.m++; Reg.t+=4; } }
@@ -525,7 +553,8 @@ public class Z80 {
 	private static void MAPcb() {
 		int i=MMU.rb(Reg.pc); Reg.pc++;
 		Reg.pc &= 65535;
-        final ServiceMethod serviceMethod = cbInstructionMap.get(i+51968);
+        // +51968 do need?
+        final ServiceMethod serviceMethod = cbInstructionMap.get(i);
         if(serviceMethod != null) {
             serviceMethod.execute();
         }
@@ -800,269 +829,269 @@ public class Z80 {
     }
     private static void populateCBmap() {
         // CB00
-        cbInstructionMap.put( 0xCB00, Z80::RLCr_b);
-        cbInstructionMap.put( 0xCB01, Z80::RLCr_c);
-        cbInstructionMap.put( 0xCB02, Z80::RLCr_d);
-        cbInstructionMap.put( 0xCB03, Z80::RLCr_e);
-        cbInstructionMap.put( 0xCB04, Z80::RLCr_h);
-        cbInstructionMap.put( 0xCB05, Z80::RLCr_l);
-        cbInstructionMap.put( 0xCB06, Z80::RLCHL);
-        cbInstructionMap.put( 0xCB07, Z80::RLCr_a);
-        cbInstructionMap.put( 0xCB08, Z80::RRCr_b);
-        cbInstructionMap.put( 0xCB09, Z80::RRCr_c);
-        cbInstructionMap.put( 0xCB0A, Z80::RRCr_d);
-        cbInstructionMap.put( 0xCB0B, Z80::RRCr_e);
-        cbInstructionMap.put( 0xCB0C, Z80::RRCr_h);
-        cbInstructionMap.put( 0xCB0D, Z80::RRCr_l);
-        cbInstructionMap.put( 0xCB0E, Z80::RRCHL);
-        cbInstructionMap.put( 0xCB0F, Z80::RRCr_a);
+        cbInstructionMap.put( 0x00, Z80::RLCr_b);
+        cbInstructionMap.put( 0x01, Z80::RLCr_c);
+        cbInstructionMap.put( 0x02, Z80::RLCr_d);
+        cbInstructionMap.put( 0x03, Z80::RLCr_e);
+        cbInstructionMap.put( 0x04, Z80::RLCr_h);
+        cbInstructionMap.put( 0x05, Z80::RLCr_l);
+        cbInstructionMap.put( 0x06, Z80::RLCHL);
+        cbInstructionMap.put( 0x07, Z80::RLCr_a);
+        cbInstructionMap.put( 0x08, Z80::RRCr_b);
+        cbInstructionMap.put( 0x09, Z80::RRCr_c);
+        cbInstructionMap.put( 0x0A, Z80::RRCr_d);
+        cbInstructionMap.put( 0x0B, Z80::RRCr_e);
+        cbInstructionMap.put( 0x0C, Z80::RRCr_h);
+        cbInstructionMap.put( 0x0D, Z80::RRCr_l);
+        cbInstructionMap.put( 0x0E, Z80::RRCHL);
+        cbInstructionMap.put( 0x0F, Z80::RRCr_a);
         // CB10
-        cbInstructionMap.put( 0xCB10, Z80::RLr_b);
-        cbInstructionMap.put( 0xCB11, Z80::RLr_c);
-        cbInstructionMap.put( 0xCB12, Z80::RLr_d);
-        cbInstructionMap.put( 0xCB13, Z80::RLr_e);
-        cbInstructionMap.put( 0xCB14, Z80::RLr_h);
-        cbInstructionMap.put( 0xCB15, Z80::RLr_l);
-        cbInstructionMap.put( 0xCB16, Z80::RLHL);
-        cbInstructionMap.put( 0xCB17, Z80::RLr_a);
-        cbInstructionMap.put( 0xCB18, Z80::RRr_b);
-        cbInstructionMap.put( 0xCB19, Z80::RRr_c);
-        cbInstructionMap.put( 0xCB1A, Z80::RRr_d);
-        cbInstructionMap.put( 0xCB1B, Z80::RRr_e);
-        cbInstructionMap.put( 0xCB1C, Z80::RRr_h);
-        cbInstructionMap.put( 0xCB1D, Z80::RRr_l);
-        cbInstructionMap.put( 0xCB1E, Z80::RRHL);
-        cbInstructionMap.put( 0xCB1F, Z80::RRr_a);
+        cbInstructionMap.put( 0x10, Z80::RLr_b);
+        cbInstructionMap.put( 0x11, Z80::RLr_c);
+        cbInstructionMap.put( 0x12, Z80::RLr_d);
+        cbInstructionMap.put( 0x13, Z80::RLr_e);
+        cbInstructionMap.put( 0x14, Z80::RLr_h);
+        cbInstructionMap.put( 0x15, Z80::RLr_l);
+        cbInstructionMap.put( 0x16, Z80::RLHL);
+        cbInstructionMap.put( 0x17, Z80::RLr_a);
+        cbInstructionMap.put( 0x18, Z80::RRr_b);
+        cbInstructionMap.put( 0x19, Z80::RRr_c);
+        cbInstructionMap.put( 0x1A, Z80::RRr_d);
+        cbInstructionMap.put( 0x1B, Z80::RRr_e);
+        cbInstructionMap.put( 0x1C, Z80::RRr_h);
+        cbInstructionMap.put( 0x1D, Z80::RRr_l);
+        cbInstructionMap.put( 0x1E, Z80::RRHL);
+        cbInstructionMap.put( 0x1F, Z80::RRr_a);
         //CB20
-        cbInstructionMap.put( 0xCB20, Z80::SLAr_b);
-        cbInstructionMap.put( 0xCB21, Z80::SLAr_c);
-        cbInstructionMap.put( 0xCB22, Z80::SLAr_d);
-        cbInstructionMap.put( 0xCB23, Z80::SLAr_e);
-        cbInstructionMap.put( 0xCB24, Z80::SLAr_h);
-        cbInstructionMap.put( 0xCB25, Z80::SLAr_l);
-        cbInstructionMap.put( 0xCB26, Z80::XX);
-        cbInstructionMap.put( 0xCB27, Z80::SLAr_a);
-        cbInstructionMap.put( 0xCB28, Z80::SRAr_b);
-        cbInstructionMap.put( 0xCB29, Z80::SRAr_c);
-        cbInstructionMap.put( 0xCB2A, Z80::SRAr_d);
-        cbInstructionMap.put( 0xCB2B, Z80::SRAr_e);
-        cbInstructionMap.put( 0xCB2C, Z80::SRAr_h);
-        cbInstructionMap.put( 0xCB2D, Z80::SRAr_l);
-        cbInstructionMap.put( 0xCB2E, Z80::XX);
-        cbInstructionMap.put( 0xCB2F, Z80::SRAr_a);
+        cbInstructionMap.put( 0x20, Z80::SLAr_b);
+        cbInstructionMap.put( 0x21, Z80::SLAr_c);
+        cbInstructionMap.put( 0x22, Z80::SLAr_d);
+        cbInstructionMap.put( 0x23, Z80::SLAr_e);
+        cbInstructionMap.put( 0x24, Z80::SLAr_h);
+        cbInstructionMap.put( 0x25, Z80::SLAr_l);
+        cbInstructionMap.put( 0x26, Z80::XX);
+        cbInstructionMap.put( 0x27, Z80::SLAr_a);
+        cbInstructionMap.put( 0x28, Z80::SRAr_b);
+        cbInstructionMap.put( 0x29, Z80::SRAr_c);
+        cbInstructionMap.put( 0x2A, Z80::SRAr_d);
+        cbInstructionMap.put( 0x2B, Z80::SRAr_e);
+        cbInstructionMap.put( 0x2C, Z80::SRAr_h);
+        cbInstructionMap.put( 0x2D, Z80::SRAr_l);
+        cbInstructionMap.put( 0x2E, Z80::XX);
+        cbInstructionMap.put( 0x2F, Z80::SRAr_a);
         // CB30
-        cbInstructionMap.put( 0xCB30, Z80::SWAPr_b);
-        cbInstructionMap.put( 0xCB31, Z80::SWAPr_c);
-        cbInstructionMap.put( 0xCB32, Z80::SWAPr_d);
-        cbInstructionMap.put( 0xCB33, Z80::SWAPr_e);
-        cbInstructionMap.put( 0xCB34, Z80::SWAPr_h);
-        cbInstructionMap.put( 0xCB35, Z80::SWAPr_l);
-        cbInstructionMap.put( 0xCB36, Z80::XX);
-        cbInstructionMap.put( 0xCB37, Z80::SWAPr_a);
-        cbInstructionMap.put( 0xCB38, Z80::SRLr_b);
-        cbInstructionMap.put( 0xCB39, Z80::SRLr_c);
-        cbInstructionMap.put( 0xCB3A, Z80::SRLr_d);
-        cbInstructionMap.put( 0xCB3B, Z80::SRLr_e);
-        cbInstructionMap.put( 0xCB3C, Z80::SRLr_h);
-        cbInstructionMap.put( 0xCB3D, Z80::SRLr_l);
-        cbInstructionMap.put( 0xCB3E, Z80::XX);
-        cbInstructionMap.put( 0xCB3F, Z80::SRLr_a);
+        cbInstructionMap.put( 0x30, Z80::SWAPr_b);
+        cbInstructionMap.put( 0x31, Z80::SWAPr_c);
+        cbInstructionMap.put( 0x32, Z80::SWAPr_d);
+        cbInstructionMap.put( 0x33, Z80::SWAPr_e);
+        cbInstructionMap.put( 0x34, Z80::SWAPr_h);
+        cbInstructionMap.put( 0x35, Z80::SWAPr_l);
+        cbInstructionMap.put( 0x36, Z80::XX);
+        cbInstructionMap.put( 0x37, Z80::SWAPr_a);
+        cbInstructionMap.put( 0x38, Z80::SRLr_b);
+        cbInstructionMap.put( 0x39, Z80::SRLr_c);
+        cbInstructionMap.put( 0x3A, Z80::SRLr_d);
+        cbInstructionMap.put( 0x3B, Z80::SRLr_e);
+        cbInstructionMap.put( 0x3C, Z80::SRLr_h);
+        cbInstructionMap.put( 0x3D, Z80::SRLr_l);
+        cbInstructionMap.put( 0x3E, Z80::XX);
+        cbInstructionMap.put( 0x3F, Z80::SRLr_a);
         // CB40
-        cbInstructionMap.put( 0xCB40, Z80::BIT0b);
-        cbInstructionMap.put( 0xCB41, Z80::BIT0c);
-        cbInstructionMap.put( 0xCB42, Z80::BIT0d);
-        cbInstructionMap.put( 0xCB43, Z80::BIT0e);
-        cbInstructionMap.put( 0xCB44, Z80::BIT0h);
-        cbInstructionMap.put( 0xCB45, Z80::BIT0l);
-        cbInstructionMap.put( 0xCB46, Z80::BIT0m);
-        cbInstructionMap.put( 0xCB47, Z80::BIT0a);
-        cbInstructionMap.put( 0xCB48, Z80::BIT1b);
-        cbInstructionMap.put( 0xCB49, Z80::BIT1c);
-        cbInstructionMap.put( 0xCB4A, Z80::BIT1d);
-        cbInstructionMap.put( 0xCB4B, Z80::BIT1e);
-        cbInstructionMap.put( 0xCB4C, Z80::BIT1h);
-        cbInstructionMap.put( 0xCB4D, Z80::BIT1l);
-        cbInstructionMap.put( 0xCB4E, Z80::BIT1m);
-        cbInstructionMap.put( 0xCB4F, Z80::BIT1a);
+        cbInstructionMap.put( 0x40, Z80::BIT0b);
+        cbInstructionMap.put( 0x41, Z80::BIT0c);
+        cbInstructionMap.put( 0x42, Z80::BIT0d);
+        cbInstructionMap.put( 0x43, Z80::BIT0e);
+        cbInstructionMap.put( 0x44, Z80::BIT0h);
+        cbInstructionMap.put( 0x45, Z80::BIT0l);
+        cbInstructionMap.put( 0x46, Z80::BIT0m);
+        cbInstructionMap.put( 0x47, Z80::BIT0a);
+        cbInstructionMap.put( 0x48, Z80::BIT1b);
+        cbInstructionMap.put( 0x49, Z80::BIT1c);
+        cbInstructionMap.put( 0x4A, Z80::BIT1d);
+        cbInstructionMap.put( 0x4B, Z80::BIT1e);
+        cbInstructionMap.put( 0x4C, Z80::BIT1h);
+        cbInstructionMap.put( 0x4D, Z80::BIT1l);
+        cbInstructionMap.put( 0x4E, Z80::BIT1m);
+        cbInstructionMap.put( 0x4F, Z80::BIT1a);
         // CB50
-        cbInstructionMap.put( 0xCB50, Z80::BIT2b);
-        cbInstructionMap.put( 0xCB51, Z80::BIT2c);
-        cbInstructionMap.put( 0xCB52, Z80::BIT2d);
-        cbInstructionMap.put( 0xCB53, Z80::BIT2e);
-        cbInstructionMap.put( 0xCB54, Z80::BIT2h);
-        cbInstructionMap.put( 0xCB55, Z80::BIT2l);
-        cbInstructionMap.put( 0xCB56, Z80::BIT2m);
-        cbInstructionMap.put( 0xCB57, Z80::BIT2a);
-        cbInstructionMap.put( 0xCB58, Z80::BIT3b);
-        cbInstructionMap.put( 0xCB59, Z80::BIT3c);
-        cbInstructionMap.put( 0xCB5A, Z80::BIT3d);
-        cbInstructionMap.put( 0xCB5B, Z80::BIT3e);
-        cbInstructionMap.put( 0xCB5C, Z80::BIT3h);
-        cbInstructionMap.put( 0xCB5D, Z80::BIT3l);
-        cbInstructionMap.put( 0xCB5E, Z80::BIT3m);
-        cbInstructionMap.put( 0xCB5F, Z80::BIT3a);
+        cbInstructionMap.put( 0x50, Z80::BIT2b);
+        cbInstructionMap.put( 0x51, Z80::BIT2c);
+        cbInstructionMap.put( 0x52, Z80::BIT2d);
+        cbInstructionMap.put( 0x53, Z80::BIT2e);
+        cbInstructionMap.put( 0x54, Z80::BIT2h);
+        cbInstructionMap.put( 0x55, Z80::BIT2l);
+        cbInstructionMap.put( 0x56, Z80::BIT2m);
+        cbInstructionMap.put( 0x57, Z80::BIT2a);
+        cbInstructionMap.put( 0x58, Z80::BIT3b);
+        cbInstructionMap.put( 0x59, Z80::BIT3c);
+        cbInstructionMap.put( 0x5A, Z80::BIT3d);
+        cbInstructionMap.put( 0x5B, Z80::BIT3e);
+        cbInstructionMap.put( 0x5C, Z80::BIT3h);
+        cbInstructionMap.put( 0x5D, Z80::BIT3l);
+        cbInstructionMap.put( 0x5E, Z80::BIT3m);
+        cbInstructionMap.put( 0x5F, Z80::BIT3a);
         // CB60
-        cbInstructionMap.put( 0xCB60, Z80::BIT4b);
-        cbInstructionMap.put( 0xCB61, Z80::BIT4c);
-        cbInstructionMap.put( 0xCB62, Z80::BIT4d);
-        cbInstructionMap.put( 0xCB63, Z80::BIT4e);
-        cbInstructionMap.put( 0xCB64, Z80::BIT4h);
-        cbInstructionMap.put( 0xCB65, Z80::BIT4l);
-        cbInstructionMap.put( 0xCB66, Z80::BIT4m);
-        cbInstructionMap.put( 0xCB67, Z80::BIT4a);
-        cbInstructionMap.put( 0xCB68, Z80::BIT5b);
-        cbInstructionMap.put( 0xCB69, Z80::BIT5c);
-        cbInstructionMap.put( 0xCB6A, Z80::BIT5d);
-        cbInstructionMap.put( 0xCB6B, Z80::BIT5e);
-        cbInstructionMap.put( 0xCB6C, Z80::BIT5h);
-        cbInstructionMap.put( 0xCB6D, Z80::BIT5l);
-        cbInstructionMap.put( 0xCB6E, Z80::BIT5m);
-        cbInstructionMap.put( 0xCB6F, Z80::BIT5a);
+        cbInstructionMap.put( 0x60, Z80::BIT4b);
+        cbInstructionMap.put( 0x61, Z80::BIT4c);
+        cbInstructionMap.put( 0x62, Z80::BIT4d);
+        cbInstructionMap.put( 0x63, Z80::BIT4e);
+        cbInstructionMap.put( 0x64, Z80::BIT4h);
+        cbInstructionMap.put( 0x65, Z80::BIT4l);
+        cbInstructionMap.put( 0x66, Z80::BIT4m);
+        cbInstructionMap.put( 0x67, Z80::BIT4a);
+        cbInstructionMap.put( 0x68, Z80::BIT5b);
+        cbInstructionMap.put( 0x69, Z80::BIT5c);
+        cbInstructionMap.put( 0x6A, Z80::BIT5d);
+        cbInstructionMap.put( 0x6B, Z80::BIT5e);
+        cbInstructionMap.put( 0x6C, Z80::BIT5h);
+        cbInstructionMap.put( 0x6D, Z80::BIT5l);
+        cbInstructionMap.put( 0x6E, Z80::BIT5m);
+        cbInstructionMap.put( 0x6F, Z80::BIT5a);
         // CB70
-        cbInstructionMap.put( 0xCB70, Z80::BIT6b);
-        cbInstructionMap.put( 0xCB71, Z80::BIT6c);
-        cbInstructionMap.put( 0xCB72, Z80::BIT6d);
-        cbInstructionMap.put( 0xCB73, Z80::BIT6e);
-        cbInstructionMap.put( 0xCB74, Z80::BIT6h);
-        cbInstructionMap.put( 0xCB75, Z80::BIT6l);
-        cbInstructionMap.put( 0xCB76, Z80::BIT6m);
-        cbInstructionMap.put( 0xCB77, Z80::BIT6a);
-        cbInstructionMap.put( 0xCB78, Z80::BIT7b);
-        cbInstructionMap.put( 0xCB79, Z80::BIT7c);
-        cbInstructionMap.put( 0xCB7A, Z80::BIT7d);
-        cbInstructionMap.put( 0xCB7B, Z80::BIT7e);
-        cbInstructionMap.put( 0xCB7C, Z80::BIT7h);
-        cbInstructionMap.put( 0xCB7D, Z80::BIT7l);
-        cbInstructionMap.put( 0xCB7E, Z80::BIT7m);
-        cbInstructionMap.put( 0xCB7F, Z80::BIT7a);
-        /*cbInstructionMap.put( 0xCB80, Z80::RES0b);
-        cbInstructionMap.put( 0xCB81, Z80::RES0c);
-        cbInstructionMap.put( 0xCB82, Z80::RES0d);
-        cbInstructionMap.put( 0xCB83, Z80::RES0e);
-        cbInstructionMap.put( 0xCB84, Z80::RES0h);
-        cbInstructionMap.put( 0xCB85, Z80::RES0l);
-        cbInstructionMap.put( 0xCB86, Z80::RES0m);
-        cbInstructionMap.put( 0xCB87, Z80::RES0a);
-        cbInstructionMap.put( 0xCB88, Z80::RES1b);
-        cbInstructionMap.put( 0xCB89, Z80::RES1c);
-        cbInstructionMap.put( 0xCB8A, Z80::RES1d);
-        cbInstructionMap.put( 0xCB8B, Z80::RES1e);
-        cbInstructionMap.put( 0xCB8C, Z80::RES1h);
-        cbInstructionMap.put( 0xCB8D, Z80::RES1l);
-        cbInstructionMap.put( 0xCB8E, Z80::RES1m);
-        cbInstructionMap.put( 0xCB8F, Z80::RES1a);
-        cbInstructionMap.put( 0xCB90, Z80::RES2b);
-        cbInstructionMap.put( 0xCB91, Z80::RES2c);
-        cbInstructionMap.put( 0xCB92, Z80::RES2d);
-        cbInstructionMap.put( 0xCB93, Z80::RES2e);
-        cbInstructionMap.put( 0xCB94, Z80::RES2h);
-        cbInstructionMap.put( 0xCB95, Z80::RES2l);
-        cbInstructionMap.put( 0xCB96, Z80::RES2m);
-        cbInstructionMap.put( 0xCB97, Z80::RES2a);
-        cbInstructionMap.put( 0xCB98, Z80::RES3b);
-        cbInstructionMap.put( 0xCB99, Z80::RES3c);
-        cbInstructionMap.put( 0xCB9A, Z80::RES3d);
-        cbInstructionMap.put( 0xCB9B, Z80::RES3e);
-        cbInstructionMap.put( 0xCB9C, Z80::RES3h);
-        cbInstructionMap.put( 0xCB9D, Z80::RES3l);
-        cbInstructionMap.put( 0xCB9E, Z80::RES3m);
-        cbInstructionMap.put( 0xCB9F, Z80::RES3a);
-        cbInstructionMap.put( 0xCBA0, Z80::RES4b);
-        cbInstructionMap.put( 0xCBA1, Z80::RES4c);
-        cbInstructionMap.put( 0xCBA2, Z80::RES4d);
-        cbInstructionMap.put( 0xCBA3, Z80::RES4e);
-        cbInstructionMap.put( 0xCBA4, Z80::RES4h);
-        cbInstructionMap.put( 0xCBA5, Z80::RES4l);
-        cbInstructionMap.put( 0xCBA6, Z80::RES4m);
-        cbInstructionMap.put( 0xCBA7, Z80::RES4a);
-        cbInstructionMap.put( 0xCBA8, Z80::RES5b);
-        cbInstructionMap.put( 0xCBA9, Z80::RES5c);
-        cbInstructionMap.put( 0xCBAA, Z80::RES5d);
-        cbInstructionMap.put( 0xCBAB, Z80::RES5e);
-        cbInstructionMap.put( 0xCBAC, Z80::RES5h);
-        cbInstructionMap.put( 0xCBAD, Z80::RES5l);
-        cbInstructionMap.put( 0xCBAE, Z80::RES5m);
-        cbInstructionMap.put( 0xCBAF, Z80::RES5a);
-        cbInstructionMap.put( 0xCBB0, Z80::RES6b);
-        cbInstructionMap.put( 0xCBB1, Z80::RES6c);
-        cbInstructionMap.put( 0xCBB2, Z80::RES6d);
-        cbInstructionMap.put( 0xCBB3, Z80::RES6e);
-        cbInstructionMap.put( 0xCBB4, Z80::RES6h);
-        cbInstructionMap.put( 0xCBB5, Z80::RES6l);
-        cbInstructionMap.put( 0xCBB6, Z80::RES6m);
-        cbInstructionMap.put( 0xCBB7, Z80::RES6a);
-        cbInstructionMap.put( 0xCBB8, Z80::RES7b);
-        cbInstructionMap.put( 0xCBB9, Z80::RES7c);
-        cbInstructionMap.put( 0xCBBA, Z80::RES7d);
-        cbInstructionMap.put( 0xCBBB, Z80::RES7e);
-        cbInstructionMap.put( 0xCBBC, Z80::RES7h);
-        cbInstructionMap.put( 0xCBBD, Z80::RES7l);
-        cbInstructionMap.put( 0xCBBE, Z80::RES7m);
-        cbInstructionMap.put( 0xCBBF, Z80::RES7a);
-        cbInstructionMap.put( 0xCBC0, Z80::SET0b);
-        cbInstructionMap.put( 0xCBC1, Z80::SET0c);
-        cbInstructionMap.put( 0xCBC2, Z80::SET0d);
-        cbInstructionMap.put( 0xCBC3, Z80::SET0e);
-        cbInstructionMap.put( 0xCBC4, Z80::SET0h);
-        cbInstructionMap.put( 0xCBC5, Z80::SET0l);
-        cbInstructionMap.put( 0xCBC6, Z80::SET0m);
-        cbInstructionMap.put( 0xCBC7, Z80::SET0a);
-        cbInstructionMap.put( 0xCBC8, Z80::SET1b);
-        cbInstructionMap.put( 0xCBC9, Z80::SET1c);
-        cbInstructionMap.put( 0xCBCA, Z80::SET1d);
-        cbInstructionMap.put( 0xCBCB, Z80::SET1e);
-        cbInstructionMap.put( 0xCBCC, Z80::SET1h);
-        cbInstructionMap.put( 0xCBCD, Z80::SET1l);
-        cbInstructionMap.put( 0xCBCE, Z80::SET1m);
-        cbInstructionMap.put( 0xCBCF, Z80::SET1a);
-        cbInstructionMap.put( 0xCBD0, Z80::SET2b);
-        cbInstructionMap.put( 0xCBD1, Z80::SET2c);
-        cbInstructionMap.put( 0xCBD2, Z80::SET2d);
-        cbInstructionMap.put( 0xCBD3, Z80::SET2e);
-        cbInstructionMap.put( 0xCBD4, Z80::SET2h);
-        cbInstructionMap.put( 0xCBD5, Z80::SET2l);
-        cbInstructionMap.put( 0xCBD6, Z80::SET2m);
-        cbInstructionMap.put( 0xCBD7, Z80::SET2a);
-        cbInstructionMap.put( 0xCBD8, Z80::SET3b);
-        cbInstructionMap.put( 0xCBD9, Z80::SET3c);
-        cbInstructionMap.put( 0xCBDA, Z80::SET3d);
-        cbInstructionMap.put( 0xCBDB, Z80::SET3e);
-        cbInstructionMap.put( 0xCBDC, Z80::SET3h);
-        cbInstructionMap.put( 0xCBDD, Z80::SET3l);
-        cbInstructionMap.put( 0xCBDE, Z80::SET3m);
-        cbInstructionMap.put( 0xCBDF, Z80::SET3a);
-        cbInstructionMap.put( 0xCBE0, Z80::SET4b);
-        cbInstructionMap.put( 0xCBE1, Z80::SET4c);
-        cbInstructionMap.put( 0xCBE2, Z80::SET4d);
-        cbInstructionMap.put( 0xCBE3, Z80::SET4e);
-        cbInstructionMap.put( 0xCBE4, Z80::SET4h);
-        cbInstructionMap.put( 0xCBE5, Z80::SET4l);
-        cbInstructionMap.put( 0xCBE6, Z80::SET4m);
-        cbInstructionMap.put( 0xCBE7, Z80::SET4a);
-        cbInstructionMap.put( 0xCBE8, Z80::SET5b);
-        cbInstructionMap.put( 0xCBE9, Z80::SET5c);
-        cbInstructionMap.put( 0xCBEA, Z80::SET5d);
-        cbInstructionMap.put( 0xCBEB, Z80::SET5e);
-        cbInstructionMap.put( 0xCBEC, Z80::SET5h);
-        cbInstructionMap.put( 0xCBED, Z80::SET5l);
-        cbInstructionMap.put( 0xCBEE, Z80::SET5m);
-        cbInstructionMap.put( 0xCBEF, Z80::SET5a);
-        cbInstructionMap.put( 0xCBF0, Z80::SET6b);
-        cbInstructionMap.put( 0xCBF1, Z80::SET6c);
-        cbInstructionMap.put( 0xCBF2, Z80::SET6d);
-        cbInstructionMap.put( 0xCBF3, Z80::SET6e);
-        cbInstructionMap.put( 0xCBF4, Z80::SET6h);
-        cbInstructionMap.put( 0xCBF5, Z80::SET6l);
-        cbInstructionMap.put( 0xCBF6, Z80::SET6m);
-        cbInstructionMap.put( 0xCBF7, Z80::SET6a);
-        cbInstructionMap.put( 0xCBF8, Z80::SET7b);
-        cbInstructionMap.put( 0xCBF9, Z80::SET7c);
-        cbInstructionMap.put( 0xCBFA, Z80::SET7d);
-        cbInstructionMap.put( 0xCBFB, Z80::SET7e);
-        cbInstructionMap.put( 0xCBFC, Z80::SET7h);
-        cbInstructionMap.put( 0xCBFD, Z80::SET7l);
-        cbInstructionMap.put( 0xCBFE, Z80::SET7m);
-        cbInstructionMap.put( 0xCBFF, Z80::SET7a);*/
+        cbInstructionMap.put( 0x70, Z80::BIT6b);
+        cbInstructionMap.put( 0x71, Z80::BIT6c);
+        cbInstructionMap.put( 0x72, Z80::BIT6d);
+        cbInstructionMap.put( 0x73, Z80::BIT6e);
+        cbInstructionMap.put( 0x74, Z80::BIT6h);
+        cbInstructionMap.put( 0x75, Z80::BIT6l);
+        cbInstructionMap.put( 0x76, Z80::BIT6m);
+        cbInstructionMap.put( 0x77, Z80::BIT6a);
+        cbInstructionMap.put( 0x78, Z80::BIT7b);
+        cbInstructionMap.put( 0x79, Z80::BIT7c);
+        cbInstructionMap.put( 0x7A, Z80::BIT7d);
+        cbInstructionMap.put( 0x7B, Z80::BIT7e);
+        cbInstructionMap.put( 0x7C, Z80::BIT7h);
+        cbInstructionMap.put( 0x7D, Z80::BIT7l);
+        cbInstructionMap.put( 0x7E, Z80::BIT7m);
+        cbInstructionMap.put( 0x7F, Z80::BIT7a);
+        /*cbInstructionMap.put( 0x80, Z80::RES0b);
+        cbInstructionMap.put( 0x81, Z80::RES0c);
+        cbInstructionMap.put( 0x82, Z80::RES0d);
+        cbInstructionMap.put( 0x83, Z80::RES0e);
+        cbInstructionMap.put( 0x84, Z80::RES0h);
+        cbInstructionMap.put( 0x85, Z80::RES0l);
+        cbInstructionMap.put( 0x86, Z80::RES0m);
+        cbInstructionMap.put( 0x87, Z80::RES0a);
+        cbInstructionMap.put( 0x88, Z80::RES1b);
+        cbInstructionMap.put( 0x89, Z80::RES1c);
+        cbInstructionMap.put( 0x8A, Z80::RES1d);
+        cbInstructionMap.put( 0x8B, Z80::RES1e);
+        cbInstructionMap.put( 0x8C, Z80::RES1h);
+        cbInstructionMap.put( 0x8D, Z80::RES1l);
+        cbInstructionMap.put( 0x8E, Z80::RES1m);
+        cbInstructionMap.put( 0x8F, Z80::RES1a);
+        cbInstructionMap.put( 0x90, Z80::RES2b);
+        cbInstructionMap.put( 0x91, Z80::RES2c);
+        cbInstructionMap.put( 0x92, Z80::RES2d);
+        cbInstructionMap.put( 0x93, Z80::RES2e);
+        cbInstructionMap.put( 0x94, Z80::RES2h);
+        cbInstructionMap.put( 0x95, Z80::RES2l);
+        cbInstructionMap.put( 0x96, Z80::RES2m);
+        cbInstructionMap.put( 0x97, Z80::RES2a);
+        cbInstructionMap.put( 0x98, Z80::RES3b);
+        cbInstructionMap.put( 0x99, Z80::RES3c);
+        cbInstructionMap.put( 0x9A, Z80::RES3d);
+        cbInstructionMap.put( 0x9B, Z80::RES3e);
+        cbInstructionMap.put( 0x9C, Z80::RES3h);
+        cbInstructionMap.put( 0x9D, Z80::RES3l);
+        cbInstructionMap.put( 0x9E, Z80::RES3m);
+        cbInstructionMap.put( 0x9F, Z80::RES3a);
+        cbInstructionMap.put( 0xA0, Z80::RES4b);
+        cbInstructionMap.put( 0xA1, Z80::RES4c);
+        cbInstructionMap.put( 0xA2, Z80::RES4d);
+        cbInstructionMap.put( 0xA3, Z80::RES4e);
+        cbInstructionMap.put( 0xA4, Z80::RES4h);
+        cbInstructionMap.put( 0xA5, Z80::RES4l);
+        cbInstructionMap.put( 0xA6, Z80::RES4m);
+        cbInstructionMap.put( 0xA7, Z80::RES4a);
+        cbInstructionMap.put( 0xA8, Z80::RES5b);
+        cbInstructionMap.put( 0xA9, Z80::RES5c);
+        cbInstructionMap.put( 0xAA, Z80::RES5d);
+        cbInstructionMap.put( 0xAB, Z80::RES5e);
+        cbInstructionMap.put( 0xAC, Z80::RES5h);
+        cbInstructionMap.put( 0xAD, Z80::RES5l);
+        cbInstructionMap.put( 0xAE, Z80::RES5m);
+        cbInstructionMap.put( 0xAF, Z80::RES5a);
+        cbInstructionMap.put( 0xB0, Z80::RES6b);
+        cbInstructionMap.put( 0xB1, Z80::RES6c);
+        cbInstructionMap.put( 0xB2, Z80::RES6d);
+        cbInstructionMap.put( 0xB3, Z80::RES6e);
+        cbInstructionMap.put( 0xB4, Z80::RES6h);
+        cbInstructionMap.put( 0xB5, Z80::RES6l);
+        cbInstructionMap.put( 0xB6, Z80::RES6m);
+        cbInstructionMap.put( 0xB7, Z80::RES6a);
+        cbInstructionMap.put( 0xB8, Z80::RES7b);
+        cbInstructionMap.put( 0xB9, Z80::RES7c);
+        cbInstructionMap.put( 0xBA, Z80::RES7d);
+        cbInstructionMap.put( 0xBB, Z80::RES7e);
+        cbInstructionMap.put( 0xBC, Z80::RES7h);
+        cbInstructionMap.put( 0xBD, Z80::RES7l);
+        cbInstructionMap.put( 0xBE, Z80::RES7m);
+        cbInstructionMap.put( 0xBF, Z80::RES7a);
+        cbInstructionMap.put( 0xC0, Z80::SET0b);
+        cbInstructionMap.put( 0xC1, Z80::SET0c);
+        cbInstructionMap.put( 0xC2, Z80::SET0d);
+        cbInstructionMap.put( 0xC3, Z80::SET0e);
+        cbInstructionMap.put( 0xC4, Z80::SET0h);
+        cbInstructionMap.put( 0xC5, Z80::SET0l);
+        cbInstructionMap.put( 0xC6, Z80::SET0m);
+        cbInstructionMap.put( 0xC7, Z80::SET0a);
+        cbInstructionMap.put( 0xC8, Z80::SET1b);
+        cbInstructionMap.put( 0xC9, Z80::SET1c);
+        cbInstructionMap.put( 0xCA, Z80::SET1d);
+        cbInstructionMap.put( 0xCB, Z80::SET1e);
+        cbInstructionMap.put( 0xCC, Z80::SET1h);
+        cbInstructionMap.put( 0xCD, Z80::SET1l);
+        cbInstructionMap.put( 0xCE, Z80::SET1m);
+        cbInstructionMap.put( 0xCF, Z80::SET1a);
+        cbInstructionMap.put( 0xD0, Z80::SET2b);
+        cbInstructionMap.put( 0xD1, Z80::SET2c);
+        cbInstructionMap.put( 0xD2, Z80::SET2d);
+        cbInstructionMap.put( 0xD3, Z80::SET2e);
+        cbInstructionMap.put( 0xD4, Z80::SET2h);
+        cbInstructionMap.put( 0xD5, Z80::SET2l);
+        cbInstructionMap.put( 0xD6, Z80::SET2m);
+        cbInstructionMap.put( 0xD7, Z80::SET2a);
+        cbInstructionMap.put( 0xD8, Z80::SET3b);
+        cbInstructionMap.put( 0xD9, Z80::SET3c);
+        cbInstructionMap.put( 0xDA, Z80::SET3d);
+        cbInstructionMap.put( 0xDB, Z80::SET3e);
+        cbInstructionMap.put( 0xDC, Z80::SET3h);
+        cbInstructionMap.put( 0xDD, Z80::SET3l);
+        cbInstructionMap.put( 0xDE, Z80::SET3m);
+        cbInstructionMap.put( 0xDF, Z80::SET3a);
+        cbInstructionMap.put( 0xE0, Z80::SET4b);
+        cbInstructionMap.put( 0xE1, Z80::SET4c);
+        cbInstructionMap.put( 0xE2, Z80::SET4d);
+        cbInstructionMap.put( 0xE3, Z80::SET4e);
+        cbInstructionMap.put( 0xE4, Z80::SET4h);
+        cbInstructionMap.put( 0xE5, Z80::SET4l);
+        cbInstructionMap.put( 0xE6, Z80::SET4m);
+        cbInstructionMap.put( 0xE7, Z80::SET4a);
+        cbInstructionMap.put( 0xE8, Z80::SET5b);
+        cbInstructionMap.put( 0xE9, Z80::SET5c);
+        cbInstructionMap.put( 0xEA, Z80::SET5d);
+        cbInstructionMap.put( 0xEB, Z80::SET5e);
+        cbInstructionMap.put( 0xEC, Z80::SET5h);
+        cbInstructionMap.put( 0xED, Z80::SET5l);
+        cbInstructionMap.put( 0xEE, Z80::SET5m);
+        cbInstructionMap.put( 0xEF, Z80::SET5a);
+        cbInstructionMap.put( 0xF0, Z80::SET6b);
+        cbInstructionMap.put( 0xF1, Z80::SET6c);
+        cbInstructionMap.put( 0xF2, Z80::SET6d);
+        cbInstructionMap.put( 0xF3, Z80::SET6e);
+        cbInstructionMap.put( 0xF4, Z80::SET6h);
+        cbInstructionMap.put( 0xF5, Z80::SET6l);
+        cbInstructionMap.put( 0xF6, Z80::SET6m);
+        cbInstructionMap.put( 0xF7, Z80::SET6a);
+        cbInstructionMap.put( 0xF8, Z80::SET7b);
+        cbInstructionMap.put( 0xF9, Z80::SET7c);
+        cbInstructionMap.put( 0xFA, Z80::SET7d);
+        cbInstructionMap.put( 0xFB, Z80::SET7e);
+        cbInstructionMap.put( 0xFC, Z80::SET7h);
+        cbInstructionMap.put( 0xFD, Z80::SET7l);
+        cbInstructionMap.put( 0xFE, Z80::SET7m);
+        cbInstructionMap.put( 0xFF, Z80::SET7a);*/
     }
 
     @FunctionalInterface
@@ -1087,6 +1116,7 @@ public class Z80 {
         populateInstructionMap();
         populateCBmap();
 		while(true) {
+            System.out.println("Reading rb(addr: " + Reg.pc + ")");
 			int op = MMU.rb(Reg.pc); // fetch instruction
             Reg.pc++;
             //op &= 0xFF;

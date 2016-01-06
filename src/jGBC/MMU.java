@@ -9,7 +9,7 @@ public class MMU {
 
 	private static final int CONST_WRAM_SIZE = 8192;
 	private static final int CONST_ERAM_SIZE = 32768;
-	private static final int CONST_ZRAM_SIZE = 127;
+	private static final int CONST_ZRAM_SIZE = 128;
 	public static final int CONST_ROM_SIZE = 32768;
 
 	// Flag indicating the BIOS is still mapped
@@ -53,7 +53,7 @@ public class MMU {
 	
 	public static int rb(int addr) {
 		/* Read 8-bit byte from a given address */
-		System.out.println("Reading rb(addr: " + addr + ")");
+
 		switch(addr & 0xF000) {
 		
 		// BIOS (256b) ROM 0 
