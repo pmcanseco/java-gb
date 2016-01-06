@@ -5,6 +5,7 @@ import java.awt.image.BufferedImage;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.io.IOException;
+import java.util.Random;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -29,12 +30,12 @@ public class GPU extends JPanel{
 	private static int scx = 0;
 	static int[][][] tileset = new int[384][8][8];
 	
-	
+	public Random rng = new Random();
 	public GPU(int width, int height) {
         canvas = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         fillCanvas(Color.BLUE);
         for(int i=0; i<160*144*4; i++){
-        	screen[i] = i;
+        	screen[i] = rng.nextInt(255);
         }
     }
 	
@@ -277,8 +278,7 @@ public class GPU extends JPanel{
         frame.setVisible(true);
         frame.setResizable(false);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        
-        
+
         gpu.drawScreen();
         
         gpu.reset();
@@ -292,12 +292,6 @@ public class GPU extends JPanel{
 		}
         
         Z80.dispatcher(gpu);
-        
-        
-        /*Integer i=0;
-        while(true) {
-        	gpu.fillCanvas(Color.decode(i.toString()));
-        	i++;
-        }*/
+
 	}
 }

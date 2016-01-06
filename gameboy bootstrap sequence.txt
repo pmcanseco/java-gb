@@ -1,0 +1,139 @@
+0x0000 – LD SP, $0xFFFE
+0x0003 – XOR A
+0x0004 – LD HL, $0x9FFF
+0x0007 – LD (HL-), A
+0x0008 – BIT 7, H
+0x000A – JRNZ .+0xfb
+0x000C – LD HL, $0xFF26
+0x000F – LD C, $0x11 # load 0x11 to C
+0x0011 – LD A, $0x80 # load 0x80 to A
+0x0013 – LD (HL-), A # load A to address pointed to by HL and Dec HL
+0x0014 – LD ($0xFF00+C), A # load A to address 0xFF00+C (0xFF11)
+0x0015 – INC C # increment C register
+0x0016 – LD A, $0xF3 # load 0xF3 to A
+0x0018 – LD ($0xFF00+C), A # load A to address 0xFF00+C (0xFF12)
+0x0019 – LD (HL-), A # load A to address pointed to by HL and Dec HL
+0x001A – LD A, $0x77 # load 0x77 to A
+0x001C – LD (HL), A # load A to address pointed to by HL
+0x001D – LD A, $0xFC # A represents the color number’s mappings
+0x001F – LD ($0xFF00+$0x47), A # initialize the palette
+0x0021 – LD DE, $0x0104 # pointer to Nintendo Logo
+0x0024 – LD HL, $0x8010 # pointer to Video RAM
+0x0027 – LD A, (DE) # load next byte from Nintendo Logo
+0x0028 – CALL $0x0095 # decompress, scale and write pixels to VRAM (1)
+0x002B – CALL $0x0096 # decompress, scale and write pixels to VRAM (2)
+0x002E – INC DE # advance pointer
+0x002F – LD A, E # …
+0x0030 – CP $0x34 # compare accumulator to 0x34
+0x0032 – JRNZ .+0xf3 # loop if not finished comparing
+0x0034 – LD DE, $0x00D8 # …
+0x0037 – LD B, $0x8 # …
+0x0039 – LD A, (DE) # …
+0x003A – INC DE # …
+0x003B – LD (HL+), A # …
+0x003C – INC HL # …
+0x003D – DEC B # …
+0x003E – JRNZ .+0xf9 # jump if not zero to 0x0039
+
+
+
+0x0040 – LD A, $0x19 # …
+0x0042 – LD ($0x9910), A # …
+0x0045 – LD HL, $0x992F # ‘HL’ pointer to tile map
+0x0048 – LD C, $0x0C # …
+0x004A – DEC A # …
+0x004B – JRZ .+0x8 # jump if zero to 0x0055
+0x004D – LD (HL-), A # load ”HL’ with A and then decrement ‘HL’
+0x004E – DEC C # …
+0x004F – JRNZ .+0xF9 # jump if not zero to 0x004A
+0x0051 – LD L, $0x0F # …
+0x0053 – JR .+0xF3 # jump to 0x0048
+
+
+
+0x0055 – LD H, A # H=0 is taken as the ‘scroll count’
+0x0056 – LD A, $0x64 # …
+0x0058 – LD D, A # D=0x64 is taken as a ‘loop count’
+0x0059 – LD ($0xFF00+$0x42), A # set the vertical scroll register
+0x005B – LD A, $0x91 # …
+0x005D – LD ($0xFF40+$0x40), A # turn on LCD Display and background
+0x005F – INC B # B=1
+
+
+0x0060 – LD E, $0x02 # …
+0x0062 – LD C, $0x0C # …
+0x0064 – LD A, ($0xFF00+$44) # wait for vertical-blank period
+0x0066 – CP $0x90 # value at 0xFF44 used to determine vertical-blank period
+0x0068 – JRNZ .+0xfa # jump to 0x0064 (loop) if not at vertical-blank period
+0x006A – DEC C # …
+0x006B – JRNZ .+0xf7 # …
+0x006D – DEC E # …
+0x006E – JRNZ .+0xf2 # …
+0x0070 – LC C, $0x13 # …
+0x0072 – INC H # increment scroll count
+0x0073 – LD A, H # …
+0x0074 – LD E, $0x83 # …
+0x0076 – CP $0x62 # when scroll count is 0x62, play sound 1
+0x0078 – JRZ .+0x06 # jump if zero to 0x0080 (skip play sound)
+
+
+
+0x007A – LD E, $0xC1 # …
+0x007C – CP $0x64 # when scroll count is 0x64, play sound 2
+0x007E – JRNZ .+0x06 # …
+
+
+0x0080 – LD A, E # …
+0x0081 – LD ($0xFF00+C), A # …
+0x0082 – INC C # …
+0x0083 – LD A, $0x87 # …
+0x0085 – LD ($0xFF00+C), A # …
+0x0086 – LD A, ($0xFF00+$0x42) # …
+0x0088 – SUB B # …
+0x0089 – LD ($0xFF00+$0x42), A # adjust vertical scroll register if necessary
+0x008B – DEC D # …
+0x008C – JRNZ .+0xd2 # …
+0x008E – DEC B # …
+0x008F – JRNZ +.0x4f # jump if not zero to 0x00E0
+
+0x0091 – LD D, $0x20 # …
+0x0093 – JR .+0xcb # jump back to 0x0060
+
+
+
+0x0095 – LD C, A # load A to C
+0x0096 – LD B, $0x4 # …
+0x0098 – PUSH BC # push BC register on the stack
+0x0099 – RL C # rotate left register C through carry flag
+0x009B – RLA # rotate left accumulator (register A) through carry flag
+0x009C – POP BC # pop word from the stack to register BC
+0x009D – RL C # rotate left register C through carry flag
+0x009F – RLA # rotate left accumulator (register A) through carry flag
+0x00A0 – DEC B # decrement register B
+0x00A1 – JRNZ .+0xF5 # jump if not zero to 0x0098
+0x00A3 – LD (HL+), A # load A to address pointed to by HL and Inc HL
+0x00A4 – INC HL # increment HL
+0x00A5 – LD (HL+), A # load A to address pointed to by HL and Inc HL
+0x00A6 – INC HL # increment HL
+0x00A7 – RET # return from call
+
+
+
+0x00E0 – LD HL, $0x0104 # point to Nintendo Logo in cartridge
+0x00E3 – LD DE, $0x00A8 # point to Nintendo Logo in boot ROM
+0x00E6 – LD A, (DE) # load next byte to compare to
+0x00E7 – INC DE # point to next byte
+0x00E8 – CP (HL) # compare bytes
+0x00E9 – JRNZ .+0xfe # jump to 0x00E9 if no match (lock up)
+0x00EB – INC HL # point to next byte
+0x00EC – LD A, L # …
+0x00ED – CP $0x34 # test if end of comparison
+0x00EF – JRNZ +.0xf5 # if not the end, jump back to 0x00E6
+0x00F1 – LD B, $0x19 # counter; prepare for checksum
+0x00F3 – LD A, B # A=0x19
+0x00F4 – ADD (HL) # add byte pointed to by HL to A
+0x00F5 – INC HL # point to next byte
+0x00F6 – DEC B # decrement counter
+0x00F7 – JRNZ .+0xfb # loop
+0x00F9 – ADD (HL) # add last byte; the ‘header checksum’
+0x00FA – JRNZ .+0xfe # if bad checksum, lock up here

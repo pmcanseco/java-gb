@@ -1116,14 +1116,14 @@ public class Z80 {
         populateInstructionMap();
         populateCBmap();
 		while(true) {
-            System.out.println("Reading rb(addr: " + Reg.pc + ")");
+            System.out.println("Reading rb(addr: 0x" + Integer.toHexString(Reg.pc).toUpperCase() + ")");
 			int op = MMU.rb(Reg.pc); // fetch instruction
             Reg.pc++;
             //op &= 0xFF;
 			// run corresponding function TODO
             final ServiceMethod serviceMethod = instructionMap.get(op);
             if(serviceMethod != null) {
-                System.out.println("Executing OpCode: 0x" + Integer.toHexString(op) + "   Function: " + instructionMap.get(op));
+                System.out.println("----Executing OpCode: 0x" + Integer.toHexString(op) + "   Function: " + instructionMap.get(op));
                 serviceMethod.execute();
             }
 			Reg.pc &= 65535; //mask program counter to 16bits
