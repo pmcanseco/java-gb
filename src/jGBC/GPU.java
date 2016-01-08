@@ -18,6 +18,8 @@ public class GPU extends JPanel{
 	
 	static int[] screen = new int[160*144*4];
 	static int[] vram = new int[8192];
+	static int[] oam = new int[160];
+	private int[][][] tilemap = new int[512][8][8];
 	private static int[][] palette = new int[4][4];
 	private int mode = 0;
 	private int modeclock = 0;
@@ -31,6 +33,7 @@ public class GPU extends JPanel{
 	static int[][][] tileset = new int[384][8][8];
 	
 	public Random rng = new Random();
+
 	public GPU(int width, int height) {
         canvas = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         fillCanvas(Color.BLUE);
@@ -92,14 +95,23 @@ public class GPU extends JPanel{
 	}
 
 	public void reset() {
-		tileset = new int[384][8][8];
-		for(int i=0; i<384; i++) {
-			for(int j=0; j<8; j++) {
-				for(int k=0; k<8; k++) {
-					tileset[i][j][k] = 0;
+		for(int i=0; i<8192; i++) {
+			vram[i] = 0;
+		}
+		for(int i=0; i<160; i++) {
+			oam[i] = 0;
+		}
+		for(int i=0;i<512;i++) {
+			for(int j=0;j<8;j++){
+				for(int k=0;k<8;k++) {
+					tilemap[i][j][k] = 0;
 				}
 			}
 		}
+
+		mode = 2;
+		modeclock = 0;
+
 		System.out.println("GPU Reset");
 	}
 	
@@ -176,7 +188,7 @@ public class GPU extends JPanel{
 				    (bgmap!=0     ? 0x08 : 0x00) |
 				    (bgtile!=0    ? 0x10 : 0x00) |
 				    (switchlcd!=0 ? 0x80 : 0x00));
-		
+
 		// Scroll Y
 		case 0xFF42:
 			return scy;
@@ -286,9 +298,9 @@ public class GPU extends JPanel{
         Z80.reset();
         
         try {
-			MMU.load("C:\\roms\\TESTGAME.GB");
+			MMU.load("C:\\roms\\mario.gb");
 		} catch (IOException e) {
-			e.printStackTrace();
+			System.out.println("Rom not found.");
 		}
         
         Z80.dispatcher(gpu);

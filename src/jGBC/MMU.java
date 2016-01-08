@@ -40,6 +40,11 @@ public class MMU {
 	        "DDDC999FBBB9333E3c42B9A5B9A5424C"+
 	        "21040111A8001A13BE20FE237DFE3420"+
 	        "F506197886230520FB8620FE3E01E050".toLowerCase());
+
+    static int[] logo = hexStringToByteArray(
+            "CEED6666CC0D000B03730083000C000D" +
+            "0008111F8889000EDCCC6EE6DDDDD999"+
+            "BBBB67636E0EECCCDDDC999FBBB9333E");
 	        
 	public static void reset() {
 		for(int i=0; i<CONST_WRAM_SIZE; i++) wram[i] = 0;
@@ -234,16 +239,57 @@ public class MMU {
 	}
 	
 	public static void load(String rompath) throws IOException {
+        System.out.println("Loading ROM: " + rompath);
         File file = new File(rompath);
         DataInputStream dis = new DataInputStream(new FileInputStream(file));
-        System.out.println("ROM: " + rom.length);
 		for(int i = 0; i< CONST_ROM_SIZE; i++) {
 			int b = dis.readUnsignedByte();
 			rom[i] = b;
 		}
 		dis.close();
+		verifyRom();
 	}
-	
+
+	public static void verifyRom() {
+		System.out.print("Title: "); // 0x0134 through 0x0143 contain the title
+		for(int i=0x134; i<0x143; i++) {
+			System.out.print((char) rom[i]);
+		}
+
+		System.out.print("\nLocale: "); // 0x014A contains the destination code. 0 = Japan, 1 = not Japan
+		if(rom[0x14A] == 0x00)  System.out.println("Japanese");
+		else if(rom[0x14A] == 0x01) System.out.println("Non-Japanese");
+		else System.out.println("Unknown");
+
+		System.out.print("Header Checksum:  "); // 0x014D is the header checksum.
+        // Contains an 8 bit checksum across the cartridge header bytes 0134-014C.
+        // Formula: x=0:FOR i=0134h TO 014Ch:x=x-MEM[i]-1:NEXT
+        // The lower 8 bits of the result must be the same than the value in this entry.
+        // The GAME WON'T WORK if this checksum is incorrect.
+		int checksum = 0;
+		for(int i=0x0134; i<=0x014C; i++) {
+			checksum=checksum-rom[i]-1;
+		}
+        checksum &= 255; // mask to lower 8 bits
+		System.out.println("Expected " + checksum + "      ROM " + rom[0x014D]);
+
+        // 0x0104 through 0x0133 are the Nintendo Logo bitmap bytes.
+        // They are verified here by adding up the ones in the bios and
+        // comparing them to the ones in the rom.
+        System.out.print("Nintendo Logo Check:  Expected ");
+        int biosSum = 0, logoSum = 0;
+        for(int i=0; i < logo.length; i++) {
+            biosSum+=logo[i];
+        }
+        System.out.print(biosSum);
+        for(int i=0x104; i <= 0x0133; i++) {
+            logoSum+=rom[i];
+        }
+        System.out.println("      ROM " + logoSum);
+	}
+
+
+
 	// helper functions
 	public static int[] hexStringToByteArray(String s) {
 	    int len = s.length();
