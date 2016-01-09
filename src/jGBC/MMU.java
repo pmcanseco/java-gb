@@ -10,7 +10,8 @@ public class MMU {
 	private static final int CONST_WRAM_SIZE = 8192;
 	private static final int CONST_ERAM_SIZE = 32768;
 	private static final int CONST_ZRAM_SIZE = 128;
-	public static final int CONST_ROM_SIZE = 32768;
+
+	private static Cartridge cart;
 
 	// Flag indicating the BIOS is still mapped
 	// BIOS is unmapped with first instruction above 0x00FF
@@ -18,7 +19,6 @@ public class MMU {
 	
 	// Memory Regions
 	static int[]
-		rom = new int[CONST_ROM_SIZE], // Cartridge ROM
 		wram = new int[CONST_WRAM_SIZE], // Working RAM
 		eram = new int[CONST_ERAM_SIZE], // External RAM
 		zram = new int[CONST_ZRAM_SIZE]; // Zero-page RAM
@@ -41,19 +41,20 @@ public class MMU {
 	        "21040111A8001A13BE20FE237DFE3420"+
 	        "F506197886230520FB8620FE3E01E050".toLowerCase());
 
-    static int[] logo = hexStringToByteArray(
-            "CEED6666CC0D000B03730083000C000D" +
-            "0008111F8889000EDCCC6EE6DDDDD999"+
-            "BBBB67636E0EECCCDDDC999FBBB9333E");
+	static int[] logo = MMU.hexStringToByteArray(
+			"CEED6666CC0D000B03730083000C000D" +
+			"0008111F8889000EDCCC6EE6DDDDD999"+
+			"BBBB67636E0EECCCDDDC999FBBB9333E");
 	        
-	public static void reset() {
+	public static void reset(Cartridge cartRef) {
 		for(int i=0; i<CONST_WRAM_SIZE; i++) wram[i] = 0;
 		for(int i=0; i<CONST_ERAM_SIZE; i++) eram[i] = 0;
 		for(int i=0; i<CONST_ZRAM_SIZE; i++) zram[i] = 0;
+
+		MMU.cart = cartRef;
+
 		inBios = true;
 		System.out.println("MMU Reset. BIOS (Expected 49, 80): " + bios[0] + " " + bios[255]);
-
-
 	}
 	
 	public static int rb(int addr) {
@@ -71,21 +72,21 @@ public class MMU {
 				}
 			}
 			else {
-				return rom[addr];
+				return cart.readFromAddress(addr);
 			}
 			
 		// ROM 0
 		case 0x1000:
 		case 0x2000:
 		case 0x3000:
-			return rom[addr];
+			return cart.readFromAddress(addr);
 			
 		// ROM 1 (unbanked) (16K)
 		case 0x4000:
 		case 0x5000:
 		case 0x6000:
 		case 0x7000:
-			return rom[addr];
+			return cart.readFromAddress(addr);
 			
 		// Graphics VRAM (8k)
 		case 0x8000:
@@ -152,7 +153,13 @@ public class MMU {
 		/* Read 16-bit word from a given address */
 		// this just reads the requested address and
 		// adds the next address to the 8 MSB's to create 16 bits
-		return (rb(addr) + (rb(addr+1) << 8));
+        int res = 0;
+        int upper = rb(addr+1);
+        res += upper;
+        res = res << 8;
+        int lower = rb(addr);
+        res += lower;
+		return res;
 	}
 	
 	public static void wb(int addr, int val) {
@@ -238,59 +245,8 @@ public class MMU {
 		wb(addr+1,  (val>>8)); // write remaining 8 bits.
 	}
 	
-	public static void load(String rompath) throws IOException {
-        System.out.println("Loading ROM: " + rompath);
-        File file = new File(rompath);
-        DataInputStream dis = new DataInputStream(new FileInputStream(file));
-		for(int i = 0; i< CONST_ROM_SIZE; i++) {
-			int b = dis.readUnsignedByte();
-			rom[i] = b;
-		}
-		dis.close();
-		verifyRom();
-	}
 
-	public static void verifyRom() {
-		System.out.print("Title: "); // 0x0134 through 0x0143 contain the title
-		for(int i=0x134; i<0x143; i++) {
-			System.out.print((char) rom[i]);
-		}
-
-		System.out.print("\nLocale: "); // 0x014A contains the destination code. 0 = Japan, 1 = not Japan
-		if(rom[0x14A] == 0x00)  System.out.println("Japanese");
-		else if(rom[0x14A] == 0x01) System.out.println("Non-Japanese");
-		else System.out.println("Unknown");
-
-		System.out.print("Header Checksum:  "); // 0x014D is the header checksum.
-        // Contains an 8 bit checksum across the cartridge header bytes 0134-014C.
-        // Formula: x=0:FOR i=0134h TO 014Ch:x=x-MEM[i]-1:NEXT
-        // The lower 8 bits of the result must be the same than the value in this entry.
-        // The GAME WON'T WORK if this checksum is incorrect.
-		int checksum = 0;
-		for(int i=0x0134; i<=0x014C; i++) {
-			checksum=checksum-rom[i]-1;
-		}
-        checksum &= 255; // mask to lower 8 bits
-		System.out.println("Expected " + checksum + "      ROM " + rom[0x014D]);
-
-        // 0x0104 through 0x0133 are the Nintendo Logo bitmap bytes.
-        // They are verified here by adding up the ones in the bios and
-        // comparing them to the ones in the rom.
-        System.out.print("Nintendo Logo Check:  Expected ");
-        int biosSum = 0, logoSum = 0;
-        for(int i=0; i < logo.length; i++) {
-            biosSum+=logo[i];
-        }
-        System.out.print(biosSum);
-        for(int i=0x104; i <= 0x0133; i++) {
-            logoSum+=rom[i];
-        }
-        System.out.println("      ROM " + logoSum);
-	}
-
-
-
-	// helper functions
+	// Helper Functions
 	public static int[] hexStringToByteArray(String s) {
 	    int len = s.length();
 	    int[] data = new int[len / 2];

@@ -11,13 +11,14 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 public class GPU extends JPanel{
+	public static final int CONST_VRAM_SIZE = 8192;
 
 	private static final long serialVersionUID = 4550660364461408923L;
 	
 	private BufferedImage canvas;
 	
 	static int[] screen = new int[160*144*4];
-	static int[] vram = new int[8192];
+	static int[] vram = new int[CONST_VRAM_SIZE];
 	static int[] oam = new int[160];
 	private int[][][] tilemap = new int[512][8][8];
 	private static int[][] palette = new int[4][4];
@@ -177,6 +178,7 @@ public class GPU extends JPanel{
 				if(bgtile == 1 && tile < 128) tile += 256;
 			}
 		}
+		System.out.println("renderscan()");
 	}
 
 	public static int rb(int addr) {
@@ -268,7 +270,7 @@ public class GPU extends JPanel{
 
 
 		repaint();
-		//System.out.println("repaint");
+		System.out.println("drawScreen()");
 	}
 	
 	public void paintComponent(Graphics g) {
@@ -277,33 +279,4 @@ public class GPU extends JPanel{
         g2.drawImage(canvas, null, null);
     }
 
-	
-	public static void main(String[] args) {
-		int width = 300;
-        int height = 300;
-        JFrame frame = new JFrame("Gameboy");
-
-        GPU gpu = new GPU(width, height);
-
-        frame.setSize(width,  height);
-        frame.add(gpu);
-        frame.setVisible(true);
-        frame.setResizable(false);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-        gpu.drawScreen();
-        
-        gpu.reset();
-        MMU.reset();
-        Z80.reset();
-        
-        try {
-			MMU.load("C:\\roms\\mario.gb");
-		} catch (IOException e) {
-			System.out.println("Rom not found.");
-		}
-        
-        Z80.dispatcher(gpu);
-
-	}
 }
