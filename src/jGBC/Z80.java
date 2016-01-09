@@ -1111,6 +1111,7 @@ public class Z80 {
         cbInstructionMap = new HashMap<>();
 
         // initial values expected by the bios.
+        // from http://gbdev.gg8.se/files/docs/mirrors/pandocs.html#powerupsequence
         Reg.a = 0x01;
         Reg.b = 0x00;
         Reg.c = 0x13;
