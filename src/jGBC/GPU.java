@@ -45,7 +45,7 @@ public class GPU extends JPanel{
 	
 
 	public void step() {
-		modeclock += Z80.Reg.t;
+		//modeclock += Z80.Reg.t;
 		switch(mode) {
 		// object attribute memory mode, scanline active
 		case 2:

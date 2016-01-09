@@ -7,8 +7,6 @@ public class Main {
     public static void main(String[] args) {
         Cartridge cart = new Cartridge("C:\\roms\\mario.gb");
 
-
-
         int width = 300;
         int height = 300;
         JFrame frame = new JFrame("Gameboy");
@@ -25,8 +23,10 @@ public class Main {
 
         gpu.reset();
         MMU.reset(cart);
-        Z80.reset();
 
-        Z80.dispatcher(gpu);
+        InstructionSet z80 = new Z80();
+        CPU cpu = new CPU(z80);
+        cpu.reset();
+        cpu.tick();
     }
 }

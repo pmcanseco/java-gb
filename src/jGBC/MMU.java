@@ -66,10 +66,10 @@ public class MMU {
 		case 0x0000: 
 			if(inBios) {
 				if(addr < 0x0100) return bios[addr];
-				else if(Z80.Reg.pc == 0x0100) {
+				/*else if(Z80.Reg.pc == 0x0100) {
 					inBios = false;
 					System.out.println("We've departed the BIOS!");
-				}
+				}*/
 			}
 			else {
 				return cart.readFromAddress(addr);
