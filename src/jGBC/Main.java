@@ -27,8 +27,6 @@ public class Main {
         MMU.reset(cart);
         Z80.reset();
 
-
-
         Z80.dispatcher(gpu);
     }
 }
