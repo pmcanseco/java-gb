@@ -1109,6 +1109,51 @@ public class Z80 {
 		Clock.m=0; Clock.t=0; // reset clock
         instructionMap = new HashMap<>();
         cbInstructionMap = new HashMap<>();
+
+        // initial values expected by the bios.
+        Reg.a = 0x01;
+        Reg.b = 0x00;
+        Reg.c = 0x13;
+        Reg.d = 0x00;
+        Reg.e = 0xD8;
+        Reg.h = 0x01;
+        Reg.l = 0x4D;
+        Reg.f = 0b11100000;
+        Reg.sp = 0xFFFE;
+        Reg.pc = 0x0100;
+        MMU.wb(0xFF05, 0x00); // TIMA
+        MMU.wb(0xFF06, 0x00); // TMA
+        MMU.wb(0xFF07, 0x00); // TAC
+        MMU.wb(0xFF10, 0x80); // NR10
+        MMU.wb(0xFF11, 0xBF); // NR11
+        MMU.wb(0xFF12, 0xF3); // NR12
+        MMU.wb(0xFF14, 0xBF); // NR14
+        MMU.wb(0xFF16, 0x3F); // NR21
+        MMU.wb(0xFF17, 0x00); // NR22
+        MMU.wb(0xFF19, 0xBF); // NR24
+        MMU.wb(0xFF1A, 0x7F); // NR30
+        MMU.wb(0xFF1B, 0xFF); // NR31
+        MMU.wb(0xFF1C, 0x9F); // NR32
+        MMU.wb(0xFF1E, 0xBF); // NR33
+        MMU.wb(0xFF20, 0xFF); // NR41
+        MMU.wb(0xFF21, 0x00); // NR42
+        MMU.wb(0xFF22, 0x00); // NR43
+        MMU.wb(0xFF23, 0xBF); // NR30
+        MMU.wb(0xFF24, 0x77); // NR50
+        MMU.wb(0xFF25, 0xF3); // NR51
+        MMU.wb(0xFF26, 0xF1); // NR52
+        MMU.wb(0xFF40, 0x91); // LCDC
+        MMU.wb(0xFF42, 0x00); // SCY
+        MMU.wb(0xFF43, 0x00); // SCX
+        MMU.wb(0xFF45, 0x00); // LYC
+        MMU.wb(0xFF47, 0xFC); // BGP
+        MMU.wb(0xFF48, 0xFF); // OBP0
+        MMU.wb(0xFF49, 0xFF); // OBP1
+        MMU.wb(0xFF4A, 0x00); // WY
+        MMU.wb(0xFF4B, 0x00); // WX
+        MMU.wb(0xFFFF, 0x00); // IE
+
+
 	}
 
 	///// DISPATCHER /////
