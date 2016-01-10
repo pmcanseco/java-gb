@@ -2,11 +2,11 @@ package jGBC;
 
 public class CPU
 {
-    InstructionSet currIS;
+    InstructionSet is;
 
     public CPU(InstructionSet is)
     {
-        currIS = is;
+        this.is = is;
     }
 
     public void reset()
