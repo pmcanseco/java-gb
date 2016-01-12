@@ -72,4 +72,6 @@ public class Cartridge {
     public int readFromAddress(int address) {
         return rom[address];
     }
+
+
 }

@@ -148,7 +148,6 @@ public class MMU {
 		System.out.println("Reached end of MMU.rb function. This is a problem.");
 		return 0;
 	}
-	
 	public static int rw(int addr) {
 		/* Read 16-bit word from a given address */
 		// this just reads the requested address and
@@ -161,7 +160,6 @@ public class MMU {
         res += lower;
 		return res;
 	}
-	
 	public static void wb(int addr, int val) {
 		/* Write 8-bit byte to a given address */
 		val &= 0xFF;
@@ -238,7 +236,6 @@ public class MMU {
 			break;
 		}
 	}
-	
 	public static void ww(int addr, int val) {
 		/* Write 16-bit word to a given address */
 		wb(addr,  (val&255)); // mask to 8 bits.

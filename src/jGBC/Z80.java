@@ -1166,7 +1166,7 @@ public class Z80 {
 			int op = MMU.rb(Reg.pc); // fetch instruction
             Reg.pc++;
             //op &= 0xFF;
-			// run corresponding function TODO
+			// run corresponding function
             final ServiceMethod serviceMethod = instructionMap.get(op);
             if(serviceMethod != null) {
                 System.out.println("----Executing OpCode: 0x" + Integer.toHexString(op) + "   Function: " + instructionMap.get(op));
