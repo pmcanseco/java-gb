@@ -1,5 +1,3 @@
-package jGBC;
-
 import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.awt.Graphics;
@@ -8,40 +6,44 @@ import java.util.Random;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
-public class GPU extends JPanel{
+public class GPU extends JPanel {
 
-	public static final int CONST_VRAM_SIZE = 8192;
+    public static final int CONST_VRAM_SIZE = 8192;
 
-	private static final long serialVersionUID = 4550660364461408923L;
-
+    private static final long serialVersionUID = 4550660364461408923L;
 
 
     private BufferedImage canvas;
-	
-	static int[] screen = new int[160*144*4];
-	static int[] vram = new int[CONST_VRAM_SIZE];
 
-	private int[][][] tilemap = new int[512][8][8];
-	private static int[][] palette = new int[4][4];
-	private int mode = 0;
-	private int modeclock = 0;
-	private static int line = 0;
-	private static int bgmap = 0;
-	private static int bgtile = 0;
-	private static int switchbg = 0;
-	private static int switchlcd = 0;
-	static int[][][] tileset = new int[384][8][8];
+    static int[] screen = new int[160 * 144 * 4];
+    static int[] vram = new int[CONST_VRAM_SIZE];
+
+    private int[][][] tilemap = new int[512][8][8];
+    private static int[][] palette = new int[4][4];
+    private int mode = 0;
+    private int modeclock = 0;
+    private static int line = 0;
+    private static int bgmap = 0;
+    private static int bgtile = 0;
+    private static int switchbg = 0;
+    private static int switchlcd = 0;
+    static int[][][] tileset = new int[384][8][8];
 
 
     // new implementation variables
     public enum lcdmode {
         HBlank(0), VBlank(1), SearchingOam(2), TransferringData(3);
         private final int value;
+
         lcdmode(final int newValue) {
             value = newValue;
         }
-        public int getValue() { return value; }
+
+        public int getValue() {
+            return value;
+        }
     }
+
     static int[] oam = new int[256];
     private static boolean lcdcControlOperationEnabled;
     private static boolean lcdcLycLyCoincidenceInterruptEnabled;
@@ -74,8 +76,10 @@ public class GPU extends JPanel{
     static final Color DARK_GRAY = new Color(96, 96, 96);
     static final Color BLACK = new Color(0, 0, 0);
     private static Color[] backgroundPalette = {WHITE, LIGHT_GRAY, DARK_GRAY, BLACK};
-    private static Color[] objectPalette0 = {WHITE, LIGHT_GRAY, DARK_GRAY, BLACK};;
-    private static Color[] objectPalette1 = {WHITE, LIGHT_GRAY, DARK_GRAY, BLACK};;
+    private static Color[] objectPalette0 = {WHITE, LIGHT_GRAY, DARK_GRAY, BLACK};
+    ;
+    private static Color[] objectPalette1 = {WHITE, LIGHT_GRAY, DARK_GRAY, BLACK};
+    ;
     private Color[][][][] spriteTile = new Color[256][8][8][2];
     private boolean[] spriteTileInvalidated = new boolean[256];
     private boolean[][] backgroundTileInvalidated = new boolean[32][32];
@@ -83,154 +87,115 @@ public class GPU extends JPanel{
 
     // end new implementation variables
 
-	public Random rng = new Random();
+    public Random rng = new Random();
 
-	public GPU(int width, int height) {
+    public GPU(int width, int height) {
         canvas = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-		JFrame frame = new JFrame("Gameboy");
-		frame.setSize(width,  height);
-		frame.add(this);
-		frame.setVisible(true);
-		frame.setResizable(false);
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        JFrame frame = new JFrame("Gameboy");
+        frame.setSize(width, height);
+        frame.add(this);
+        frame.setVisible(true);
+        frame.setResizable(false);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         fillCanvas(Color.BLUE);
-        for(int i=0; i<160*144*4; i++){
-        	screen[i] = rng.nextInt(255);
+        for (int i = 0; i < 160 * 144 * 4; i++) {
+            screen[i] = rng.nextInt(255);
         }
-		//drawScreen();
+        //drawScreen();
     }
-	
 
-	public void step() {
-            for (int y = 0, pixelIndex = 0; y < 144; y++) {
-                ly = y;
-                lcdcMode = lcdmode.SearchingOam.getValue();
-                if (lcdcInterruptEnabled
-                        && (lcdcOamInterruptEnabled
-                        || (lcdcLycLyCoincidenceInterruptEnabled && lyCompare == y))) {
-                    lcdcInterruptRequested = true;
+
+    public void step() {
+        for (int y = 0, pixelIndex = 0; y < 144; y++) {
+            ly = y;
+            lcdcMode = lcdmode.SearchingOam.getValue();
+            if (lcdcInterruptEnabled
+                    && (lcdcOamInterruptEnabled
+                    || (lcdcLycLyCoincidenceInterruptEnabled && lyCompare == y))) {
+                lcdcInterruptRequested = true;
+            }
+
+            updateWindow();
+            updateBackground();
+            updateSpriteTiles();
+
+            int currwindowX = windowX - 7;
+            int windowPointY = windowY + y;
+
+            for (int x = 0; x < 160; x++, pixelIndex++) {
+
+                Color intensity = BLACK;
+
+                if (backgroundDisplayed) {
+                    intensity = backgroundBuffer[0xFF & (scrollY + y)][0xFF & (scrollX + x)];
                 }
 
-                updateWindow();
-                updateBackground();
-                updateSpriteTiles();
-
-                int currwindowX = windowX - 7;
-                int windowPointY = windowY + y;
-
-                for (int x = 0; x < 160; x++, pixelIndex++) {
-
-                    Color intensity = BLACK;
-
-                    if (backgroundDisplayed) {
-                        intensity = backgroundBuffer[0xFF & (scrollY + y)][0xFF & (scrollX + x)];
-                    }
-
-                    if (windowDisplayed && y >= windowY && y < windowY + 144 && x >= windowX && x < windowX + 160
-                            && windowX >= -7 && windowX <= 159 && windowY >= 0 && windowY <= 143) {
-                        intensity = windowBuffer[y - windowY][x - windowX];
-                    }
-
-                    pixels[pixelIndex] = intensity;
+                if (windowDisplayed && y >= windowY && y < windowY + 144 && x >= windowX && x < windowX + 160
+                        && windowX >= -7 && windowX <= 159 && windowY >= 0 && windowY <= 143) {
+                    intensity = windowBuffer[y - windowY][x - windowX];
                 }
 
-                if (spritesDisplayed) {
-                    if (largeSprites) {
-                        for (int address = 0; address < 160; address += 4) {
-                            int spriteY = oam[address];
-                            int spriteX = oam[address + 1];
-                            if (spriteY == 0 || spriteX == 0 || spriteY >= 160 || spriteX >= 168) {
-                                continue;
-                            }
-                            spriteY -= 16;
-                            if (spriteY > y || spriteY + 15 < y) {
-                                continue;
-                            }
-                            spriteX -= 8;
+                pixels[pixelIndex] = intensity;
+            }
 
-                            int spriteTileIndex0 = 0xFE & oam[address + 2];
-                            int spriteTileIndex1 = spriteTileIndex0 | 0x01;
-                            int spriteFlags = oam[address + 3];
-                            boolean spritePriority = (0x80 & spriteFlags) == 0x80;
-                            boolean spriteYFlipped = (0x40 & spriteFlags) == 0x40;
-                            boolean spriteXFlipped = (0x20 & spriteFlags) == 0x20;
-                            int spritePalette = (0x10 & spriteFlags) == 0x10 ? 1 : 0;
-
-                            if (spriteYFlipped) {
-                                int temp = spriteTileIndex0;
-                                spriteTileIndex0 = spriteTileIndex1;
-                                spriteTileIndex1 = temp;
-                            }
-
-                            int spriteRow = y - spriteY;
-                            if (spriteRow >= 0 && spriteRow < 8) {
-                                int screenAddress = (y << 7) + (y << 5) + spriteX;
-                                for (int x = 0; x < 8; x++, screenAddress++) {
-                                    int screenX = spriteX + x;
-                                    if (screenX >= 0 && screenX < 160) {
-                                        Color color = spriteTile[spriteTileIndex0][spriteYFlipped ? 7 - spriteRow : spriteRow][spriteXFlipped ? 7 - x : x][spritePalette];
-                                        if (!color.equals(BLACK)){
-                                            if (spritePriority) {
-                                                if (pixels[screenAddress].equals(WHITE)) {
-                                                    pixels[screenAddress] = color;
-                                                }
-                                            } else {
-                                                pixels[screenAddress] = color;
-                                            }
-                                        }
-                                    }
-                                }
-                                continue;
-                            }
-
-                            spriteY += 8;
-
-                            spriteRow = y - spriteY;
-                            if (spriteRow >= 0 && spriteRow < 8) {
-                                int screenAddress = (y << 7) + (y << 5) + spriteX;
-                                for (int x = 0; x < 8; x++, screenAddress++) {
-                                    int screenX = spriteX + x;
-                                    if (screenX >= 0 && screenX < 160) {
-                                        Color color = spriteTile[spriteTileIndex1][spriteYFlipped ? 7 - spriteRow : spriteRow][spriteXFlipped ? 7 - x : x][spritePalette];
-                                        if (!color.equals(BLACK)) {
-                                            if (spritePriority) {
-                                                if (pixels[screenAddress].equals(WHITE)) {
-                                                    pixels[screenAddress] = color;
-                                                }
-                                            } else {
-                                                pixels[screenAddress] = color;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
+            if (spritesDisplayed) {
+                if (largeSprites) {
+                    for (int address = 0; address < 160; address += 4) {
+                        int spriteY = oam[address];
+                        int spriteX = oam[address + 1];
+                        if (spriteY == 0 || spriteX == 0 || spriteY >= 160 || spriteX >= 168) {
+                            continue;
                         }
-                    } else {
-                        for (int address = 0; address < 160; address += 4) {
-                            int spriteY = oam[address];
-                            int spriteX = oam[address + 1];
-                            if (spriteY == 0 || spriteX == 0 || spriteY >= 160 || spriteX >= 168) {
-                                continue;
-                            }
-                            spriteY -= 16;
-                            if (spriteY > y || spriteY + 7 < y) {
-                                continue;
-                            }
-                            spriteX -= 8;
+                        spriteY -= 16;
+                        if (spriteY > y || spriteY + 15 < y) {
+                            continue;
+                        }
+                        spriteX -= 8;
 
-                            int spriteTileIndex = oam[address + 2];
-                            int spriteFlags = oam[address + 3];
-                            boolean spritePriority = (0x80 & spriteFlags) == 0x80;
-                            boolean spriteYFlipped = (0x40 & spriteFlags) == 0x40;
-                            boolean spriteXFlipped = (0x20 & spriteFlags) == 0x20;
-                            int spritePalette = (0x10 & spriteFlags) == 0x10 ? 1 : 0;
+                        int spriteTileIndex0 = 0xFE & oam[address + 2];
+                        int spriteTileIndex1 = spriteTileIndex0 | 0x01;
+                        int spriteFlags = oam[address + 3];
+                        boolean spritePriority = (0x80 & spriteFlags) == 0x80;
+                        boolean spriteYFlipped = (0x40 & spriteFlags) == 0x40;
+                        boolean spriteXFlipped = (0x20 & spriteFlags) == 0x20;
+                        int spritePalette = (0x10 & spriteFlags) == 0x10 ? 1 : 0;
 
-                            int spriteRow = y - spriteY;
+                        if (spriteYFlipped) {
+                            int temp = spriteTileIndex0;
+                            spriteTileIndex0 = spriteTileIndex1;
+                            spriteTileIndex1 = temp;
+                        }
+
+                        int spriteRow = y - spriteY;
+                        if (spriteRow >= 0 && spriteRow < 8) {
                             int screenAddress = (y << 7) + (y << 5) + spriteX;
                             for (int x = 0; x < 8; x++, screenAddress++) {
                                 int screenX = spriteX + x;
                                 if (screenX >= 0 && screenX < 160) {
-                                    Color color = spriteTile[spriteTileIndex][spriteYFlipped ? 7 - spriteRow : spriteRow][spriteXFlipped ? 7 - x : x][spritePalette];
+                                    Color color = spriteTile[spriteTileIndex0][spriteYFlipped ? 7 - spriteRow : spriteRow][spriteXFlipped ? 7 - x : x][spritePalette];
+                                    if (!color.equals(BLACK)) {
+                                        if (spritePriority) {
+                                            if (pixels[screenAddress].equals(WHITE)) {
+                                                pixels[screenAddress] = color;
+                                            }
+                                        } else {
+                                            pixels[screenAddress] = color;
+                                        }
+                                    }
+                                }
+                            }
+                            continue;
+                        }
+
+                        spriteY += 8;
+
+                        spriteRow = y - spriteY;
+                        if (spriteRow >= 0 && spriteRow < 8) {
+                            int screenAddress = (y << 7) + (y << 5) + spriteX;
+                            for (int x = 0; x < 8; x++, screenAddress++) {
+                                int screenX = spriteX + x;
+                                if (screenX >= 0 && screenX < 160) {
+                                    Color color = spriteTile[spriteTileIndex1][spriteYFlipped ? 7 - spriteRow : spriteRow][spriteXFlipped ? 7 - x : x][spritePalette];
                                     if (!color.equals(BLACK)) {
                                         if (spritePriority) {
                                             if (pixels[screenAddress].equals(WHITE)) {
@@ -244,13 +209,52 @@ public class GPU extends JPanel{
                             }
                         }
                     }
-                }
+                } else {
+                    for (int address = 0; address < 160; address += 4) {
+                        int spriteY = oam[address];
+                        int spriteX = oam[address + 1];
+                        if (spriteY == 0 || spriteX == 0 || spriteY >= 160 || spriteX >= 168) {
+                            continue;
+                        }
+                        spriteY -= 16;
+                        if (spriteY > y || spriteY + 7 < y) {
+                            continue;
+                        }
+                        spriteX -= 8;
 
-                lcdcMode = lcdmode.HBlank.getValue();
-                if (lcdcInterruptEnabled && lcdcHblankInterruptEnabled) {
-                    lcdcInterruptRequested = true;
+                        int spriteTileIndex = oam[address + 2];
+                        int spriteFlags = oam[address + 3];
+                        boolean spritePriority = (0x80 & spriteFlags) == 0x80;
+                        boolean spriteYFlipped = (0x40 & spriteFlags) == 0x40;
+                        boolean spriteXFlipped = (0x20 & spriteFlags) == 0x20;
+                        int spritePalette = (0x10 & spriteFlags) == 0x10 ? 1 : 0;
+
+                        int spriteRow = y - spriteY;
+                        int screenAddress = (y << 7) + (y << 5) + spriteX;
+                        for (int x = 0; x < 8; x++, screenAddress++) {
+                            int screenX = spriteX + x;
+                            if (screenX >= 0 && screenX < 160) {
+                                Color color = spriteTile[spriteTileIndex][spriteYFlipped ? 7 - spriteRow : spriteRow][spriteXFlipped ? 7 - x : x][spritePalette];
+                                if (!color.equals(BLACK)) {
+                                    if (spritePriority) {
+                                        if (pixels[screenAddress].equals(WHITE)) {
+                                            pixels[screenAddress] = color;
+                                        }
+                                    } else {
+                                        pixels[screenAddress] = color;
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
+
+            lcdcMode = lcdmode.HBlank.getValue();
+            if (lcdcInterruptEnabled && lcdcHblankInterruptEnabled) {
+                lcdcInterruptRequested = true;
+            }
+        }
 
 
         lcdcMode = lcdmode.VBlank.getValue();
@@ -269,92 +273,95 @@ public class GPU extends JPanel{
         }
         drawScreen();
     }
-	public void reset() {
-		for(int i=0; i<8192; i++) {
-			vram[i] = 0;
-		}
-		for(int i=0; i<160; i++) {
-			oam[i] = 0;
-		}
-		for(int i=0;i<512;i++) {
-			for(int j=0;j<8;j++){
-				for(int k=0;k<8;k++) {
-					tilemap[i][j][k] = 0;
-				}
-			}
-		}
 
-		mode = 2;
-		modeclock = 0;
+    public void reset() {
+        for (int i = 0; i < 8192; i++) {
+            vram[i] = 0;
+        }
+        for (int i = 0; i < 160; i++) {
+            oam[i] = 0;
+        }
+        for (int i = 0; i < 512; i++) {
+            for (int j = 0; j < 8; j++) {
+                for (int k = 0; k < 8; k++) {
+                    tilemap[i][j][k] = 0;
+                }
+            }
+        }
 
-		System.out.println("GPU Reset");
-	}
-	public static void updatetile(int addr, int val) {
-		// get the base address for thie tile row
-		addr &= 0xFF;
-		addr &= 0x1FFE;
-		
-		//evaluate which tile and row was updated
-		int tile = (addr >> 4) & 511;
-		int y = (addr >> 1) & 7;
-		
-		int sx;
-		for(int x=0; x<8; x++) {
-			sx = 1 << (7-x); // find bit index for this pixel
-			tileset[tile][y][x] =  ((((vram[addr] & sx)!=0) ? 1 : 0) + (((vram[addr+1] & sx)!=0) ? 2 : 0));
-		}
-	}
-	public static void renderscan() {
-		// VRAM offset for the tile map
-		int mapOffsets =  (bgmap!=0 ? 0x1C00 : 0x1800);
-		
-		// which line of tiles to use in the map
-		mapOffsets += ((line + scrollX) & 255) >> 3;
-			
-		// which tile to start with in the map line
-		int lineOffsets = (scrollX >> 3);
-		
-		// which line of pixels to use inthe tiles
-		int y = ((line + scrollY) & 7);
-		
-		// where in the tile line to start
-		int x =  (scrollX & 7);
-		
-		// where to render on the canvas
-		int canvasOffsets =  (line * 160 * 4);
-		
-		// read tile index from the background map
-		int[] color;
-		int tile = vram[mapOffsets + lineOffsets];
-		
-		// if tile data set is #1, use signed indices, calc real tile offset
-		if(bgtile == 1 && tile < 128) tile += 256;
-		
-		for(int i=0; i<160; i++) {
-			//re-map the tile pixel through the palette
-			color = palette[tileset[tile][y][x]];
-			
-			//plot pixel to canvas
-			screen[canvasOffsets] = color[0];
-			screen[canvasOffsets+1] = color[1];
-			screen[canvasOffsets+2] = color[2];
-			screen[canvasOffsets+3] = color[3];
-			canvasOffsets += 4;
-			
-			//when this tile ends, read another
-			x++;
-			if(x==8) {
-				x=0;
-				lineOffsets =  ((lineOffsets + 1) & 31);
-				tile = vram[mapOffsets + lineOffsets];
-				if(bgtile == 1 && tile < 128) tile += 256;
-			}
-		}
-		System.out.println("renderscan()");
-	}
+        mode = 2;
+        modeclock = 0;
 
-	public static int rb(int addr) {
-		switch(addr) {
+        System.out.println("GPU Reset");
+    }
+
+    public static void updatetile(int addr, int val) {
+        // get the base address for thie tile row
+        addr &= 0xFF;
+        addr &= 0x1FFE;
+
+        //evaluate which tile and row was updated
+        int tile = (addr >> 4) & 511;
+        int y = (addr >> 1) & 7;
+
+        int sx;
+        for (int x = 0; x < 8; x++) {
+            sx = 1 << (7 - x); // find bit index for this pixel
+            tileset[tile][y][x] = ((((vram[addr] & sx) != 0) ? 1 : 0) + (((vram[addr + 1] & sx) != 0) ? 2 : 0));
+        }
+    }
+
+    public static void renderscan() {
+        // VRAM offset for the tile map
+        int mapOffsets = (bgmap != 0 ? 0x1C00 : 0x1800);
+
+        // which line of tiles to use in the map
+        mapOffsets += ((line + scrollX) & 255) >> 3;
+
+        // which tile to start with in the map line
+        int lineOffsets = (scrollX >> 3);
+
+        // which line of pixels to use inthe tiles
+        int y = ((line + scrollY) & 7);
+
+        // where in the tile line to start
+        int x = (scrollX & 7);
+
+        // where to render on the canvas
+        int canvasOffsets = (line * 160 * 4);
+
+        // read tile index from the background map
+        int[] color;
+        int tile = vram[mapOffsets + lineOffsets];
+
+        // if tile data set is #1, use signed indices, calc real tile offset
+        if (bgtile == 1 && tile < 128) tile += 256;
+
+        for (int i = 0; i < 160; i++) {
+            //re-map the tile pixel through the palette
+            color = palette[tileset[tile][y][x]];
+
+            //plot pixel to canvas
+            screen[canvasOffsets] = color[0];
+            screen[canvasOffsets + 1] = color[1];
+            screen[canvasOffsets + 2] = color[2];
+            screen[canvasOffsets + 3] = color[3];
+            canvasOffsets += 4;
+
+            //when this tile ends, read another
+            x++;
+            if (x == 8) {
+                x = 0;
+                lineOffsets = ((lineOffsets + 1) & 31);
+                tile = vram[mapOffsets + lineOffsets];
+                if (bgtile == 1 && tile < 128) tile += 256;
+            }
+        }
+        System.out.println("renderscan()");
+    }
+
+    public static int rb(int addr) {
+        switch (addr) {
             case 0xFF40: { // LCD Control
                 int value = 0;
                 if (lcdcControlOperationEnabled) value |= 0x80;
@@ -391,10 +398,17 @@ public class GPU extends JPanel{
                 for (int i = 3; i >= 0; i--) {
                     value <<= 2;
                     switch (backgroundPalette[i].getRGB()) {
-                        case -16777216: value |= 3; break;
-                        case -10461088: value |= 2; break;
-                        case -4934476: value |= 1; break;
-                        case -1: break;
+                        case -16777216:
+                            value |= 3;
+                            break;
+                        case -10461088:
+                            value |= 2;
+                            break;
+                        case -4934476:
+                            value |= 1;
+                            break;
+                        case -1:
+                            break;
                     }
                 }
                 return value;
@@ -405,10 +419,17 @@ public class GPU extends JPanel{
                 for (int i = 3; i >= 0; i--) {
                     value <<= 2;
                     switch (objectPalette0[i].getRGB()) {
-                        case -16777216: value |= 3; break;
-                        case -10461088: value |= 2; break;
-                        case -4934476: value |= 1; break;
-                        case -1: break;
+                        case -16777216:
+                            value |= 3;
+                            break;
+                        case -10461088:
+                            value |= 2;
+                            break;
+                        case -4934476:
+                            value |= 1;
+                            break;
+                        case -1:
+                            break;
                     }
                 }
                 return value;
@@ -416,26 +437,36 @@ public class GPU extends JPanel{
             case 0xFF49: { // Object palette 1
                 invalidateAllSpriteTilesRequests = true;
                 int value = 0;
-                for( int i=3; i>=0; i--) {
+                for (int i = 3; i >= 0; i--) {
                     value <<= 2;
                     switch (objectPalette1[i].getRGB()) {
-                        case -16777216: value |= 3; break;
-                        case -10461088: value |= 2; break;
-                        case -4934476: value |= 1; break;
-                        case -1: break;
+                        case -16777216:
+                            value |= 3;
+                            break;
+                        case -10461088:
+                            value |= 2;
+                            break;
+                        case -4934476:
+                            value |= 1;
+                            break;
+                        case -1:
+                            break;
                     }
                 }
                 return value;
             }
-            case 0xFF4A: return windowY; // Window Y
-            case 0xFF4B: return windowX; // Window X
+            case 0xFF4A:
+                return windowY; // Window Y
+            case 0xFF4B:
+                return windowX; // Window X
             case 0xFFFF: // TODO : Interrupts
                 return 0;
         }
         return 0;
-	}
-	public static void wb(int addr, int value) {
-		switch(addr) {
+    }
+
+    public static void wb(int addr, int value) {
+        switch (addr) {
             // LCD Control
             case 0xFF40:
                 boolean bAWTDS = backgroundAndWindowTileDataSelect;
@@ -464,48 +495,84 @@ public class GPU extends JPanel{
                 lcdcHblankInterruptEnabled = (value & 0x08) == 0x08;
                 lcdcMode = (value & 0x03);
                 break;
-            case 0xFF42: scrollY = value; break; // Scroll Y
-            case 0xFF43: scrollX = value; break; // Scroll X
-            case 0xFF44: ly = value; break; // LY
-            case 0xFF45:  lyCompare = value; break; // LY Compare
+            case 0xFF42:
+                scrollY = value;
+                break; // Scroll Y
+            case 0xFF43:
+                scrollX = value;
+                break; // Scroll X
+            case 0xFF44:
+                ly = value;
+                break; // LY
+            case 0xFF45:
+                lyCompare = value;
+                break; // LY Compare
             case 0xFF47: // Background palette
-                for(int i = 0; i < 4; i++) {
-                    switch(value & 0x03) {
-                        case 0: backgroundPalette[i] = WHITE; break;
-                        case 1: backgroundPalette[i] = LIGHT_GRAY; break;
-                        case 2: backgroundPalette[i] = DARK_GRAY; break;
-                        case 3: backgroundPalette[i] = BLACK; break;
+                for (int i = 0; i < 4; i++) {
+                    switch (value & 0x03) {
+                        case 0:
+                            backgroundPalette[i] = WHITE;
+                            break;
+                        case 1:
+                            backgroundPalette[i] = LIGHT_GRAY;
+                            break;
+                        case 2:
+                            backgroundPalette[i] = DARK_GRAY;
+                            break;
+                        case 3:
+                            backgroundPalette[i] = BLACK;
+                            break;
                     }
                     value >>= 2;
                 }
                 invalidateAllBackgroundTilesRequests = true;
                 break;
             case 0xFF48: // Object palette 0
-                for(int i = 0; i < 4; i++) {
-                    switch(value & 0x03) {
-                        case 0: objectPalette0[i] = WHITE; break;
-                        case 1: objectPalette0[i] = LIGHT_GRAY; break;
-                        case 2: objectPalette0[i] = DARK_GRAY; break;
-                        case 3: objectPalette0[i] = BLACK; break;
+                for (int i = 0; i < 4; i++) {
+                    switch (value & 0x03) {
+                        case 0:
+                            objectPalette0[i] = WHITE;
+                            break;
+                        case 1:
+                            objectPalette0[i] = LIGHT_GRAY;
+                            break;
+                        case 2:
+                            objectPalette0[i] = DARK_GRAY;
+                            break;
+                        case 3:
+                            objectPalette0[i] = BLACK;
+                            break;
                     }
                     value >>= 2;
                 }
                 invalidateAllBackgroundTilesRequests = true;
                 break;
             case 0xFF49: // Object palette 1
-                for(int i = 0; i < 4; i++) {
-                    switch(value & 0x03) {
-                        case 0: objectPalette1[i] = WHITE; break;
-                        case 1: objectPalette1[i] = LIGHT_GRAY; break;
-                        case 2: objectPalette1[i] = DARK_GRAY; break;
-                        case 3: objectPalette1[i] = BLACK; break;
+                for (int i = 0; i < 4; i++) {
+                    switch (value & 0x03) {
+                        case 0:
+                            objectPalette1[i] = WHITE;
+                            break;
+                        case 1:
+                            objectPalette1[i] = LIGHT_GRAY;
+                            break;
+                        case 2:
+                            objectPalette1[i] = DARK_GRAY;
+                            break;
+                        case 3:
+                            objectPalette1[i] = BLACK;
+                            break;
                     }
                     value >>= 2;
                 }
                 invalidateAllBackgroundTilesRequests = true;
                 break;
-            case 0xFF4A: windowY = value; break; // Window Y
-            case 0xFF4B: windowX = value; break; // Window X
+            case 0xFF4A:
+                windowY = value;
+                break; // Window Y
+            case 0xFF4B:
+                windowX = value;
+                break; // Window X
             case 0xFFFF: // TODO Interrupts
                 break;
         }
@@ -537,6 +604,7 @@ public class GPU extends JPanel{
         }
         invalidateAllSpriteTilesRequests = false;
     }
+
     public void updateWindow() {
         int tileMapAddress = windowTileMapDisplaySelect ? 0x1C00 : 0x1800;
         if (backgroundAndWindowTileDataSelect) {
@@ -583,6 +651,7 @@ public class GPU extends JPanel{
             }
         }
     }
+
     public void updateBackground() {
         int tileMapAddress = backgroundTileMapDisplaySelect ? 0x1C00 : 0x1800;
         if (backgroundAndWindowTileDataSelect) {
@@ -633,9 +702,9 @@ public class GPU extends JPanel{
         invalidateAllBackgroundTilesRequests = false;
     }
 
-	
-	///// canvas helper functions /////
-	public void fillCanvas(Color c) {
+
+    ///// canvas helper functions /////
+    public void fillCanvas(Color c) {
         int color = c.getRGB();
         for (int x = 0; x < canvas.getWidth(); x++) {
             for (int y = 0; y < canvas.getHeight(); y++) {
@@ -644,26 +713,28 @@ public class GPU extends JPanel{
         }
         repaint();
     }
-	public void drawScreen() {
-		for(int i=0; i<160; i++) {
-			for(int j=0; j<144; j++) {
-				/*int r = screen[i*j];
+
+    public void drawScreen() {
+        for (int i = 0; i < 160; i++) {
+            for (int j = 0; j < 144; j++) {
+                /*int r = screen[i*j];
 				int g = screen[i*j+1];
 				int b = screen[i*j+2];
 				if(r>255) r = 255;
 				if(g>255) g = 255;
 				if(b>255) b = 255;*/
-                Color c = pixels[i*j];
-                System.out.println(c);
+                Color c = pixels[i * j];
+                //System.out.println(c);
                 canvas.setRGB(i, j, c.getRGB());
-				if(!c.equals(Color.WHITE)) System.out.print("Color wasn't white!");
-                if(100 < i && i < 120) canvas.setRGB(i, j, Color.CYAN.getRGB());
-			}
-		}
-		repaint();
-		System.out.println("drawScreen()");
-	}
-	public void paintComponent(Graphics g) {
+                if (!c.equals(Color.WHITE)) System.out.print("Color wasn't white!");
+                if (100 < i && i < 120) canvas.setRGB(i, j, Color.CYAN.getRGB());
+            }
+        }
+        repaint();
+        //System.out.println("drawScreen()");
+    }
+
+    public void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
         g2.drawImage(canvas, null, null);

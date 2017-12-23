@@ -1,5 +1,3 @@
-package jGBC;
-
 public class Graphics {
     private int[] vram = new int[8192];
 

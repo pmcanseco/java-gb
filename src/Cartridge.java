@@ -1,13 +1,18 @@
-package jGBC;
-
 import java.io.*;
 import java.nio.file.Files;
 import java.util.Scanner;
 
 public class Cartridge {
+
+    private enum Locale {
+        Japanese,
+        NonJapanese,
+        Unknown
+    }
+
     private int[] rom; // the entire contents
     private String title; // the game title
-    private String locale; // japanese or non-japanese?
+    private Locale locale; // japanese or non-japanese?
     private int checksum; // see verifyRom()
     private int expectedChecksum; // see verifyRom()
     private int logoChecksum; // see verifyRom()
@@ -16,7 +21,7 @@ public class Cartridge {
     Cartridge(String path) {
         loadRomFile(path);
         System.out.println("Title:\t\t"+title);
-        System.out.println("Locale:\t\t"+locale);
+        System.out.println("Locale:\t\t" + locale.name());
         System.out.println("Checksum:\t( "+checksum+" == "+expectedChecksum+" ) is "+(checksum==expectedChecksum));
         System.out.println("Logo Check:\t( "+logoChecksum+" == "+expectedLogoChecksum+" ) is "+(logoChecksum==expectedLogoChecksum));
     }
@@ -44,9 +49,9 @@ public class Cartridge {
         title = sb.toString();
 
         // 0x014A contains the destination code. 0 = Japan, 1 = not Japan
-        if(rom[0x14A] == 0x00)  locale = "Japanese";
-        else if(rom[0x14A] == 0x01) locale = "Non-Japanese";
-        else locale = "Unknown";
+        if(rom[0x14A] == 0x00)  locale = Locale.Japanese;
+        else if(rom[0x14A] == 0x01) locale = Locale.NonJapanese;
+        else locale = Locale.Unknown;
 
         // 0x014D is the header checksum.
         // Contains an 8 bit checksum across the cartridge header bytes 0134-014C.
@@ -72,6 +77,4 @@ public class Cartridge {
     public int readFromAddress(int address) {
         return rom[address];
     }
-
-
 }
