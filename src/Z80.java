@@ -1,4 +1,6 @@
+import java.util.HashMap;
 import java.util.InvalidPropertiesFormatException;
+import java.util.Map;
 
 /**
  * Created by Pablo Canseco on 12/22/2017.
@@ -22,7 +24,14 @@ public class Z80 {
 
         // methods
         public void write(int value) {
-            this.value = value;
+            if( value >= 0 && (
+                ( this.size == 16 && value <= 65535 ) ||
+                ( this.size == 8  && value <= 255) )
+              )
+                this.value = value;
+            else {
+                System.out.println("Value " + value + " is out of range for " + this.size + "-bit register " + this.name);
+            }
         }
         public void and(int value) {
             this.value &= value;
@@ -34,6 +43,10 @@ public class Z80 {
             return this.value;
         }
         public boolean readBit(int index) {
+            if (index > this.size - 1) {
+                System.out.println("Bit index " + index + " is out of bounds for " + this.size + "-bit register " + this.name);
+                return false;
+            }
             int tmp = this.value;
             tmp >>= index;
             tmp &= 1;
@@ -79,6 +92,9 @@ public class Z80 {
     private Register registerT;  // t-time for last instruction
     private Register registerIME;
 
+    private Map<String, Register> eightBitRegisters = new HashMap<>();
+    private Map<String, Register> sixteenBitRegisters = new HashMap<>();
+
     public Z80() {
         // initialize 8-bit registers
         registerA = new Register("A", 8, 0);
@@ -89,6 +105,14 @@ public class Z80 {
         registerH = new Register("H", 8, 0);
         registerL = new Register("L", 8, 0);
         registerFlags = new Register("Flags", 8, 0);
+        eightBitRegisters.put("A", registerA);
+        eightBitRegisters.put("B", registerB);
+        eightBitRegisters.put("C", registerC);
+        eightBitRegisters.put("D", registerD);
+        eightBitRegisters.put("E", registerE);
+        eightBitRegisters.put("H", registerH);
+        eightBitRegisters.put("L", registerL);
+        eightBitRegisters.put("Flags", registerFlags);
 
         // initialize 16-bit registers
         registerPC  = new Register("PC",  16, 0);
@@ -98,6 +122,78 @@ public class Z80 {
         registerM   = new Register("M",   16, 0);
         registerT   = new Register("T",   16, 0);
         registerIME = new Register("IME", 16, 0);
+        sixteenBitRegisters.put("PC", registerPC);
+        sixteenBitRegisters.put("SP", registerSP);
+        sixteenBitRegisters.put("I",  registerI);
+        sixteenBitRegisters.put("R",  registerR);
+        sixteenBitRegisters.put("M",  registerM);
+        sixteenBitRegisters.put("T",  registerT);
+        sixteenBitRegisters.put("IME", registerIME);
+    }
+
+    // utility functions
+    private Register search(String name) {
+        if (eightBitRegisters.get(name) != null) {
+            return eightBitRegisters.get(name);
+        }
+        else if (sixteenBitRegisters.get(name) != null) {
+            return sixteenBitRegisters.get(name);
+        }
+        else {
+            // unknown register?
+            System.out.println("Unknown register");
+            return null;
+        }
+    }
+    public int getRegisterValue(String name) {
+        if (eightBitRegisters.get(name) != null) {
+            return eightBitRegisters.get(name).read();
+        }
+        else if (sixteenBitRegisters.get(name) != null) {
+            return sixteenBitRegisters.get(name).read();
+        }
+        else {
+            // unknown register?
+            System.out.println("Unknown register");
+            return -1;
+        }
+    }
+    public void setRegisterValue(String name, int value) {
+        if (eightBitRegisters.get(name) != null) {
+            eightBitRegisters.get(name).write(value);
+        }
+        else if (sixteenBitRegisters.get(name) != null) {
+            sixteenBitRegisters.get(name).write(value);
+        }
+        else {
+            // unknown register?
+            System.out.println("Unknown register");
+        }
+    }
+    public boolean getRegisterBit(String name, int index) {
+        Register r = search(name);
+        return r != null && r.readBit(index);
+    }
+    public int readCombined8bitRegisters(String upper, String lower) throws InvalidPropertiesFormatException {
+        Register u = search(upper);
+        Register l = search(lower);
+        if(u != null && l != null) {
+            return readCombined8bitRegisters(u, l);
+        }
+        else {
+            System.out.println("Did not find one of registers " + upper + ", " + lower);
+            return -1;
+        }
+    }
+    public void writeCombined8bitRegisters(String upper, String lower, int value) throws InvalidPropertiesFormatException {
+        Register u = search(upper);
+        Register l = search(lower);
+        if(u != null && l != null) {
+            writeCombined8bitRegisters(u, l, value);
+        }
+        else {
+            System.out.println("Did not find one of registers " + upper + ", " + lower);
+        }
     }
 
     private int readCombined8bitRegisters(Register upper, Register lower) throws InvalidPropertiesFormatException {
@@ -109,17 +205,18 @@ public class Z80 {
         result |= lower.read();
         return result;
     }
-
-    private void writeCombined8bitRegisters(Register upper, Register lower, int value) throws InvalidPropertiesFormatException {
+    private void writeCombined8bitRegisters(Register upper, Register lower, final int value) throws InvalidPropertiesFormatException {
         if (upper.getSize() != 8 || lower.getSize() != 8) {
             throw new InvalidPropertiesFormatException("one of the registers to combine wasn't an 8-bit register");
         }
-        int upper8bits = value >>= 8; // shift right  by 8 bits;
+        int upper8bits = value / 256; // shift right  by 8 bits;
         int lower8bits = value & 0b0000000011111111; // mask out the upper 8 bits.
         upper.write(upper8bits);
         lower.write(lower8bits);
     }
-
+    private int readRegister(Register r) {
+        return r.read();
+    }
     private void load(Register sourceRegister, Register destinationRegister) {
         destinationRegister.write(sourceRegister.read());
     }
