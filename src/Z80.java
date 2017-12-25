@@ -40,7 +40,9 @@ public class Z80 {
     private Map<String, Register> eightBitRegisters = new HashMap<>();
     private Map<String, Register> sixteenBitRegisters = new HashMap<>();
 
-    Z80() {
+    private MemoryManager mmu;
+
+    Z80(MemoryManager memMgr) {
         // initialize 8-bit registers
         registerA = new Register("A", 8, 0);
         registerB = new Register("B", 8, 0);
@@ -74,6 +76,8 @@ public class Z80 {
         sixteenBitRegisters.put("M",  registerM);
         sixteenBitRegisters.put("T",  registerT);
         sixteenBitRegisters.put("IME", registerIME);
+
+        this.mmu = memMgr;
     }
 
     // utility functions
@@ -165,10 +169,11 @@ public class Z80 {
     private void load(Register destinationRegister, Register sourceRegister) {
         destinationRegister.write(sourceRegister.read());
     }
-    private void load(int number, Register destinationRegister) {
+    private void load(Register destinationRegister, int number) {
         destinationRegister.write(number);
     }
-    private void load(int opcode, int number) {
+    private void load(int opcode, int number) throws InvalidPropertiesFormatException {
+        int address = 0;
         switch(opcode) {
             //<editor-fold desc="3.3.1.1 8-Bit Loads - LD nn, n" defaultstate="collapsed">
             /*
@@ -188,12 +193,12 @@ public class Z80 {
              *      LD             H,n     26      8
              *      LD             L,n     2E      8
              */
-            case 0x06: load(number, registerB); break;
-            case 0x0E: load(number, registerC); break;
-            case 0x16: load(number, registerD); break;
-            case 0x1E: load(number, registerE); break;
-            case 0x26: load(number, registerH); break;
-            case 0x2E: load(number, registerL); break;
+            case 0x06: load(registerB, number); break;
+            case 0x0E: load(registerC, number); break;
+            case 0x16: load(registerD, number); break;
+            case 0x1E: load(registerE, number); break;
+            case 0x26: load(registerH, number); break;
+            case 0x2E: load(registerL, number); break;
             //</editor-fold>
             //<editor-fold desc="3.3.1.2 8-Bit Loads - LD r1,r2" defaultstate="collapsed">
             /*
@@ -210,56 +215,92 @@ public class Z80 {
             case 0x7B: load(registerA, registerE); break;
             case 0x7C: load(registerA, registerH); break;
             case 0x7D: load(registerA, registerL); break;
-            // TODO resolve first parameter as address from LegacyMMU case 0x7E: load(readCombined8bitRegisters(registerH, registerL), registerA); break;
+            case 0x7E:
+                address = readCombined8bitRegisters(registerH, registerL);
+                load(registerA, mmu.rawRead(address));
+                break;
             case 0x40: load(registerB, registerB); break;
             case 0x41: load(registerB, registerC); break;
             case 0x42: load(registerB, registerD); break;
             case 0x43: load(registerB, registerE); break;
             case 0x44: load(registerB, registerH); break;
             case 0x45: load(registerB, registerL); break;
-            // TODO resolve first parameter as address from LegacyMMU case 0x46: load(readCombined8bitRegisters(registerH, registerL), registerB); break;
+            case 0x46:
+                address = readCombined8bitRegisters(registerH, registerL);
+                load(registerB, mmu.rawRead(address));
+                break;
             case 0x48: load(registerC, registerB); break;
             case 0x49: load(registerC, registerC); break;
             case 0x4A: load(registerC, registerD); break;
             case 0x4B: load(registerC, registerE); break;
             case 0x4C: load(registerC, registerH); break;
             case 0x4D: load(registerC, registerL); break;
-            // TODO resolve first parameter as address from LegacyMMU case 0x4E: load(readCombined8bitRegisters(registerH, registerL), registerC); break;
+            case 0x4E:
+                address = readCombined8bitRegisters(registerH, registerL);
+                load(registerC, mmu.rawRead(address));
+                break;
             case 0x50: load(registerD, registerB); break;
             case 0x51: load(registerD, registerC); break;
             case 0x52: load(registerD, registerD); break;
             case 0x53: load(registerD, registerE); break;
             case 0x54: load(registerD, registerH); break;
             case 0x55: load(registerD, registerL); break;
-            // TODO resolve first parameter as address from LegacyMMU case 0x56: load(readCombined8bitRegisters(registerH, registerL), registerD); break;
+            case 0x56:
+                address = readCombined8bitRegisters(registerH, registerL);
+                load(registerD, mmu.rawRead(address));
+                break;
             case 0x58: load(registerE, registerB); break;
             case 0x59: load(registerE, registerC); break;
             case 0x5A: load(registerE, registerD); break;
             case 0x5B: load(registerE, registerE); break;
             case 0x5C: load(registerE, registerH); break;
             case 0x5D: load(registerE, registerL); break;
-            // TODO resolve first parameter as address from LegacyMMU case 0x5E: load(readCombined8bitRegisters(registerH, registerL), registerE); break;
+            case 0x5E:
+                address = readCombined8bitRegisters(registerH, registerL);
+                load(registerE, mmu.rawRead(address));
+                break;
             case 0x60: load(registerH, registerB); break;
             case 0x61: load(registerH, registerC); break;
             case 0x62: load(registerH, registerD); break;
             case 0x63: load(registerH, registerE); break;
             case 0x64: load(registerH, registerH); break;
             case 0x65: load(registerH, registerL); break;
-            // TODO resolve first parameter as address from LegacyMMU case 0x66: load(readCombined8bitRegisters(registerH, registerL), registerH); break;
+            case 0x66:
+                address = readCombined8bitRegisters(registerH, registerL);
+                load(registerH, mmu.rawRead(address));
+                break;
             case 0x68: load(registerL, registerB); break;
             case 0x69: load(registerL, registerC); break;
             case 0x6A: load(registerL, registerD); break;
             case 0x6B: load(registerL, registerE); break;
             case 0x6C: load(registerL, registerH); break;
             case 0x6D: load(registerL, registerL); break;
-            // TODO resolve first parameter as address from LegacyMMU case 0x6E: load(readCombined8bitRegisters(registerH, registerL), registerL); break;
-            // TODO resolve first parameter as address from LegacyMMU case 0x70: (HL),B  8
-            // TODO resolve first parameter as address from LegacyMMU case 0x71: (HL),C  8
-            // TODO resolve first parameter as address from LegacyMMU case 0x72: (HL),D  8
-            // TODO resolve first parameter as address from LegacyMMU case 0x73: (HL),E  8
-            // TODO resolve first parameter as address from LegacyMMU case 0x74: (HL),H  8
-            // TODO resolve first parameter as address from LegacyMMU case 0x75: (HL),L  8
-            // TODO resolve first parameter as address from LegacyMMU case 0x36: (HL),n  12
+            case 0x6E:
+                address = readCombined8bitRegisters(registerH, registerL);
+                load(registerL, mmu.rawRead(address));
+                break;
+            case 0x70:
+                address = readCombined8bitRegisters(registerH, registerL); //(HL),B  8
+                mmu.rawWrite(address, registerB.read());
+            case 0x71:
+                address = readCombined8bitRegisters(registerH, registerL); //(HL),C  8
+                mmu.rawWrite(address, registerC.read());
+            case 0x72:
+                address = readCombined8bitRegisters(registerH, registerL); //(HL),D  8
+                mmu.rawWrite(address, registerD.read());
+            case 0x73:
+                address = readCombined8bitRegisters(registerH, registerL); //(HL),E  8
+                mmu.rawWrite(address, registerE.read());
+            case 0x74:
+                address = readCombined8bitRegisters(registerH, registerL); //(HL),H  8
+                mmu.rawWrite(address, registerH.read());
+            case 0x75:
+                address = readCombined8bitRegisters(registerH, registerL); //(HL),L  8
+                mmu.rawWrite(address, registerL.read());
+            case 0x36:
+                address = readCombined8bitRegisters(registerH, registerL); //(HL),n  12
+                // mmu.rawWrite(address, registerPC.read()); // TODO: 16-bit write
+                registerPC.write(registerPC.read() + 1);
             //</editor-fold>
         }
     }

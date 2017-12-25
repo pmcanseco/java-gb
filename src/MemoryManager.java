@@ -35,7 +35,7 @@ public class MemoryManager {
 
     private Cartridge cartridge;
 
-    public MemoryManager(Cartridge cart) {
+    MemoryManager(Cartridge cart) {
         this.cartridge = cart;
     }
 
