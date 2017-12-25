@@ -29,4 +29,14 @@ class MemoryManagerTest {
         assertArrayEquals(new int[mmu.memorySize], mmu.getRawRam());
     }
 
+    @Test
+    void testGetBiosLogo() {
+        int[] expected = MemoryManager.hexStringToByteArray(
+                "CEED6666CC0D000B03730083000C000D" +
+                "0008111F8889000EDCCC6EE6DDDDD999" +
+                "BBBB67636E0EECCCDDDC999FBBB9333E");
+        int[] actual = MemoryManager.getBiosLogo();
+
+        assertArrayEquals(expected,actual);
+    }
 }
