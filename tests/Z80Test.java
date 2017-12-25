@@ -1,5 +1,7 @@
 import org.junit.jupiter.api.*;
 
+import java.util.Random;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -40,16 +42,23 @@ class Z80Test {
 
     @Test
     void test8bitReadBitFunction() {
-        z80uut.setRegisterValue("A", 0b00010101);
+        Random rng = new Random();
+        String[] registers = {"A", "B", "C", "D", "E", "H", "L"};
 
-        assertEquals(true, z80uut.getRegisterBit("A", 0));
-        assertEquals(false, z80uut.getRegisterBit("A", 1));
-        assertEquals(true, z80uut.getRegisterBit("A", 2));
-        assertEquals(false, z80uut.getRegisterBit("A", 3));
-        assertEquals(true, z80uut.getRegisterBit("A", 4));
-        assertEquals(false, z80uut.getRegisterBit("A", 5));
-        assertEquals(false, z80uut.getRegisterBit("A", 6));
-        assertEquals(false, z80uut.getRegisterBit("A", 7));
+        for (String register : registers) {
+            // generate random number between 0 and 255.
+            int randomEightBitUnsignedInt = rng.nextInt(256);
+
+            // put it in register
+            z80uut.setRegisterValue(register, randomEightBitUnsignedInt);
+
+            // ensure each bit is expected value
+            for (int j = 0; j < 8; j++) {
+                assertEquals(((randomEightBitUnsignedInt >> j) & 1) == 1, z80uut.getRegisterBit(register, j));
+            }
+        }
+
+
     }
 
     @Test
