@@ -70,7 +70,7 @@ public class Cartridge {
         //and comparing them to the ones in the rom.
         expectedLogoChecksum = 0;
         logoChecksum = 0;
-        for (int i : MMU.logo) expectedLogoChecksum += i;
+        //for (int i : MMU.logo) expectedLogoChecksum += i;
         for(int i=0x104; i <= 0x0133; i++) logoChecksum += rom[i];
     }
 

@@ -8,61 +8,6 @@ import java.util.Map;
  */
 public class Z80 {
 
-    private class Register {
-
-        // members
-        private final String name;
-        private final int size;
-        private int value;
-
-        // constructors
-        private Register(String regName, int regSize, int regVal) {
-            this.name = regName;
-            this.value = regVal;
-            this.size = regSize;
-        }
-
-        // methods
-        public void write(int value) {
-            if( value >= 0 && (
-                ( this.size == 16 && value <= 65535 ) ||
-                ( this.size == 8  && value <= 255) )
-              )
-                this.value = value;
-            else {
-                System.out.println("Value " + value + " is out of range for " + this.size + "-bit register " + this.name);
-            }
-        }
-        public void and(int value) {
-            this.value &= value;
-        }
-        public void or(int value) {
-            this.value |= value;
-        }
-        public int read() {
-            return this.value;
-        }
-        public boolean readBit(int index) {
-            if (index > this.size - 1) {
-                System.out.println("Bit index " + index + " is out of bounds for " + this.size + "-bit register " + this.name);
-                return false;
-            }
-            int tmp = this.value;
-            tmp >>= index;
-            tmp &= 1;
-            return tmp == 1;
-        }
-        public final String getName() {
-            return this.name;
-        }
-        public final int getSize() {
-            return this.size;
-        }
-        public String toString() {
-            return "Register " + this.name + " (" + this.size + "-bit): " + this.value;
-        }
-    }
-
     // 8-bit registers, constructed in the LegacyZ80 constructor.
     private Register registerA;
     private Register registerB;
@@ -95,7 +40,7 @@ public class Z80 {
     private Map<String, Register> eightBitRegisters = new HashMap<>();
     private Map<String, Register> sixteenBitRegisters = new HashMap<>();
 
-    public Z80() {
+    Z80() {
         // initialize 8-bit registers
         registerA = new Register("A", 8, 0);
         registerB = new Register("B", 8, 0);
@@ -132,7 +77,7 @@ public class Z80 {
     }
 
     // utility functions
-    private Register search(String name) {
+    private Register search(final String name) {
         if (eightBitRegisters.get(name) != null) {
             return eightBitRegisters.get(name);
         }
@@ -145,7 +90,7 @@ public class Z80 {
             return null;
         }
     }
-    public int getRegisterValue(String name) {
+    public int getRegisterValue(final String name) {
         if (eightBitRegisters.get(name) != null) {
             return eightBitRegisters.get(name).read();
         }
@@ -158,7 +103,7 @@ public class Z80 {
             return -1;
         }
     }
-    public void setRegisterValue(String name, int value) {
+    public void setRegisterValue(final String name, int value) {
         if (eightBitRegisters.get(name) != null) {
             eightBitRegisters.get(name).write(value);
         }
@@ -170,11 +115,11 @@ public class Z80 {
             System.out.println("Unknown register");
         }
     }
-    public boolean getRegisterBit(String name, int index) {
+    public boolean getRegisterBit(final String name, int index) {
         Register r = search(name);
         return r != null && r.readBit(index);
     }
-    public int readCombined8bitRegisters(String upper, String lower) throws InvalidPropertiesFormatException {
+    public int readCombined8bitRegisters(final String upper, final String lower) throws InvalidPropertiesFormatException {
         Register u = search(upper);
         Register l = search(lower);
         if(u != null && l != null) {
@@ -185,7 +130,7 @@ public class Z80 {
             return -1;
         }
     }
-    public void writeCombined8bitRegisters(String upper, String lower, int value) throws InvalidPropertiesFormatException {
+    public void writeCombined8bitRegisters(final String upper, final String lower, int value) throws InvalidPropertiesFormatException {
         Register u = search(upper);
         Register l = search(lower);
         if(u != null && l != null) {
@@ -217,11 +162,106 @@ public class Z80 {
     private int readRegister(Register r) {
         return r.read();
     }
-    private void load(Register sourceRegister, Register destinationRegister) {
+    private void load(Register destinationRegister, Register sourceRegister) {
         destinationRegister.write(sourceRegister.read());
     }
-    private void load(short number, Register destinationRegister) {
+    private void load(int number, Register destinationRegister) {
         destinationRegister.write(number);
+    }
+    private void load(int opcode, int number) {
+        switch(opcode) {
+            //<editor-fold desc="3.3.1.1 8-Bit Loads - LD nn, n" defaultstate="collapsed">
+            /*
+             * 3.3.1. 8-Bit Loads
+             *   1. LD nn,n
+             *   Description:
+             *      Put value nn into n.
+             *   Use with:
+             *      nn = B,C,D,E,H,L,BC,DE,HL,SP
+             *      n = 8 bit immediate value
+             *   Opcodes:
+             *      Instruction Parameters Opcode Cycles
+             *      LD             B,n     06      8
+             *      LD             C,n     0E      8
+             *      LD             D,n     16      8
+             *      LD             E,n     1E      8
+             *      LD             H,n     26      8
+             *      LD             L,n     2E      8
+             */
+            case 0x06: load(number, registerB); break;
+            case 0x0E: load(number, registerC); break;
+            case 0x16: load(number, registerD); break;
+            case 0x1E: load(number, registerE); break;
+            case 0x26: load(number, registerH); break;
+            case 0x2E: load(number, registerL); break;
+            //</editor-fold>
+            //<editor-fold desc="3.3.1.2 8-Bit Loads - LD r1,r2" defaultstate="collapsed">
+            /*
+             *   2. LD r1,r2
+             *   Description:
+             *      Put value r2 into r1.
+             *   Use with:
+             *      r1,r2 = A,B,C,D,E,H,L,(HL)
+             */
+            case 0x78: load(registerA, registerB); break;
+            case 0x7F: load(registerA, registerA); break;
+            case 0x79: load(registerA, registerC); break;
+            case 0x7A: load(registerA, registerD); break;
+            case 0x7B: load(registerA, registerE); break;
+            case 0x7C: load(registerA, registerH); break;
+            case 0x7D: load(registerA, registerL); break;
+            // TODO resolve first parameter as address from LegacyMMU case 0x7E: load(readCombined8bitRegisters(registerH, registerL), registerA); break;
+            case 0x40: load(registerB, registerB); break;
+            case 0x41: load(registerB, registerC); break;
+            case 0x42: load(registerB, registerD); break;
+            case 0x43: load(registerB, registerE); break;
+            case 0x44: load(registerB, registerH); break;
+            case 0x45: load(registerB, registerL); break;
+            // TODO resolve first parameter as address from LegacyMMU case 0x46: load(readCombined8bitRegisters(registerH, registerL), registerB); break;
+            case 0x48: load(registerC, registerB); break;
+            case 0x49: load(registerC, registerC); break;
+            case 0x4A: load(registerC, registerD); break;
+            case 0x4B: load(registerC, registerE); break;
+            case 0x4C: load(registerC, registerH); break;
+            case 0x4D: load(registerC, registerL); break;
+            // TODO resolve first parameter as address from LegacyMMU case 0x4E: load(readCombined8bitRegisters(registerH, registerL), registerC); break;
+            case 0x50: load(registerD, registerB); break;
+            case 0x51: load(registerD, registerC); break;
+            case 0x52: load(registerD, registerD); break;
+            case 0x53: load(registerD, registerE); break;
+            case 0x54: load(registerD, registerH); break;
+            case 0x55: load(registerD, registerL); break;
+            // TODO resolve first parameter as address from LegacyMMU case 0x56: load(readCombined8bitRegisters(registerH, registerL), registerD); break;
+            case 0x58: load(registerE, registerB); break;
+            case 0x59: load(registerE, registerC); break;
+            case 0x5A: load(registerE, registerD); break;
+            case 0x5B: load(registerE, registerE); break;
+            case 0x5C: load(registerE, registerH); break;
+            case 0x5D: load(registerE, registerL); break;
+            // TODO resolve first parameter as address from LegacyMMU case 0x5E: load(readCombined8bitRegisters(registerH, registerL), registerE); break;
+            case 0x60: load(registerH, registerB); break;
+            case 0x61: load(registerH, registerC); break;
+            case 0x62: load(registerH, registerD); break;
+            case 0x63: load(registerH, registerE); break;
+            case 0x64: load(registerH, registerH); break;
+            case 0x65: load(registerH, registerL); break;
+            // TODO resolve first parameter as address from LegacyMMU case 0x66: load(readCombined8bitRegisters(registerH, registerL), registerH); break;
+            case 0x68: load(registerL, registerB); break;
+            case 0x69: load(registerL, registerC); break;
+            case 0x6A: load(registerL, registerD); break;
+            case 0x6B: load(registerL, registerE); break;
+            case 0x6C: load(registerL, registerH); break;
+            case 0x6D: load(registerL, registerL); break;
+            // TODO resolve first parameter as address from LegacyMMU case 0x6E: load(readCombined8bitRegisters(registerH, registerL), registerL); break;
+            // TODO resolve first parameter as address from LegacyMMU case 0x70: (HL),B  8
+            // TODO resolve first parameter as address from LegacyMMU case 0x71: (HL),C  8
+            // TODO resolve first parameter as address from LegacyMMU case 0x72: (HL),D  8
+            // TODO resolve first parameter as address from LegacyMMU case 0x73: (HL),E  8
+            // TODO resolve first parameter as address from LegacyMMU case 0x74: (HL),H  8
+            // TODO resolve first parameter as address from LegacyMMU case 0x75: (HL),L  8
+            // TODO resolve first parameter as address from LegacyMMU case 0x36: (HL),n  12
+            //</editor-fold>
+        }
     }
 
 }

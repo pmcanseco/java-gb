@@ -5,12 +5,12 @@ public class Main {
 
     public static void main(String[] args) {
         Cartridge cart = new Cartridge("C:\\Users\\Pablo\\Desktop\\cpu_instrs\\cpu_instrs.gb");
-        Z80 ooz80 = new Z80();
+        Z80 z80 = new Z80();
 
         GPU gpu = new GPU(width, height);
 
         gpu.reset();
-        MMU.reset(cart);
+        //LegacyMMU.reset(cart);
         //LegacyZ80.reset();
 
         System.out.println(GPU.BLACK.getRGB());
