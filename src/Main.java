@@ -5,7 +5,8 @@ public class Main {
 
     public static void main(String[] args) {
         Cartridge cart = new Cartridge("C:\\Users\\Pablo\\Desktop\\cpu_instrs\\cpu_instrs.gb");
-        Z80 z80 = new Z80();
+        MemoryManager mmu = new MemoryManager(cart);
+        Z80 z80 = new Z80(mmu);
 
         GPU gpu = new GPU(width, height);
 

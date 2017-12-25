@@ -14,7 +14,9 @@ class Z80Test {
 
     @BeforeAll
     void setUp() {
-        z80uut = new Z80();
+        Cartridge cart = new Cartridge("C:\\Users\\Pablo\\Desktop\\cpu_instrs\\cpu_instrs.gb");
+        MemoryManager mmu = new MemoryManager(cart);
+        z80uut = new Z80(mmu);
     }
 
     @AfterAll
