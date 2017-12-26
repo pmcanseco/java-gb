@@ -206,7 +206,7 @@
     </copy>
   </target>
 
-  <target name="compile.module.java-gb.test" depends="register.custom.compilers,compile.module.java-gb.production" description="compile module java-gb; test classes" unless="skip.tests">
+  <target name="test" depends="register.custom.compilers,compile.module.java-gb.production" description="compile module java-gb; test classes" unless="skip.tests">
     <mkdir dir="${java-gb.testoutput.dir}"/>
     <javac2 destdir="${java-gb.testoutput.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.java-gb}/javac">
       <compilerarg line="${compiler.args.java-gb}"/>
