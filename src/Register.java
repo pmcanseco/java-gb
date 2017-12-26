@@ -32,6 +32,9 @@ public class Register {
     public void or(int value) {
         this.value |= value;
     }
+    public void inc() {
+        this.value += 1;
+    }
     public int read() {
         return this.value;
     }

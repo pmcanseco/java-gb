@@ -123,29 +123,29 @@ public class Z80 {
         Register r = search(name);
         return r != null && r.readBit(index);
     }
-    public int readCombined8bitRegisters(final String upper, final String lower) throws InvalidPropertiesFormatException {
+    public int readCombinedRegisters(final String upper, final String lower) throws InvalidPropertiesFormatException {
         Register u = search(upper);
         Register l = search(lower);
         if(u != null && l != null) {
-            return readCombined8bitRegisters(u, l);
+            return readCombinedRegisters(u, l);
         }
         else {
             System.out.println("Did not find one of registers " + upper + ", " + lower);
             return -1;
         }
     }
-    public void writeCombined8bitRegisters(final String upper, final String lower, int value) throws InvalidPropertiesFormatException {
+    public void writeCombinedRegisters(final String upper, final String lower, int value) throws InvalidPropertiesFormatException {
         Register u = search(upper);
         Register l = search(lower);
         if(u != null && l != null) {
-            writeCombined8bitRegisters(u, l, value);
+            writeCombinedRegisters(u, l, value);
         }
         else {
             System.out.println("Did not find one of registers " + upper + ", " + lower);
         }
     }
 
-    private int readCombined8bitRegisters(Register upper, Register lower) throws InvalidPropertiesFormatException {
+    private int readCombinedRegisters(Register upper, Register lower) throws InvalidPropertiesFormatException {
         if (upper.getSize() != 8 || lower.getSize() != 8) {
             throw new InvalidPropertiesFormatException("one of the registers to combine wasn't an 8-bit register");
         }
@@ -154,7 +154,7 @@ public class Z80 {
         result |= lower.read();
         return result;
     }
-    private void writeCombined8bitRegisters(Register upper, Register lower, final int value) throws InvalidPropertiesFormatException {
+    private void writeCombinedRegisters(Register upper, Register lower, final int value) throws InvalidPropertiesFormatException {
         if (upper.getSize() != 8 || lower.getSize() != 8) {
             throw new InvalidPropertiesFormatException("one of the registers to combine wasn't an 8-bit register");
         }
@@ -163,17 +163,16 @@ public class Z80 {
         upper.write(upper8bits);
         lower.write(lower8bits);
     }
-    private int readRegister(Register r) {
-        return r.read();
-    }
+
     private void load(Register destinationRegister, Register sourceRegister) {
         destinationRegister.write(sourceRegister.read());
     }
     private void load(Register destinationRegister, int number) {
         destinationRegister.write(number);
     }
-    private void load(int opcode, int number) throws InvalidPropertiesFormatException {
-        int address = 0;
+    private void load(int opcode) throws InvalidPropertiesFormatException {
+        int address;
+        int temp;
         switch(opcode) {
             //<editor-fold desc="3.3.1.1 8-Bit Loads - LD nn, n" defaultstate="collapsed">
             /*
@@ -193,12 +192,12 @@ public class Z80 {
              *      LD             H,n     26      8
              *      LD             L,n     2E      8
              */
-            case 0x06: load(registerB, number); break;
-            case 0x0E: load(registerC, number); break;
-            case 0x16: load(registerD, number); break;
-            case 0x1E: load(registerE, number); break;
-            case 0x26: load(registerH, number); break;
-            case 0x2E: load(registerL, number); break;
+            case 0x06: load(registerB, mmu.rawRead(registerPC.read())); registerPC.inc(); break;
+            case 0x0E: load(registerC, mmu.rawRead(registerPC.read())); registerPC.inc(); break;
+            case 0x16: load(registerD, mmu.rawRead(registerPC.read())); registerPC.inc(); break;
+            case 0x1E: load(registerE, mmu.rawRead(registerPC.read())); registerPC.inc(); break;
+            case 0x26: load(registerH, mmu.rawRead(registerPC.read())); registerPC.inc(); break;
+            case 0x2E: load(registerL, mmu.rawRead(registerPC.read())); registerPC.inc(); break;
             //</editor-fold>
             //<editor-fold desc="3.3.1.2 8-Bit Loads - LD r1,r2" defaultstate="collapsed">
             /*
@@ -216,7 +215,7 @@ public class Z80 {
             case 0x7C: load(registerA, registerH); break;
             case 0x7D: load(registerA, registerL); break;
             case 0x7E:
-                address = readCombined8bitRegisters(registerH, registerL);
+                address = readCombinedRegisters(registerH, registerL);
                 load(registerA, mmu.rawRead(address));
                 break;
             case 0x40: load(registerB, registerB); break;
@@ -226,7 +225,7 @@ public class Z80 {
             case 0x44: load(registerB, registerH); break;
             case 0x45: load(registerB, registerL); break;
             case 0x46:
-                address = readCombined8bitRegisters(registerH, registerL);
+                address = readCombinedRegisters(registerH, registerL);
                 load(registerB, mmu.rawRead(address));
                 break;
             case 0x48: load(registerC, registerB); break;
@@ -236,7 +235,7 @@ public class Z80 {
             case 0x4C: load(registerC, registerH); break;
             case 0x4D: load(registerC, registerL); break;
             case 0x4E:
-                address = readCombined8bitRegisters(registerH, registerL);
+                address = readCombinedRegisters(registerH, registerL);
                 load(registerC, mmu.rawRead(address));
                 break;
             case 0x50: load(registerD, registerB); break;
@@ -246,7 +245,7 @@ public class Z80 {
             case 0x54: load(registerD, registerH); break;
             case 0x55: load(registerD, registerL); break;
             case 0x56:
-                address = readCombined8bitRegisters(registerH, registerL);
+                address = readCombinedRegisters(registerH, registerL);
                 load(registerD, mmu.rawRead(address));
                 break;
             case 0x58: load(registerE, registerB); break;
@@ -256,7 +255,7 @@ public class Z80 {
             case 0x5C: load(registerE, registerH); break;
             case 0x5D: load(registerE, registerL); break;
             case 0x5E:
-                address = readCombined8bitRegisters(registerH, registerL);
+                address = readCombinedRegisters(registerH, registerL);
                 load(registerE, mmu.rawRead(address));
                 break;
             case 0x60: load(registerH, registerB); break;
@@ -266,7 +265,7 @@ public class Z80 {
             case 0x64: load(registerH, registerH); break;
             case 0x65: load(registerH, registerL); break;
             case 0x66:
-                address = readCombined8bitRegisters(registerH, registerL);
+                address = readCombinedRegisters(registerH, registerL);
                 load(registerH, mmu.rawRead(address));
                 break;
             case 0x68: load(registerL, registerB); break;
@@ -276,32 +275,110 @@ public class Z80 {
             case 0x6C: load(registerL, registerH); break;
             case 0x6D: load(registerL, registerL); break;
             case 0x6E:
-                address = readCombined8bitRegisters(registerH, registerL);
+                address = readCombinedRegisters(registerH, registerL);
                 load(registerL, mmu.rawRead(address));
                 break;
             case 0x70:
-                address = readCombined8bitRegisters(registerH, registerL); //(HL),B  8
+                address = readCombinedRegisters(registerH, registerL);
                 mmu.rawWrite(address, registerB.read());
+                break;
             case 0x71:
-                address = readCombined8bitRegisters(registerH, registerL); //(HL),C  8
+                address = readCombinedRegisters(registerH, registerL);
                 mmu.rawWrite(address, registerC.read());
+                break;
             case 0x72:
-                address = readCombined8bitRegisters(registerH, registerL); //(HL),D  8
+                address = readCombinedRegisters(registerH, registerL);
                 mmu.rawWrite(address, registerD.read());
+                break;
             case 0x73:
-                address = readCombined8bitRegisters(registerH, registerL); //(HL),E  8
+                address = readCombinedRegisters(registerH, registerL);
                 mmu.rawWrite(address, registerE.read());
+                break;
             case 0x74:
-                address = readCombined8bitRegisters(registerH, registerL); //(HL),H  8
+                address = readCombinedRegisters(registerH, registerL);
                 mmu.rawWrite(address, registerH.read());
+                break;
             case 0x75:
-                address = readCombined8bitRegisters(registerH, registerL); //(HL),L  8
+                address = readCombinedRegisters(registerH, registerL);
                 mmu.rawWrite(address, registerL.read());
-            case 0x36:
-                address = readCombined8bitRegisters(registerH, registerL); //(HL),n  12
-                // mmu.rawWrite(address, registerPC.read()); // TODO: 16-bit write
-                registerPC.write(registerPC.read() + 1);
+                break;
+            case 0x36: // 12 cycles
+                address = readCombinedRegisters(registerH, registerL);
+                mmu.rawWrite(address, mmu.rawRead(registerPC.read()));
+                registerPC.inc();
+                break;
             //</editor-fold>
+            //<editor-fold desc="3.3.1.3 8-bit Loads - LD A, n" defaultstate="collapsed">
+            /*
+             *  3. LD A,n
+             *  Description:
+             *     Put value n into A.
+             *  Use with:
+             *     n = A,B,C,D,E,H,L,(BC),(DE),(HL),(nn),#
+             *     nn = two byte immediate value. (LS byte first.)
+             */
+            case 0x0A: load(registerA, mmu.rawRead(readCombinedRegisters(registerB, registerC))); break;  // LD A,(BC) 0A 8
+            case 0x1A: load(registerA, mmu.rawRead(readCombinedRegisters(registerD, registerE))); break;  // LD A,(DE) 1A 8
+            case 0xFA: // 16 cycles
+                load(registerA, mmu.rawRead(mmu.readWord(registerPC.read())));
+                registerPC.inc(); registerPC.inc(); break;
+            case 0x3E: load(registerA, mmu.rawRead(registerPC.read())); registerPC.inc(); break;  // LD A,# 3E 8
+            //</editor-fold>
+            //<editor-fold desc="3.3.1.4 8-bit Loads - LD n, A" defaultstate="collapsed">
+            /*
+             *  4. LD n,A
+             *  Description:
+             *     Put value A into n.
+             *  Use with:
+             *     n = A,B,C,D,E,H,L,(BC),(DE),(HL),(nn)
+             *     nn = two byte immediate value. (LS byte first.)
+             */
+            case 0x47: load(registerB, registerA); break; // LD B,A 47 4
+            case 0x4F: load(registerC, registerA); break; // LD C,A 4F 4
+            case 0x57: load(registerD, registerA); break; // LD D,A 57 4
+            case 0x5F: load(registerE, registerA); break; // LD E,A 5F 4
+            case 0x67: load(registerH, registerA); break; // LD H,A 67 4
+            case 0x6F: load(registerL, registerA); break; // LD L,A 6F 4
+            case 0x02: mmu.rawWrite(mmu.rawRead(readCombinedRegisters(registerB, registerC)), registerA.read()); break; // LD (BC),A 02 8
+            case 0x12: mmu.rawWrite(mmu.rawRead(readCombinedRegisters(registerD, registerE)), registerA.read()); break; // LD (DE),A 12 8
+            case 0x77: mmu.rawWrite(mmu.rawRead(readCombinedRegisters(registerH, registerL)), registerA.read()); break; // LD (HL),A 77 8
+            case 0xEA: // 16 cycles
+                mmu.rawWrite(mmu.readWord(registerPC.read()), registerA.read());
+                registerPC.inc(); registerPC.inc(); break; // LD (nn),A EA 16
+            //</editor-fold>
+            case 0xF2:
+                // Put value at address $FF00 + register C into A , takes 8 cycles
+                load(registerA, mmu.rawRead(registerC.read() + 0xFF00));
+                break;
+            case 0xE2:
+                // Put A into address $FF00 + register C , takes 8 cycles
+                mmu.rawWrite(0xFF00 + registerC.read(), registerA.read());
+                break;
+            case 0x3A:
+                // Put value at address HL into A, Decrement HL. Takes 8 cycles
+                temp = readCombinedRegisters(registerH, registerL);
+                load(registerA, mmu.rawRead(temp));
+                writeCombinedRegisters(registerH, registerL, temp - 1);
+                break;
+            case 0x32:
+                // put A into memory address HL. Decrement HL. Takes 8 cycles.
+                temp = readCombinedRegisters(registerH, registerL);
+                mmu.rawWrite(temp, registerA.read());
+                writeCombinedRegisters(registerH, registerL, temp - 1);
+                break;
+            case 0x2A:
+                // Put value at address HL into A, Increment HL. Takes 8 cycles
+                temp = readCombinedRegisters(registerH, registerL);
+                load(registerA, mmu.rawRead(temp));
+                writeCombinedRegisters(registerH, registerL, temp + 1);
+                break;
+            case 0x22:
+                // put A into memory address HL. Increment HL. Takes 8 cycles.
+                temp = readCombinedRegisters(registerH, registerL);
+                mmu.rawWrite(temp, registerA.read());
+                writeCombinedRegisters(registerH, registerL, temp + 1);
+                break;
+
         }
     }
 
