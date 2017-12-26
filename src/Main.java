@@ -1,13 +1,13 @@
 public class Main {
 
-    private static int width = 300;
-    private static int height = 300;
-
     public static void main(String[] args) {
         Cartridge cart = new Cartridge("C:\\Users\\Pablo\\Desktop\\cpu_instrs\\cpu_instrs.gb");
         MemoryManager mmu = new MemoryManager(cart);
         Z80 z80 = new Z80(mmu);
+        z80.getRegisterValue("A");
 
+        int width = 300;
+        int height = 300;
         GPU gpu = new GPU(width, height);
 
         gpu.reset();

@@ -39,4 +39,27 @@ class MemoryManagerTest {
 
         assertArrayEquals(expected,actual);
     }
+
+    @Test
+    void testEightBitReadWrite() {
+        Random rng = new Random();
+        for (int i = 0; i < 100; i++) {
+            int address = rng.nextInt(mmu.memorySize);
+            int value = rng.nextInt(256);
+            mmu.rawWrite(address, value);
+            assertEquals(value, mmu.rawRead(address));
+        }
+        assertThrows(IndexOutOfBoundsException.class, () -> mmu.rawRead(mmu.memorySize));
+        assertThrows(IndexOutOfBoundsException.class, () -> mmu.rawRead(-1));
+
+        // address 0
+        int value = rng.nextInt(256);
+        mmu.rawWrite(0, value);
+        assertEquals(value, mmu.rawRead(0));
+
+        // max valid address
+        value = rng.nextInt(256);
+        mmu.rawWrite(mmu.memorySize - 1, value);
+        assertEquals(value, mmu.rawRead(mmu.memorySize - 1));
+    }
 }
