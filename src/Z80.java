@@ -171,8 +171,11 @@ public class Z80 {
         destinationRegister.write(number);
     }
     private void load(int opcode) throws InvalidPropertiesFormatException {
+        // temp variables to temporarily hold stuff
         int address;
         int temp;
+        int lowerValue;
+        int upperValue;
         switch(opcode) {
             //<editor-fold desc="3.3.1.1 8-Bit Loads - LD nn, n" defaultstate="collapsed">
             /*
@@ -378,7 +381,27 @@ public class Z80 {
                 mmu.rawWrite(temp, registerA.read());
                 writeCombinedRegisters(registerH, registerL, temp + 1);
                 break;
-
+            case 0xE0:
+                // Put A into memory address $FF00+n . 12 cycles
+                mmu.rawWrite(0xFF00 + registerPC.read(), registerA.read());
+                break;
+            case 0xF0:
+                // Put memory address $FF00+n into A. 12 cycles
+                load(registerA, mmu.rawRead(0xFF00 + registerPC.read()));
+                break;
+            case 0x01:
+                // LD BC,nn 01 12
+                load(registerC, mmu.rawRead(registerPC.read()));
+                registerPC.inc();
+                load(registerB, mmu.rawRead(registerPC.read()));
+                registerPC.inc();
+                break;
+            case 0x11:
+                // LD DE,nn 11 12
+            case 0x21:
+                // LD HL,nn 21 12
+            case 0x31:
+                // LD SP,nn 31 12
         }
     }
 

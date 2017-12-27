@@ -18,6 +18,7 @@ public class Cartridge {
         OneTwentyEightKb("128KB"),
         SixtyFourKb("64KB");
 
+        //<editor-fold desc=" Implementation " default-state="collapsed">
         private String displayName;
         RamSize(String displayName) {
             this.displayName = displayName;
@@ -25,6 +26,7 @@ public class Cartridge {
         public String getDisplayName() {
             return displayName;
         }
+        //</editor-fold>
     }
 
     private int[] rom; // the entire contents

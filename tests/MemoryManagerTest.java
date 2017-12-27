@@ -1,4 +1,5 @@
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import static org.junit.jupiter.api.Assertions.*;
@@ -12,16 +13,17 @@ import java.util.Random;
 class MemoryManagerTest {
 
     private MemoryManager mmu;
+    private Random rng;
 
     @BeforeAll
     void setUp() {
         Cartridge cart = new Cartridge("C:\\Users\\Pablo\\Desktop\\cpu_instrs\\cpu_instrs.gb");
         mmu = new MemoryManager(cart);
+        rng = new Random();
     }
 
     @Test
     void testZeroize() {
-        Random rng = new Random();
         for (int i = 0; i < mmu.memorySize; i++) {
             mmu.rawWrite(i, rng.nextInt(256));
         }
@@ -42,7 +44,6 @@ class MemoryManagerTest {
 
     @Test
     void testEightBitReadWrite() {
-        Random rng = new Random();
         for (int i = 0; i < 100; i++) {
             int address = rng.nextInt(mmu.memorySize);
             int value = rng.nextInt(256);
@@ -61,5 +62,27 @@ class MemoryManagerTest {
         value = rng.nextInt(256);
         mmu.rawWrite(mmu.memorySize - 1, value);
         assertEquals(value, mmu.rawRead(mmu.memorySize - 1));
+    }
+
+    @Test
+    void testSixteenBitReadWrite() {
+        for (int i = 0; i < 100; i ++) {
+            int address = rng.nextInt(mmu.memorySize - 1);
+            int value = rng.nextInt(65536);
+
+            // test 16bit write
+            mmu.writeWord(address, value);
+            assertEquals(value & 0b00000000_11111111, mmu.rawRead(address));
+            assertEquals((value & 0b11111111_00000000) >> 8, mmu.rawRead(address + 1));
+
+            // test 16-bit read
+            address = rng.nextInt(mmu.memorySize - 1);
+            int upperValue = rng.nextInt(256);
+            int lowerValue = rng.nextInt(256);
+            mmu.rawWrite(address, lowerValue);
+            mmu.rawWrite(address + 1, upperValue);
+            int expectedValue = (upperValue << 8) + lowerValue;
+            assertEquals(expectedValue, mmu.readWord(address));
+        }
     }
 }

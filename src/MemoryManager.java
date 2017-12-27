@@ -54,9 +54,9 @@ public class MemoryManager {
 
     public int readWord(int address) throws IndexOutOfBoundsException {
         if (isValidMemoryAddress(address)) {
-            int value = rawRead(address);
+            int value = rawRead(address + 1);
             value <<= 8;
-            value += rawRead(address + 1);
+            value += rawRead(address);
             return value;
         }
         else { throw new IndexOutOfBoundsException(); }

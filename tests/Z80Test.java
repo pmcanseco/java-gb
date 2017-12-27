@@ -66,7 +66,7 @@ class Z80Test {
     @Test
     void testCombinedRegisterWrite() {
         try {
-            z80uut.writeCombinedRegisters("A", "B", 0b1111000110011110);
+            z80uut.writeCombinedRegisters("A", "B", 0b11110001_10011110);
             assertEquals(0b11110001, z80uut.getRegisterValue("A"));
             assertEquals(0b10011110, z80uut.getRegisterValue("B"));
         } catch (Exception ex) {
