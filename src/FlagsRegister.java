@@ -1,47 +1,54 @@
 public class FlagsRegister extends Register {
 
+    public enum FlagIndex {
+        Z,
+        N,
+        H,
+        C
+    }
+
     FlagsRegister(String regName, int regSize, int regVal) {
         super(regName, regSize, regVal);
     }
 
     public boolean readZ() {
-        return readBit(0);
+        return readBit(FlagIndex.Z.ordinal());
     }
     public void setZ() {
-        writeBit(0, true);
+        writeBit(FlagIndex.Z.ordinal(), true);
     }
     public void clearZ() {
-        writeBit(0 ,false);
+        writeBit(FlagIndex.Z.ordinal() ,false);
     }
 
     public boolean readN() {
-        return readBit(1);
+        return readBit(FlagIndex.N.ordinal());
     }
     public void setN() {
-        writeBit(1, true);
+        writeBit(FlagIndex.N.ordinal(), true);
     }
     public void clearN() {
-        writeBit(1, false);
+        writeBit(FlagIndex.N.ordinal(), false);
     }
 
     public boolean readH() {
-        return readBit(2);
+        return readBit(FlagIndex.H.ordinal());
     }
     public void setH() {
-        writeBit(2, true);
+        writeBit(FlagIndex.H.ordinal(), true);
     }
     public void clearH() {
-        writeBit(2, false);
+        writeBit(FlagIndex.H.ordinal(), false);
     }
 
     public boolean readC() {
-        return readBit(3);
+        return readBit(FlagIndex.C.ordinal());
     }
     public void setC() {
-        writeBit(3, true);
+        writeBit(FlagIndex.C.ordinal(), true);
     }
     public void clearC() {
-        writeBit(3, false);
+        writeBit(FlagIndex.C.ordinal(), false);
     }
 
 }

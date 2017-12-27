@@ -1,7 +1,5 @@
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.*;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.Random;
@@ -17,9 +15,16 @@ class MemoryManagerTest {
 
     @BeforeAll
     void setUp() {
+        System.out.println("=== Starting MemoryManagerTest");
         Cartridge cart = new Cartridge("C:\\Users\\Pablo\\Desktop\\cpu_instrs\\cpu_instrs.gb");
         mmu = new MemoryManager(cart);
         rng = new Random();
+    }
+
+    @AfterAll
+    void tearDown() {
+        System.out.println("=== Ending MemoryManagerTest");
+        System.out.println();
     }
 
     @Test

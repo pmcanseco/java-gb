@@ -14,6 +14,7 @@ class Z80Test {
 
     @BeforeAll
     void setUp() {
+        System.out.println("=== Starting Z80Test");
         Cartridge cart = new Cartridge("C:\\Users\\Pablo\\Desktop\\cpu_instrs\\cpu_instrs.gb");
         MemoryManager mmu = new MemoryManager(cart);
         z80uut = new Z80(mmu);
@@ -21,6 +22,8 @@ class Z80Test {
 
     @AfterAll
     void tearDown() {
+        System.out.println("=== Ending Z80Test");
+        System.out.println();
     }
 
     @Test

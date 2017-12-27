@@ -55,14 +55,13 @@ public class Register {
             System.out.println("Bit index " + index + " is out of bounds for " + this.size + "-bit register " + this.name);
             return;
         }
-        BitSet bs = new BitSet(this.read());
+
         if (value) {
-            bs.set(index);
+            this.value |= (1 << index);
         }
         else {
-            bs.clear(index);
+            this.value &= ~(1 << index);
         }
-        this.write((int) bs.toLongArray()[0]);
     }
     public final String getName() {
         return this.name;
