@@ -18,9 +18,9 @@ public class Register {
     // methods
     public void write(int value) {
         if( value >= 0 && (
-                ( this.size == 16 && value <= 65535 ) ||
-                        ( this.size == 8  && value <= 255) )
-                )
+            ( this.size == 16 && value <= 65535 ) ||
+            ( this.size == 8  && value <= 255) )
+          )
             this.value = value;
         else {
             System.out.println("Value " + value + " is out of range for " + this.size + "-bit register " + this.name);

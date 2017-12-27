@@ -398,10 +398,40 @@ public class Z80 {
                 break;
             case 0x11:
                 // LD DE,nn 11 12
+                load(registerE, mmu.rawRead(registerPC.read()));
+                registerPC.inc();
+                load(registerD, mmu.rawRead(registerPC.read()));
+                registerPC.inc();
+                break;
             case 0x21:
                 // LD HL,nn 21 12
+                load(registerL, mmu.rawRead(registerPC.read()));
+                registerPC.inc();
+                load(registerH, mmu.rawRead(registerPC.read()));
+                registerPC.inc();
+                break;
             case 0x31:
                 // LD SP,nn 31 12
+                load(registerSP, mmu.readWord(registerPC.read()));
+                registerPC.inc();
+                registerPC.inc();
+                break;
+            case 0xF9:
+                // LD SP,HL F9 8
+                load(registerSP, readCombinedRegisters(registerH, registerL));
+                break;
+            case 0xF8:
+                // LDHL SP,n F8 12
+                // Put SP + n effective address into HL. (n is signed here!)
+                temp = mmu.rawRead(registerPC.read());
+                if (temp > 127) {
+                    temp = -((~temp + 1) & 255); // 2's complement
+                }
+                registerPC.inc();
+                temp += registerSP.read();
+                registerH.write((temp >> 8) & 255);
+                registerL.write(temp & 255);
+                // todo flags affected
         }
     }
 
