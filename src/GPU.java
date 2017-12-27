@@ -3,8 +3,7 @@ import java.awt.image.BufferedImage;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.util.Random;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
+import javax.swing.*;
 
 public class GPU extends JPanel {
 
@@ -96,7 +95,7 @@ public class GPU extends JPanel {
         frame.add(this);
         frame.setVisible(true);
         frame.setResizable(false);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         fillCanvas(Color.BLUE);
         for (int i = 0; i < 160 * 144 * 4; i++) {
             screen[i] = rng.nextInt(255);

@@ -85,7 +85,7 @@ public class MemoryManager {
 
     private boolean isValidMemoryAddress(int address) {
         if (address < 0 || address > memorySize) {
-            System.out.println("Address " + address + "is not in memory range (" + memorySize + ").");
+            System.out.println("Address " + address + " is not in memory range (" + memorySize + ").");
             return false;
         }
         return true;

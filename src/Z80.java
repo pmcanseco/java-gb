@@ -26,7 +26,7 @@ public class Z80 {
     // H = Half-carry: set if last operation's result's lower half overflowed past 15
     // C = Carry: set if last operation produced result greater than 255 for adds or less than 0 for subtracts
     // * NOTE * The lower 4 bits always read zero even if 1 is written to them.
-    private Register registerFlags;
+    private FlagsRegister registerFlags;
 
     // 16-bit registers, also constructed in the LegacyZ80 constructor.
     private Register registerPC; // program counter
@@ -51,7 +51,7 @@ public class Z80 {
         registerE = new Register("E", 8, 0);
         registerH = new Register("H", 8, 0);
         registerL = new Register("L", 8, 0);
-        registerFlags = new Register("Flags", 8, 0);
+        registerFlags = new FlagsRegister("Flags", 8, 0);
         eightBitRegisters.put("A", registerA);
         eightBitRegisters.put("B", registerB);
         eightBitRegisters.put("C", registerC);

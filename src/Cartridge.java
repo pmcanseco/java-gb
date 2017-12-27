@@ -40,11 +40,17 @@ public class Cartridge {
 
     Cartridge(String path) {
         loadRomFile(path);
-        System.out.println(this.toString());
+    }
+
+    Cartridge(String path, boolean print) {
+        this(path);
+        if (print) {
+            System.out.println("Loaded ROM: " + path);
+            System.out.println(this.toString());
+        }
     }
 
     private void loadRomFile(String romPath) {
-        System.out.println("Loading ROM: " + romPath);
         try {
             byte[] tempRom = Files.readAllBytes(new File(romPath).toPath());
             rom = new int[tempRom.length];

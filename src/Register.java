@@ -1,3 +1,5 @@
+import java.util.BitSet;
+
 /**
  * Created by Pablo Canseco on 12/24/2017.
  */
@@ -39,7 +41,7 @@ public class Register {
         return this.value;
     }
     public boolean readBit(int index) {
-        if (index > this.size - 1) {
+        if (index > this.size - 1 || index < 0) {
             System.out.println("Bit index " + index + " is out of bounds for " + this.size + "-bit register " + this.name);
             return false;
         }
@@ -47,6 +49,20 @@ public class Register {
         tmp >>= index;
         tmp &= 1;
         return tmp == 1;
+    }
+    public void writeBit(int index, boolean value) {
+        if (index > this.size - 1 || index < 0) {
+            System.out.println("Bit index " + index + " is out of bounds for " + this.size + "-bit register " + this.name);
+            return;
+        }
+        BitSet bs = new BitSet(this.read());
+        if (value) {
+            bs.set(index);
+        }
+        else {
+            bs.clear(index);
+        }
+        this.write((int) bs.toLongArray()[0]);
     }
     public final String getName() {
         return this.name;
@@ -58,3 +74,4 @@ public class Register {
         return "Register " + this.name + " (" + this.size + "-bit): " + this.value;
     }
 }
+
