@@ -15,7 +15,7 @@ class Z80Test {
     @BeforeAll
     void setUp() {
         System.out.println("=== Starting Z80Test");
-        Cartridge cart = new Cartridge("C:\\Users\\Pablo\\Desktop\\cpu_instrs\\cpu_instrs.gb");
+        Cartridge cart = new Cartridge("C:\\Users\\Pablo\\Desktop\\cpu_instrs.gb");
         MemoryManager mmu = new MemoryManager(cart);
         z80uut = new Z80(mmu);
     }

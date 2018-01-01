@@ -51,4 +51,10 @@ public class FlagsRegister extends Register {
         writeBit(FlagIndex.C.ordinal(), false);
     }
 
+    @Override
+    public void write(int value) {
+        // the lower 4 bits are always zero
+        value &= 0b11110000;
+        super.write(value);
+    }
 }

@@ -16,7 +16,7 @@ class MemoryManagerTest {
     @BeforeAll
     void setUp() {
         System.out.println("=== Starting MemoryManagerTest");
-        Cartridge cart = new Cartridge("C:\\Users\\Pablo\\Desktop\\cpu_instrs\\cpu_instrs.gb");
+        Cartridge cart = new Cartridge("C:\\Users\\Pablo\\Desktop\\cpu_instrs.gb");
         mmu = new MemoryManager(cart);
         rng = new Random();
     }

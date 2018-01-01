@@ -98,6 +98,9 @@ class RegisterTest {
     @Test
     void testFlagsRegisterFunctions() {
         FlagsRegister fr = new FlagsRegister("F", 8, 0);
-        fr.write(rng.nextInt(256));
+        int value = rng.nextInt(256);
+        fr.write(value);
+        value &= 0b11110000;
+        assertEquals(value, fr.read());
     }
 }
