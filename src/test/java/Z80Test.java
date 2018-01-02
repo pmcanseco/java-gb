@@ -32,7 +32,7 @@ public class Z80Test extends AbstractTest{
         }
     }
     private int as8bitNumber(int number) {
-        if (number > 255) {
+        if (number > 255 || number < 0) {
             number &= 255;
         }
 
@@ -103,7 +103,7 @@ public class Z80Test extends AbstractTest{
 
     @Test
     public void testAdd() {
-        for(int i = 0; i < 100; i++) {
+        for(int i = 0; i < 10; i++) {
             try {
                 Map<Integer, Integer> opcodeToExpectedValueMap = new HashMap<>();
                 randomize8bitRegisters();
@@ -124,6 +124,42 @@ public class Z80Test extends AbstractTest{
                     z80uut.add(opcode);
                     final int expected = as8bitNumber(opcodeToExpectedValueMap.get(opcode)); // account for overflow
                     final int actual = z80uut.getRegisterValue("A");
+                    assertEquals(expected, actual);
+
+                    // clean up A back to previous value
+                    z80uut.load(z80uut.search("A"), currentRegisterAValue);
+                }
+            }
+            catch (Exception e) {
+                fail("this test should not throw an exception");
+            }
+        }
+    }
+
+    @Test
+    public void testSub() {
+        for(int i = 0; i < 10; i++) {
+            try {
+                Map<Integer, Integer> opcodeToExpectedValueMap = new HashMap<>();
+                randomize8bitRegisters();
+                randomizeMemory();
+                final int currentRegisterAValue = z80uut.getRegisterValue("A");
+
+                opcodeToExpectedValueMap.put(0x97, currentRegisterAValue - z80uut.getRegisterValue("A"));
+                opcodeToExpectedValueMap.put(0x90, currentRegisterAValue - z80uut.getRegisterValue("B"));
+                opcodeToExpectedValueMap.put(0x91, currentRegisterAValue - z80uut.getRegisterValue("C"));
+                opcodeToExpectedValueMap.put(0x92, currentRegisterAValue - z80uut.getRegisterValue("D"));
+                opcodeToExpectedValueMap.put(0x93, currentRegisterAValue - z80uut.getRegisterValue("E"));
+                opcodeToExpectedValueMap.put(0x94, currentRegisterAValue - z80uut.getRegisterValue("H"));
+                opcodeToExpectedValueMap.put(0x95, currentRegisterAValue - z80uut.getRegisterValue("L"));
+                opcodeToExpectedValueMap.put(0x96, currentRegisterAValue - mmu.rawRead(z80uut.readCombinedRegisters("H", "L")));
+                opcodeToExpectedValueMap.put(0xD6, currentRegisterAValue - mmu.rawRead(z80uut.getRegisterValue("PC")));
+
+                for (final int opcode : opcodeToExpectedValueMap.keySet()) {
+                    z80uut.sub(opcode);
+                    final int expected = as8bitNumber(opcodeToExpectedValueMap.get(opcode)); // account for overflow
+                    final int actual = z80uut.getRegisterValue("A");
+                    log("expected = " + expected + ", actual = " + actual);
                     assertEquals(expected, actual);
 
                     // clean up A back to previous value

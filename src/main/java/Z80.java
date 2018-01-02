@@ -31,11 +31,11 @@ public class Z80 {
     // 16-bit registers, also constructed in the LegacyZ80 constructor.
     private Register registerPC; // program counter
     private Register registerSP; // stack pointer
-    private Register registerI;
-    private Register registerR;
-    private Register registerM;  // m-time for last instruction
-    private Register registerT;  // t-time for last instruction
-    private Register registerIME;
+    //private Register registerI;
+    //private Register registerR;
+    //private Register registerM;  // m-time for last instruction
+    //private Register registerT;  // t-time for last instruction
+    //private Register registerIME;
 
     private Map<String, Register> eightBitRegisters = new HashMap<>();
     private Map<String, Register> sixteenBitRegisters = new HashMap<>();
@@ -64,18 +64,18 @@ public class Z80 {
         // initialize 16-bit registers
         registerPC  = new Register("PC",  16, 0);
         registerSP  = new Register("SP",  16, 0);
-        registerI   = new Register("I",   16, 0);
-        registerR   = new Register("R",   16, 0);
-        registerM   = new Register("M",   16, 0);
-        registerT   = new Register("T",   16, 0);
-        registerIME = new Register("IME", 16, 0);
+        //registerI   = new Register("I",   16, 0);
+        //registerR   = new Register("R",   16, 0);
+        //registerM   = new Register("M",   16, 0);
+        //registerT   = new Register("T",   16, 0);
+        //registerIME = new Register("IME", 16, 0);
         sixteenBitRegisters.put("PC", registerPC);
         sixteenBitRegisters.put("SP", registerSP);
-        sixteenBitRegisters.put("I",  registerI);
-        sixteenBitRegisters.put("R",  registerR);
-        sixteenBitRegisters.put("M",  registerM);
-        sixteenBitRegisters.put("T",  registerT);
-        sixteenBitRegisters.put("IME", registerIME);
+        //sixteenBitRegisters.put("I",  registerI);
+        //sixteenBitRegisters.put("R",  registerR);
+        //sixteenBitRegisters.put("M",  registerM);
+        //sixteenBitRegisters.put("T",  registerT);
+        //sixteenBitRegisters.put("IME", registerIME);
 
         this.mmu = memMgr;
     }
@@ -164,7 +164,7 @@ public class Z80 {
         lower.write(lower8bits);
     }
 
-    public void load(Register destinationRegister, Register sourceRegister) {
+    private void load(Register destinationRegister, Register sourceRegister) {
         destinationRegister.write(sourceRegister.read());
     }
     public void load(Register destinationRegister, int number) {
@@ -177,8 +177,6 @@ public class Z80 {
         int result;
         int lowerValue;
         int upperValue;
-        String upperRegister = "";
-        String lowerRegister = "";
         switch (opcode) {
             //<editor-fold desc="3.3.1.1 8-Bit Loads - LD nn, n" defaultstate="collapsed">
             /*
@@ -786,6 +784,124 @@ public class Z80 {
             registerFlags.setZ();
         }
         if (result > 0b0000_1111) {
+            registerFlags.setH();
+        }
+
+        // save result
+        load(registerA, result);
+    }
+
+    public void sub(int opcode) throws InvalidPropertiesFormatException {
+        /* 3.3.3.3 SUB n
+            Description:
+               Subtract n from A.
+            Use with:
+               n = A,B,C,D,E,H,L,(HL),#
+            Flags affected:
+               Z - Set if result is zero.
+               N - Set.
+               H - Set if no borrow from bit 4.
+               C - Set if no borrow.
+            Opcodes:
+            Instruction Parameters Opcode Cycles
+             SUB          A          97     4
+             SUB          B          90     4
+             SUB          C          91     4
+             SUB          D          92     4
+             SUB          E          93     4
+             SUB          H          94     4
+             SUB          L          95     4
+             SUB          (HL)       96     8
+             SUB          #          D6     8
+         */
+        int second;
+        switch (opcode) {
+            case 0x97: second = registerA.read(); break;
+            case 0x90: second = registerB.read(); break;
+            case 0x91: second = registerC.read(); break;
+            case 0x92: second = registerD.read(); break;
+            case 0x93: second = registerE.read(); break;
+            case 0x94: second = registerH.read(); break;
+            case 0x95: second = registerL.read(); break;
+            case 0x96: second = mmu.rawRead(readCombinedRegisters(registerH, registerL)); break;
+            case 0xD6: second = mmu.rawRead(registerPC.read()); registerPC.inc(); break;
+            default:
+                System.out.println(String.format("Error: Opcode %05X does not belong to sub(int opcode) . ", opcode));
+                return;
+        }
+
+        // do the subtraction
+        int result = registerA.read() - second;
+
+        // flags affected
+        registerFlags.setN();
+        if (result == 0) {
+            registerFlags.setZ();
+        }
+        if (result < 0) {
+            registerFlags.setC();
+            result &= 0b1111_1111;
+        }
+        if (result < 0b0000_1111) {
+            registerFlags.setH();
+        }
+
+        // save result
+        load(registerA, result);
+    }
+
+    public void sbc(int opcode) throws InvalidPropertiesFormatException {
+        /* 3.3.3.4 SBC A,n
+            Description:
+               Subtract n + Carry flag from A.
+            Use with:
+               n = A,B,C,D,E,H,L,(HL),#
+            Flags affected:
+               Z - Set if result is zero.
+               N - Set.
+               H - Set if no borrow from bit 4.
+               C - Set if no borrow.
+            Opcodes:
+            Instruction Parameters Opcode Cycles
+             SBC          A,A        9F     4
+             SBC          A,B        98     4
+             SBC          A,C        99     4
+             SBC          A,D        9A     4
+             SBC          A,E        9B     4
+             SBC          A,H        9C     4
+             SBC          A,L        9D     4
+             SBC          A,(HL)     9E     8
+             SBC          A,#        ??     ?
+         */
+        int second;
+        switch (opcode) {
+            case 0x9F: second = registerA.read(); break;
+            case 0x98: second = registerB.read(); break;
+            case 0x99: second = registerC.read(); break;
+            case 0x9A: second = registerD.read(); break;
+            case 0x9B: second = registerE.read(); break;
+            case 0x9C: second = registerH.read(); break;
+            case 0x9D: second = registerL.read(); break;
+            case 0x9E: second = mmu.rawRead(readCombinedRegisters(registerH, registerL)); break;
+            default:
+                System.out.println(String.format("Error: Opcode %05X does not belong to sbc(int opcode) . ", opcode));
+                return;
+        }
+
+        // do the subtraction
+        second += registerFlags.readC() ? 1 : 0;
+        int result = registerA.read() - second;
+
+        // flags affected
+        registerFlags.setN();
+        if (result == 0) {
+            registerFlags.setZ();
+        }
+        if (result < 0) {
+            registerFlags.setC();
+            result &= 0b1111_1111;
+        }
+        if (result < 0b0000_1111) {
             registerFlags.setH();
         }
 
