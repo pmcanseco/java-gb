@@ -179,7 +179,7 @@ public class Z80 {
         int upperValue;
         String upperRegister = "";
         String lowerRegister = "";
-        switch(opcode) {
+        switch (opcode) {
             //<editor-fold desc="3.3.1.1 8-Bit Loads - LD nn, n" defaultstate="collapsed">
             /*
              * 3.3.1. 8-Bit Loads
@@ -198,12 +198,30 @@ public class Z80 {
              *      LD             H,n     26      8
              *      LD             L,n     2E      8
              */
-            case 0x06: load(registerB, mmu.rawRead(registerPC.read())); registerPC.inc(); break;
-            case 0x0E: load(registerC, mmu.rawRead(registerPC.read())); registerPC.inc(); break;
-            case 0x16: load(registerD, mmu.rawRead(registerPC.read())); registerPC.inc(); break;
-            case 0x1E: load(registerE, mmu.rawRead(registerPC.read())); registerPC.inc(); break;
-            case 0x26: load(registerH, mmu.rawRead(registerPC.read())); registerPC.inc(); break;
-            case 0x2E: load(registerL, mmu.rawRead(registerPC.read())); registerPC.inc(); break;
+            case 0x06:
+                load(registerB, mmu.rawRead(registerPC.read()));
+                registerPC.inc();
+                break;
+            case 0x0E:
+                load(registerC, mmu.rawRead(registerPC.read()));
+                registerPC.inc();
+                break;
+            case 0x16:
+                load(registerD, mmu.rawRead(registerPC.read()));
+                registerPC.inc();
+                break;
+            case 0x1E:
+                load(registerE, mmu.rawRead(registerPC.read()));
+                registerPC.inc();
+                break;
+            case 0x26:
+                load(registerH, mmu.rawRead(registerPC.read()));
+                registerPC.inc();
+                break;
+            case 0x2E:
+                load(registerL, mmu.rawRead(registerPC.read()));
+                registerPC.inc();
+                break;
             //</editor-fold>
             //<editor-fold desc="3.3.1.2 8-Bit Loads - LD r1,r2" defaultstate="collapsed">
             /*
@@ -213,73 +231,159 @@ public class Z80 {
              *   Use with:
              *      r1,r2 = A,B,C,D,E,H,L,(HL)
              */
-            case 0x78: load(registerA, registerB); break;
-            case 0x7F: load(registerA, registerA); break;
-            case 0x79: load(registerA, registerC); break;
-            case 0x7A: load(registerA, registerD); break;
-            case 0x7B: load(registerA, registerE); break;
-            case 0x7C: load(registerA, registerH); break;
-            case 0x7D: load(registerA, registerL); break;
+            case 0x78:
+                load(registerA, registerB);
+                break;
+            case 0x7F:
+                load(registerA, registerA);
+                break;
+            case 0x79:
+                load(registerA, registerC);
+                break;
+            case 0x7A:
+                load(registerA, registerD);
+                break;
+            case 0x7B:
+                load(registerA, registerE);
+                break;
+            case 0x7C:
+                load(registerA, registerH);
+                break;
+            case 0x7D:
+                load(registerA, registerL);
+                break;
             case 0x7E:
                 address = readCombinedRegisters(registerH, registerL);
                 load(registerA, mmu.rawRead(address));
                 break;
-            case 0x40: load(registerB, registerB); break;
-            case 0x41: load(registerB, registerC); break;
-            case 0x42: load(registerB, registerD); break;
-            case 0x43: load(registerB, registerE); break;
-            case 0x44: load(registerB, registerH); break;
-            case 0x45: load(registerB, registerL); break;
+            case 0x40:
+                load(registerB, registerB);
+                break;
+            case 0x41:
+                load(registerB, registerC);
+                break;
+            case 0x42:
+                load(registerB, registerD);
+                break;
+            case 0x43:
+                load(registerB, registerE);
+                break;
+            case 0x44:
+                load(registerB, registerH);
+                break;
+            case 0x45:
+                load(registerB, registerL);
+                break;
             case 0x46:
                 address = readCombinedRegisters(registerH, registerL);
                 load(registerB, mmu.rawRead(address));
                 break;
-            case 0x48: load(registerC, registerB); break;
-            case 0x49: load(registerC, registerC); break;
-            case 0x4A: load(registerC, registerD); break;
-            case 0x4B: load(registerC, registerE); break;
-            case 0x4C: load(registerC, registerH); break;
-            case 0x4D: load(registerC, registerL); break;
+            case 0x48:
+                load(registerC, registerB);
+                break;
+            case 0x49:
+                load(registerC, registerC);
+                break;
+            case 0x4A:
+                load(registerC, registerD);
+                break;
+            case 0x4B:
+                load(registerC, registerE);
+                break;
+            case 0x4C:
+                load(registerC, registerH);
+                break;
+            case 0x4D:
+                load(registerC, registerL);
+                break;
             case 0x4E:
                 address = readCombinedRegisters(registerH, registerL);
                 load(registerC, mmu.rawRead(address));
                 break;
-            case 0x50: load(registerD, registerB); break;
-            case 0x51: load(registerD, registerC); break;
-            case 0x52: load(registerD, registerD); break;
-            case 0x53: load(registerD, registerE); break;
-            case 0x54: load(registerD, registerH); break;
-            case 0x55: load(registerD, registerL); break;
+            case 0x50:
+                load(registerD, registerB);
+                break;
+            case 0x51:
+                load(registerD, registerC);
+                break;
+            case 0x52:
+                load(registerD, registerD);
+                break;
+            case 0x53:
+                load(registerD, registerE);
+                break;
+            case 0x54:
+                load(registerD, registerH);
+                break;
+            case 0x55:
+                load(registerD, registerL);
+                break;
             case 0x56:
                 address = readCombinedRegisters(registerH, registerL);
                 load(registerD, mmu.rawRead(address));
                 break;
-            case 0x58: load(registerE, registerB); break;
-            case 0x59: load(registerE, registerC); break;
-            case 0x5A: load(registerE, registerD); break;
-            case 0x5B: load(registerE, registerE); break;
-            case 0x5C: load(registerE, registerH); break;
-            case 0x5D: load(registerE, registerL); break;
+            case 0x58:
+                load(registerE, registerB);
+                break;
+            case 0x59:
+                load(registerE, registerC);
+                break;
+            case 0x5A:
+                load(registerE, registerD);
+                break;
+            case 0x5B:
+                load(registerE, registerE);
+                break;
+            case 0x5C:
+                load(registerE, registerH);
+                break;
+            case 0x5D:
+                load(registerE, registerL);
+                break;
             case 0x5E:
                 address = readCombinedRegisters(registerH, registerL);
                 load(registerE, mmu.rawRead(address));
                 break;
-            case 0x60: load(registerH, registerB); break;
-            case 0x61: load(registerH, registerC); break;
-            case 0x62: load(registerH, registerD); break;
-            case 0x63: load(registerH, registerE); break;
-            case 0x64: load(registerH, registerH); break;
-            case 0x65: load(registerH, registerL); break;
+            case 0x60:
+                load(registerH, registerB);
+                break;
+            case 0x61:
+                load(registerH, registerC);
+                break;
+            case 0x62:
+                load(registerH, registerD);
+                break;
+            case 0x63:
+                load(registerH, registerE);
+                break;
+            case 0x64:
+                load(registerH, registerH);
+                break;
+            case 0x65:
+                load(registerH, registerL);
+                break;
             case 0x66:
                 address = readCombinedRegisters(registerH, registerL);
                 load(registerH, mmu.rawRead(address));
                 break;
-            case 0x68: load(registerL, registerB); break;
-            case 0x69: load(registerL, registerC); break;
-            case 0x6A: load(registerL, registerD); break;
-            case 0x6B: load(registerL, registerE); break;
-            case 0x6C: load(registerL, registerH); break;
-            case 0x6D: load(registerL, registerL); break;
+            case 0x68:
+                load(registerL, registerB);
+                break;
+            case 0x69:
+                load(registerL, registerC);
+                break;
+            case 0x6A:
+                load(registerL, registerD);
+                break;
+            case 0x6B:
+                load(registerL, registerE);
+                break;
+            case 0x6C:
+                load(registerL, registerH);
+                break;
+            case 0x6D:
+                load(registerL, registerL);
+                break;
             case 0x6E:
                 address = readCombinedRegisters(registerH, registerL);
                 load(registerL, mmu.rawRead(address));
@@ -323,12 +427,21 @@ public class Z80 {
              *     n = A,B,C,D,E,H,L,(BC),(DE),(HL),(nn),#
              *     nn = two byte immediate value. (LS byte first.)
              */
-            case 0x0A: load(registerA, mmu.rawRead(readCombinedRegisters(registerB, registerC))); break;  // LD A,(BC) 0A 8
-            case 0x1A: load(registerA, mmu.rawRead(readCombinedRegisters(registerD, registerE))); break;  // LD A,(DE) 1A 8
+            case 0x0A:
+                load(registerA, mmu.rawRead(readCombinedRegisters(registerB, registerC)));
+                break;  // LD A,(BC) 0A 8
+            case 0x1A:
+                load(registerA, mmu.rawRead(readCombinedRegisters(registerD, registerE)));
+                break;  // LD A,(DE) 1A 8
             case 0xFA: // 16 cycles
                 load(registerA, mmu.rawRead(mmu.readWord(registerPC.read())));
-                registerPC.inc(); registerPC.inc(); break;
-            case 0x3E: load(registerA, mmu.rawRead(registerPC.read())); registerPC.inc(); break;  // LD A,# 3E 8
+                registerPC.inc();
+                registerPC.inc();
+                break;
+            case 0x3E:
+                load(registerA, mmu.rawRead(registerPC.read()));
+                registerPC.inc();
+                break;  // LD A,# 3E 8
             //</editor-fold>
             //<editor-fold desc="3.3.1.4 8-bit Loads - LD n, A" defaultstate="collapsed">
             /*
@@ -339,18 +452,38 @@ public class Z80 {
              *     n = A,B,C,D,E,H,L,(BC),(DE),(HL),(nn)
              *     nn = two byte immediate value. (LS byte first.)
              */
-            case 0x47: load(registerB, registerA); break; // LD B,A 47 4
-            case 0x4F: load(registerC, registerA); break; // LD C,A 4F 4
-            case 0x57: load(registerD, registerA); break; // LD D,A 57 4
-            case 0x5F: load(registerE, registerA); break; // LD E,A 5F 4
-            case 0x67: load(registerH, registerA); break; // LD H,A 67 4
-            case 0x6F: load(registerL, registerA); break; // LD L,A 6F 4
-            case 0x02: mmu.rawWrite(mmu.rawRead(readCombinedRegisters(registerB, registerC)), registerA.read()); break; // LD (BC),A 02 8
-            case 0x12: mmu.rawWrite(mmu.rawRead(readCombinedRegisters(registerD, registerE)), registerA.read()); break; // LD (DE),A 12 8
-            case 0x77: mmu.rawWrite(mmu.rawRead(readCombinedRegisters(registerH, registerL)), registerA.read()); break; // LD (HL),A 77 8
+            case 0x47:
+                load(registerB, registerA);
+                break; // LD B,A 47 4
+            case 0x4F:
+                load(registerC, registerA);
+                break; // LD C,A 4F 4
+            case 0x57:
+                load(registerD, registerA);
+                break; // LD D,A 57 4
+            case 0x5F:
+                load(registerE, registerA);
+                break; // LD E,A 5F 4
+            case 0x67:
+                load(registerH, registerA);
+                break; // LD H,A 67 4
+            case 0x6F:
+                load(registerL, registerA);
+                break; // LD L,A 6F 4
+            case 0x02:
+                mmu.rawWrite(mmu.rawRead(readCombinedRegisters(registerB, registerC)), registerA.read());
+                break; // LD (BC),A 02 8
+            case 0x12:
+                mmu.rawWrite(mmu.rawRead(readCombinedRegisters(registerD, registerE)), registerA.read());
+                break; // LD (DE),A 12 8
+            case 0x77:
+                mmu.rawWrite(mmu.rawRead(readCombinedRegisters(registerH, registerL)), registerA.read());
+                break; // LD (HL),A 77 8
             case 0xEA: // 16 cycles
                 mmu.rawWrite(mmu.readWord(registerPC.read()), registerA.read());
-                registerPC.inc(); registerPC.inc(); break; // LD (nn),A EA 16
+                registerPC.inc();
+                registerPC.inc();
+                break; // LD (nn),A EA 16
             //</editor-fold>
             //<editor-fold desc="3.3.1.5 -- 3.3.1.20 8-bit Loads" defaultstate="collapsed">
             case 0xF2:
@@ -461,54 +594,81 @@ public class Z80 {
                 mmu.rawWrite(address + 1, registerSP.readHigh());
                 break;
             //</editor-fold>
+            default:
+                System.out.println(String.format("Error: Opcode %05X does not belong to load(int opcode) . ", opcode));
+        }
+    }
 
-            // TODO end load function here, separate these two into Push and Pop
-
+    private void push(int opcode) throws InvalidPropertiesFormatException {
+        // 3.3.2.6 PUSH nn
+        int temp;
+        switch (opcode) {
+            // PUSH AF F5 16
+            // PUSH BC C5 16
+            // PUSH DE D5 16
+            // PUSH HL E5 16
             case 0xF5:
-            case 0xC5:
-            case 0xD5:
-            case 0xE5:
-                // PUSH AF F5 16
-                // PUSH BC C5 16
-                // PUSH DE D5 16
-                // PUSH HL E5 16
-
-                // Description:
-                //   Push register pair nn onto stack.
-                //   Decrement Stack Pointer (SP) twice.
-                temp = 0;
-                switch(opcode) {
-                    case 0xF5: temp = readCombinedRegisters(registerA, registerFlags); break;
-                    case 0xC5: temp = readCombinedRegisters(registerB, registerC); break;
-                    case 0xD5: temp = readCombinedRegisters(registerD, registerE); break;
-                    case 0xE5: temp = readCombinedRegisters(registerH, registerL); break;
-                }
-                registerSP.dec();
-                mmu.rawWrite(registerSP.read(), temp & 0b11111111_00000000);
-                registerSP.dec();
-                mmu.rawWrite(registerSP.read(), temp & 0b00000000_11111111);
+                temp = readCombinedRegisters(registerA, registerFlags);
                 break;
+            case 0xC5:
+                temp = readCombinedRegisters(registerB, registerC);
+                break;
+            case 0xD5:
+                temp = readCombinedRegisters(registerD, registerE);
+                break;
+            case 0xE5:
+                temp = readCombinedRegisters(registerH, registerL);
+                break;
+            default:
+                System.out.println(String.format("Error: Opcode %05X does not belong to push(int opcode) . ", opcode));
+                return;
+        }
+
+        // Description:
+        //   Push register pair nn onto stack.
+        //   Decrement Stack Pointer (SP) twice.
+        registerSP.dec();
+        mmu.rawWrite(registerSP.read(), temp & 0b11111111_00000000);
+        registerSP.dec();
+        mmu.rawWrite(registerSP.read(), temp & 0b00000000_11111111);
+
+    }
+
+    private void pop(int opcode) {
+        // 3.3.2.7 POP nn
+        Register upperRegister = null;
+        Register lowerRegister = null;
+        switch(opcode) {
+            // POP AF F1 12
+            // POP BC C1 12
+            // POP DE D1 12
+            // POP HL E1 12
             case 0xF1:
+                upperRegister = registerA; lowerRegister = registerFlags; break;
             case 0xC1:
+                upperRegister = registerB; lowerRegister = registerC; break;
             case 0xD1:
+                upperRegister = registerD; lowerRegister = registerE; break;
             case 0xE1:
-                // POP AF F1 12
-                // POP BC C1 12
-                // POP DE D1 12
-                // POP HL E1 12
-                switch(opcode) {
-                    case 0xF1: upperRegister = "A"; lowerRegister = "F"; break;
-                    case 0xC1: upperRegister = "B"; lowerRegister = "C"; break;
-                    case 0xD1: upperRegister = "D"; lowerRegister = "E"; break;
-                    case 0xE1: upperRegister = "H"; lowerRegister = "L"; break;
-                }
-                // Description:
-                //   Pop two bytes off stack into register pair nn.
-                //   Increment Stack Pointer (SP) twice
-                load(search(upperRegister), mmu.rawRead(registerSP.read()));
-                registerSP.inc();
-                load(search(lowerRegister), mmu.rawRead(registerSP.read()));
-                registerSP.inc();
+                upperRegister = registerH; lowerRegister = registerL; break;
+            default:
+                System.out.println(String.format("Error: Opcode %05X does not belong to pop(int opcode) . ", opcode));
+        }
+
+        if (upperRegister != null && lowerRegister != null) {
+            // execute instruction
+
+            // Description:
+            //   Pop two bytes off stack into register pair nn.
+            //   Increment Stack Pointer (SP) twice
+            load(upperRegister, mmu.rawRead(registerSP.read()));
+            registerSP.inc();
+            load(lowerRegister, mmu.rawRead(registerSP.read()));
+            registerSP.inc();
+        }
+        else {
+            // error out
+            System.out.println("Error: found call to pop() but either upper or lower register didn't get populated.");
         }
     }
 
