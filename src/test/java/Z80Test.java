@@ -10,7 +10,7 @@ import static org.junit.Assert.assertEquals;
 public class Z80Test {
 
 
-    private Cartridge cart = new Cartridge("C:\\Users\\Pablo\\Desktop\\cpu_instrs.gb");
+    private Cartridge cart = new Cartridge(getClass().getResource("cpu_instrs.gb").getPath());
     private MemoryManager mmu = new MemoryManager(cart);
     private Z80 z80uut = new Z80(mmu);
 

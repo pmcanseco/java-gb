@@ -9,7 +9,7 @@ import static org.junit.Assert.*;
  */
 public class MemoryManagerTest {
 
-    private Cartridge cart = new Cartridge("C:\\Users\\Pablo\\Desktop\\cpu_instrs.gb");
+    private Cartridge cart = new Cartridge(getClass().getResource("cpu_instrs.gb").getPath());
     private MemoryManager mmu = new MemoryManager(cart);
     private Random rng = new Random();
 
