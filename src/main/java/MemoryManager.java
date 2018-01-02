@@ -28,7 +28,7 @@ public class MemoryManager {
     private int[] ram = new int[memorySize];
     private Cartridge cartridge;
 
-    public MemoryManager(Cartridge cart) {
+    MemoryManager(Cartridge cart) {
         this.cartridge = cart;
     }
 
@@ -42,14 +42,19 @@ public class MemoryManager {
         if (isValidMemoryAddress(address)) {
             return ram[address];
         }
-        else { throw new IndexOutOfBoundsException(); }
+        else { throw new IndexOutOfBoundsException(address + " isn't a valid memory address."); }
     }
 
-    public void rawWrite(int address, int value) throws IndexOutOfBoundsException {
-        if (isValidMemoryAddress(address)) {
-            ram[address] = value;
+    public void rawWrite(int address, int value) throws IndexOutOfBoundsException, NumberFormatException {
+        if (!isValidMemoryAddress(address)) {
+            throw new IndexOutOfBoundsException();
         }
-        else { throw new IndexOutOfBoundsException(); }
+
+        if (value > 255 || value < 0) {
+            throw new NumberFormatException(value + " isn't between 0 and 255 inclusive");
+        }
+
+        ram[address] = value;
     }
 
     public int readWord(int address) throws IndexOutOfBoundsException {

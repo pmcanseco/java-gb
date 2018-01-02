@@ -7,7 +7,7 @@ import static org.junit.Assert.*;
 /**
  * Created by Pablo Canseco on 12/24/2017.
  */
-public class MemoryManagerTest {
+public class MemoryManagerTest extends AbstractTest {
 
     private Cartridge cart = new Cartridge(getClass().getResource("cpu_instrs.gb").getPath());
     private MemoryManager mmu = new MemoryManager(cart);
@@ -66,6 +66,24 @@ public class MemoryManagerTest {
         value = rng.nextInt(256);
         mmu.rawWrite(mmu.memorySize - 1, value);
         assertEquals(value, mmu.rawRead(mmu.memorySize - 1));
+
+        // write value higher than max possible
+        try {
+            mmu.rawWrite(rng.nextInt(mmu.memorySize), 256);
+            fail("should not be able to write values higher than 255 to memory");
+        }
+        catch (NumberFormatException e) {
+            // OK
+        }
+
+        // write value lower than 0
+        try {
+            mmu.rawWrite(rng.nextInt(mmu.memorySize), -1);
+            fail("should not be able to write values lower than 0 to memory");
+        }
+        catch (NumberFormatException e) {
+            // OK
+        }
     }
 
     @Test

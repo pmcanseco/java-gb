@@ -42,7 +42,7 @@ public class Z80 {
 
     private MemoryManager mmu;
 
-    public Z80(MemoryManager memMgr) {
+    Z80(MemoryManager memMgr) {
         // initialize 8-bit registers
         registerA = new Register("A", 8, 0);
         registerB = new Register("B", 8, 0);
@@ -81,7 +81,7 @@ public class Z80 {
     }
 
     // utility functions
-    private Register search(final String name) {
+    public Register search(final String name) {
         if (eightBitRegisters.get(name) != null) {
             return eightBitRegisters.get(name);
         }
@@ -164,13 +164,13 @@ public class Z80 {
         lower.write(lower8bits);
     }
 
-    private void load(Register destinationRegister, Register sourceRegister) {
+    public void load(Register destinationRegister, Register sourceRegister) {
         destinationRegister.write(sourceRegister.read());
     }
-    private void load(Register destinationRegister, int number) {
+    public void load(Register destinationRegister, int number) {
         destinationRegister.write(number);
     }
-    private void load(int opcode) throws InvalidPropertiesFormatException {
+    public void load(int opcode) throws InvalidPropertiesFormatException {
         // temp variables to temporarily hold stuff
         int address;
         int temp;
@@ -599,7 +599,7 @@ public class Z80 {
         }
     }
 
-    private void push(int opcode) throws InvalidPropertiesFormatException {
+    public void push(int opcode) throws InvalidPropertiesFormatException {
         // 3.3.2.6 PUSH nn
         int temp;
         switch (opcode) {
@@ -634,7 +634,7 @@ public class Z80 {
 
     }
 
-    private void pop(int opcode) {
+    public void pop(int opcode) {
         // 3.3.2.7 POP nn
         Register upperRegister;
         Register lowerRegister;
@@ -673,7 +673,7 @@ public class Z80 {
         }
     }
 
-    private void add(int opcode) throws InvalidPropertiesFormatException {
+    public void add(int opcode) throws InvalidPropertiesFormatException {
         /*  3.3.3.1 ADD A,n
             1. ADD A,n
             Description:
@@ -733,7 +733,7 @@ public class Z80 {
         load(registerA, result);
     }
 
-    private void adc(int opcode) throws InvalidPropertiesFormatException {
+    public void adc(int opcode) throws InvalidPropertiesFormatException {
         /*  3.3.3.2 ADC A,n
             Description:
                Add n + Carry flag to A.

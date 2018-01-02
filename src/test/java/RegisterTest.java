@@ -8,13 +8,12 @@ import static org.junit.Assert.assertEquals;
 /**
  * Created by Pablo Canseco on 12/27/2017.
  */
-public class RegisterTest {
+public class RegisterTest extends AbstractTest {
 
     private Random rng = new Random();
 
     @Test
     public void readBitTest() {
-        System.out.println("Testing readBit()");
         int eightbitregs = 0;
         int sixteenbitregs = 0;
 
@@ -35,15 +34,14 @@ public class RegisterTest {
             for (int j = 0; j < (registerSize ? 8 : 16); j++) {
                 assertEquals(bs.get(j), r.readBit(j));
             }
-            //System.out.println(r);
+            //log(r);
         }
-        System.out.println("Tested " + eightbitregs + " 8-bit registers.");
-        System.out.println("Tested " + sixteenbitregs + " 16-bit registers.");
+        log("Tested " + eightbitregs + " 8-bit registers.");
+        log("Tested " + sixteenbitregs + " 16-bit registers.");
     }
 
     @Test
     public void writeBitTest() {
-        System.out.println("Testing writeBit()");
         int eightBitRegs = 0 ;
         int sixteenBitRegs = 0 ;
 
@@ -77,8 +75,8 @@ public class RegisterTest {
             }
         }
 
-        System.out.println("Tested " + eightBitRegs + " 8-bit registers.");
-        System.out.println("Tested " + sixteenBitRegs + " 16-bit registers.");
+        log("Tested " + eightBitRegs + " 8-bit registers.");
+        log("Tested " + sixteenBitRegs + " 16-bit registers.");
     }
 
     @Test
@@ -88,5 +86,6 @@ public class RegisterTest {
         fr.write(value);
         value &= 0b11110000;
         assertEquals(value, fr.read());
+        // TODO finish testing register flags
     }
 }
