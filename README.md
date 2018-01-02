@@ -1,4 +1,4 @@
-# java-gb
+# java-gb [![Build Status](https://travis-ci.org/pmcanseco/java-gb.png?branch=master)](https://travis-ci.org/pmcanseco/java-gb)
 http://imrannazar.com/GameBoy-Emulation-in-JavaScript:-The-CPU
 
 
