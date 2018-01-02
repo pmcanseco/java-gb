@@ -636,8 +636,8 @@ public class Z80 {
 
     private void pop(int opcode) {
         // 3.3.2.7 POP nn
-        Register upperRegister = null;
-        Register lowerRegister = null;
+        Register upperRegister;
+        Register lowerRegister;
         switch(opcode) {
             // POP AF F1 12
             // POP BC C1 12
@@ -653,6 +653,7 @@ public class Z80 {
                 upperRegister = registerH; lowerRegister = registerL; break;
             default:
                 System.out.println(String.format("Error: Opcode %05X does not belong to pop(int opcode) . ", opcode));
+                return;
         }
 
         if (upperRegister != null && lowerRegister != null) {
@@ -670,6 +671,126 @@ public class Z80 {
             // error out
             System.out.println("Error: found call to pop() but either upper or lower register didn't get populated.");
         }
+    }
+
+    private void add(int opcode) throws InvalidPropertiesFormatException {
+        /*  3.3.3.1 ADD A,n
+            1. ADD A,n
+            Description:
+               Add n to A.
+            Use with:
+               n = A,B,C,D,E,H,L,(HL),#
+            Flags affected:
+               Z - Set if result is zero.
+               N - Reset.
+               H - Set if carry from bit 3.
+               C - Set if carry from bit 7.
+            Opcodes:
+            Instruction Parameters Opcode Cycles
+             ADD        A,A         87      4
+             ADD        A,B         80      4
+             ADD        A,C         81      4
+             ADD        A,D         82      4
+             ADD        A,E         83      4
+             ADD        A,H         84      4
+             ADD        A,L         85      4
+             ADD        A,(HL)      86      8
+             ADD        A,#         C6      8
+         */
+        int second;
+        // determine value to add based on opcode
+        switch (opcode) {
+            case 0x87: second = registerA.read(); break;
+            case 0x80: second = registerB.read(); break;
+            case 0x81: second = registerC.read(); break;
+            case 0x82: second = registerD.read(); break;
+            case 0x83: second = registerE.read(); break;
+            case 0x84: second = registerH.read(); break;
+            case 0x85: second = registerL.read(); break;
+            case 0x86: second = mmu.rawRead(readCombinedRegisters(registerH, registerL)); break;
+            case 0xC6: second = mmu.rawRead(registerPC.read()); registerPC.inc(); break;
+            default:
+                System.out.println(String.format("Error: Opcode %05X does not belong to add(int opcode) . ", opcode));
+                return;
+        }
+        // do the addition
+        int result = registerA.read() + second;
+
+        // flags affected
+        registerFlags.clearN();
+        if (result > 255) {
+            registerFlags.setC();
+            result &= 0b1111_1111;
+        }
+        if (result == 0) {
+            registerFlags.setZ();
+        }
+        if (result > 0b0000_1111) {
+            registerFlags.setH();
+        }
+
+        // save result
+        load(registerA, result);
+    }
+
+    private void adc(int opcode) throws InvalidPropertiesFormatException {
+        /*  3.3.3.2 ADC A,n
+            Description:
+               Add n + Carry flag to A.
+            Use with:
+               n = A,B,C,D,E,H,L,(HL),#
+            Flags affected:
+               Z - Set if result is zero.
+               N - Reset.
+               H - Set if carry from bit 3.
+               C - Set if carry from bit 7.
+            Opcodes:
+            Instruction Parameters Opcode Cycles
+              ADC         A,A        8F     4
+              ADC         A,B        88     4
+              ADC         A,C        89     4
+              ADC         A,D        8A     4
+              ADC         A,E        8B     4
+              ADC         A,H        8C     4
+              ADC         A,L        8D     4
+              ADC         A,(HL)     8E     8
+              ADC         A,#        CE     8
+         */
+        int second;
+        switch (opcode) {
+            case 0x8F: second = registerA.read(); break;
+            case 0x88: second = registerB.read(); break;
+            case 0x89: second = registerC.read(); break;
+            case 0x8A: second = registerD.read(); break;
+            case 0x8B: second = registerE.read(); break;
+            case 0x8C: second = registerH.read(); break;
+            case 0x8D: second = registerL.read(); break;
+            case 0x8E: second = mmu.rawRead(readCombinedRegisters(registerH, registerL)); break;
+            case 0xCE: second = mmu.rawRead(registerPC.read()); registerPC.inc(); break;
+            default:
+                System.out.println(String.format("Error: Opcode %05X does not belong to adc(int opcode) . ", opcode));
+                return;
+        }
+
+        // do the addition
+        int result = registerA.read() + second;
+        result += (registerFlags.readC()) ? 1 : 0;
+
+        // flags affected
+        registerFlags.clearN();
+        if (result > 255) {
+            registerFlags.setC();
+            result &= 0b1111_1111;
+        }
+        if (result == 0) {
+            registerFlags.setZ();
+        }
+        if (result > 0b0000_1111) {
+            registerFlags.setH();
+        }
+
+        // save result
+        load(registerA, result);
     }
 
 }
