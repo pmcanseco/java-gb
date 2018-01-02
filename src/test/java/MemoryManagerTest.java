@@ -1,37 +1,20 @@
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.Test;
 
 import java.util.Random;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.Assert.*;
 
 /**
  * Created by Pablo Canseco on 12/24/2017.
  */
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class MemoryManagerTest {
+public class MemoryManagerTest {
 
-    private MemoryManager mmu;
-    private Random rng;
-
-    @BeforeAll
-    void setUp() {
-        System.out.println("=== Starting MemoryManagerTest");
-        Cartridge cart = new Cartridge("C:\\Users\\Pablo\\Desktop\\cpu_instrs.gb");
-        mmu = new MemoryManager(cart);
-        rng = new Random();
-    }
-
-    @AfterAll
-    void tearDown() {
-        System.out.println("=== Ending MemoryManagerTest");
-        System.out.println();
-    }
+    private Cartridge cart = new Cartridge("C:\\Users\\Pablo\\Desktop\\cpu_instrs.gb");
+    private MemoryManager mmu = new MemoryManager(cart);
+    private Random rng = new Random();
 
     @Test
-    void testZeroize() {
+    public void testZeroize() {
         for (int i = 0; i < mmu.memorySize; i++) {
             mmu.rawWrite(i, rng.nextInt(256));
         }
@@ -40,7 +23,7 @@ class MemoryManagerTest {
     }
 
     @Test
-    void testGetBiosLogo() {
+    public void testGetBiosLogo() {
         int[] expected = MemoryManager.hexStringToByteArray(
                 "CEED6666CC0D000B03730083000C000D" +
                 "0008111F8889000EDCCC6EE6DDDDD999" +
@@ -51,15 +34,28 @@ class MemoryManagerTest {
     }
 
     @Test
-    void testEightBitReadWrite() {
+    public void testEightBitReadWrite() {
         for (int i = 0; i < 100; i++) {
             int address = rng.nextInt(mmu.memorySize);
             int value = rng.nextInt(256);
             mmu.rawWrite(address, value);
             assertEquals(value, mmu.rawRead(address));
         }
-        assertThrows(IndexOutOfBoundsException.class, () -> mmu.rawRead(mmu.memorySize));
-        assertThrows(IndexOutOfBoundsException.class, () -> mmu.rawRead(-1));
+
+        try {
+            mmu.rawRead(mmu.memorySize);
+            fail("should not be able to do mmu.rawRead(mmu.memorySize) without an exception");
+        }
+        catch (IndexOutOfBoundsException e) {
+            // OK
+        }
+        try {
+            mmu.rawRead(-1);
+            fail("should not be able to do mmu.rawRead(-1) without an exception");
+        }
+        catch (IndexOutOfBoundsException e) {
+            // OK
+        }
 
         // address 0
         int value = rng.nextInt(256);
@@ -73,7 +69,7 @@ class MemoryManagerTest {
     }
 
     @Test
-    void testSixteenBitReadWrite() {
+    public void testSixteenBitReadWrite() {
         for (int i = 0; i < 100; i ++) {
             int address = rng.nextInt(mmu.memorySize - 1);
             int value = rng.nextInt(65536);

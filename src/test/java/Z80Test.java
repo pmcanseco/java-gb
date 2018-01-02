@@ -1,36 +1,22 @@
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.Test;
 
 import java.util.Random;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Created by Pablo Canseco on 12/23/2017.
  */
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class Z80Test {
+public class Z80Test {
 
-    private Z80 z80uut;
 
-    @BeforeAll
-    void setUp() {
-        System.out.println("=== Starting Z80Test");
-        Cartridge cart = new Cartridge("C:\\Users\\Pablo\\Desktop\\cpu_instrs.gb");
-        MemoryManager mmu = new MemoryManager(cart);
-        z80uut = new Z80(mmu);
-    }
-
-    @AfterAll
-    void tearDown() {
-        System.out.println("=== Ending Z80Test");
-        System.out.println();
-    }
+    private Cartridge cart = new Cartridge("C:\\Users\\Pablo\\Desktop\\cpu_instrs.gb");
+    private MemoryManager mmu = new MemoryManager(cart);
+    private Z80 z80uut = new Z80(mmu);
 
     @Test
-    void test8bitRegister() {
+    public void test8bitRegister() {
+        System.out.println("Testing test8bitRegister()");
         z80uut.setRegisterValue("A", 0);
         assertEquals(0, z80uut.getRegisterValue("A"));
 
@@ -49,7 +35,8 @@ class Z80Test {
     }
 
     @Test
-    void test8bitReadBitFunction() {
+    public void test8bitReadBitFunction() {
+        System.out.println("Testing test8bitReadBitFunction()");
         Random rng = new Random();
         String[] registers = {"A", "B", "C", "D", "E", "H", "L"};
 
@@ -62,7 +49,7 @@ class Z80Test {
 
             // ensure each bit is expected value
             for (int j = 0; j < 8; j++) {
-                assertEquals(((randomEightBitUnsignedInt >> j) & 1) == 1, z80uut.getRegisterBit(register, j));
+                org.junit.Assert.assertEquals(((randomEightBitUnsignedInt >> j) & 1) == 1, z80uut.getRegisterBit(register, j));
             }
         }
 
@@ -70,7 +57,8 @@ class Z80Test {
     }
 
     @Test
-    void testCombinedRegisterWrite() {
+    public void testCombinedRegisterWrite() {
+        System.out.println("Testing testCombinedRegisterWrite()");
         try {
             z80uut.writeCombinedRegisters("A", "B", 0b11110001_10011110);
             assertEquals(0b11110001, z80uut.getRegisterValue("A"));
@@ -81,7 +69,8 @@ class Z80Test {
     }
 
     @Test
-    void testCombinedRegisterRead() {
+    public void testCombinedRegisterRead() {
+        System.out.println("Testing testCombinedRegisterRead()");
         try {
             z80uut.setRegisterValue("C", 0b01101100);
             z80uut.setRegisterValue("D", 0b01111111);

@@ -1,36 +1,19 @@
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.Test;
 
 import java.util.BitSet;
 import java.util.Random;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Created by Pablo Canseco on 12/27/2017.
  */
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class RegisterTest {
+public class RegisterTest {
 
-    private Z80 z80uut;
-    private Random rng;
-
-    @BeforeAll
-    void setUp() {
-        System.out.println("=== Starting RegisterTest");
-        rng = new Random();
-    }
-
-    @AfterAll
-    void tearDown() {
-        System.out.println("=== Ending RegisterTest");
-        System.out.println();
-    }
+    private Random rng = new Random();
 
     @Test
-    void readBitTest() {
+    public void readBitTest() {
         System.out.println("Testing readBit()");
         int eightbitregs = 0;
         int sixteenbitregs = 0;
@@ -59,7 +42,7 @@ class RegisterTest {
     }
 
     @Test
-    void writeBitTest() {
+    public void writeBitTest() {
         System.out.println("Testing writeBit()");
         int eightBitRegs = 0 ;
         int sixteenBitRegs = 0 ;
@@ -99,7 +82,7 @@ class RegisterTest {
     }
 
     @Test
-    void testFlagsRegisterFunctions() {
+    public void testFlagsRegisterFunctions() {
         FlagsRegister fr = new FlagsRegister("F", 8, 0);
         int value = rng.nextInt(256);
         fr.write(value);
