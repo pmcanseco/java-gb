@@ -28,7 +28,7 @@ public class MemoryManager {
     private int[] ram = new int[memorySize];
     private Cartridge cartridge;
 
-    MemoryManager(Cartridge cart) {
+    public MemoryManager(Cartridge cart) {
         this.cartridge = cart;
     }
 

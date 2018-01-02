@@ -1,3 +1,4 @@
+
 public class Main {
 
     public static void main(String[] args) {
@@ -8,16 +9,16 @@ public class Main {
 
         int width = 300;
         int height = 300;
-        GPU gpu = new GPU(width, height);
+        main.java.GPU gpu = new main.java.GPU(width, height);
 
         gpu.reset();
         //LegacyMMU.reset(cart);
         //LegacyZ80.reset();
 
-        System.out.println(GPU.BLACK.getRGB());
-        System.out.println(GPU.DARK_GRAY.getRGB());
-        System.out.println(GPU.LIGHT_GRAY.getRGB());
-        System.out.println(GPU.WHITE.getRGB());
+        System.out.println(main.java.GPU.BLACK.getRGB());
+        System.out.println(main.java.GPU.DARK_GRAY.getRGB());
+        System.out.println(main.java.GPU.LIGHT_GRAY.getRGB());
+        System.out.println(main.java.GPU.WHITE.getRGB());
 
         //LegacyZ80.dispatcher(gpu);
     }

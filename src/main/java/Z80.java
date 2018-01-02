@@ -42,7 +42,7 @@ public class Z80 {
 
     private MemoryManager mmu;
 
-    Z80(MemoryManager memMgr) {
+    public Z80(MemoryManager memMgr) {
         // initialize 8-bit registers
         registerA = new Register("A", 8, 0);
         registerB = new Register("B", 8, 0);

@@ -9,7 +9,7 @@ public class Register {
     private int value;
 
     // constructors
-    Register(String regName, int regSize, int regVal) {
+    public Register(String regName, int regSize, int regVal) {
         this.name = regName;
         this.value = regVal;
         this.size = regSize;

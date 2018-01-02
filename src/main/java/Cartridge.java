@@ -1,4 +1,4 @@
-import java.io.*;
+import java.io.File;
 import java.nio.file.Files;
 import java.util.Scanner;
 
@@ -38,7 +38,7 @@ public class Cartridge {
     private int logoChecksum; // see verifyRom()
     private int expectedLogoChecksum; // see verifyRom()
 
-    Cartridge(String path) {
+    public Cartridge(String path) {
         loadRomFile(path);
     }
 

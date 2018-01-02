@@ -1,9 +1,9 @@
-import java.awt.Color;
-import java.awt.image.BufferedImage;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.util.Random;
+package main.java;
+
 import javax.swing.*;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.util.Random;
 
 public class GPU extends JPanel {
 
@@ -70,15 +70,13 @@ public class GPU extends JPanel {
     private static int lyCompare;
     static Color[][] windowBuffer = new Color[144][168];
     private Color[][] backgroundBuffer = new Color[256][256];
-    static final Color WHITE = new Color(255, 255, 255);
-    static final Color LIGHT_GRAY = new Color(180, 180, 180);
-    static final Color DARK_GRAY = new Color(96, 96, 96);
-    static final Color BLACK = new Color(0, 0, 0);
+    public static final Color WHITE = new Color(255, 255, 255);
+    public static final Color LIGHT_GRAY = new Color(180, 180, 180);
+    public static final Color DARK_GRAY = new Color(96, 96, 96);
+    public static final Color BLACK = new Color(0, 0, 0);
     private static Color[] backgroundPalette = {WHITE, LIGHT_GRAY, DARK_GRAY, BLACK};
     private static Color[] objectPalette0 = {WHITE, LIGHT_GRAY, DARK_GRAY, BLACK};
-    ;
     private static Color[] objectPalette1 = {WHITE, LIGHT_GRAY, DARK_GRAY, BLACK};
-    ;
     private Color[][][][] spriteTile = new Color[256][8][8][2];
     private boolean[] spriteTileInvalidated = new boolean[256];
     private boolean[][] backgroundTileInvalidated = new boolean[32][32];
