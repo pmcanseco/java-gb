@@ -6,7 +6,7 @@ public class Cartridge {
 
     private enum Locale {
         Japanese,
-        NonJapanese,
+        World,
         Unknown
     }
 
@@ -80,7 +80,7 @@ public class Cartridge {
     private void setLocale() {
         // 0x014A contains the destination code. 0 = Japan, 1 = not Japan
         if(rom[0x14A] == 0x00)  locale = Locale.Japanese;
-        else if(rom[0x14A] == 0x01) locale = Locale.NonJapanese;
+        else if(rom[0x14A] == 0x01) locale = Locale.World;
         else locale = Locale.Unknown;
     }
 
@@ -125,9 +125,9 @@ public class Cartridge {
         return "Title:\t\t" + title + "\n" +
                "Locale:\t\t" + locale.name() + "\n" +
                "RAM Size:\t" + ramSize.getDisplayName() + "\n" +
-               "Checksum:\t( " + headerChecksum + " == " + expectedHeaderChecksum + " ) is " +
+               "Header Checksum:\t( " + headerChecksum + " == " + expectedHeaderChecksum + " ) is " +
                (headerChecksum == expectedHeaderChecksum) + "\n" +
-               "Logo Check:\t( " + logoChecksum + " == " + expectedLogoChecksum + " ) is " +
+               "Logo Match Check:\t( " + logoChecksum + " == " + expectedLogoChecksum + " ) is " +
                (logoChecksum == expectedLogoChecksum);
     }
 

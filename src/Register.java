@@ -1,5 +1,3 @@
-import java.util.BitSet;
-
 /**
  * Created by Pablo Canseco on 12/24/2017.
  */
@@ -37,6 +35,7 @@ public class Register {
     public void inc() {
         this.value += 1;
     }
+    public void dec() { this.value -= 1; }
     public int read() {
         return this.value;
     }
@@ -63,6 +62,43 @@ public class Register {
             this.value &= ~(1 << index);
         }
     }
+
+    // 16-bit reads
+    public int readHigh() {
+        if (this.size == 16) {
+            return this.value & 0b11111111_00000000;
+        }
+        else {
+            return this.read();
+        }
+    }
+    public int readLow() {
+        if (this.size == 16) {
+            return this.value & 0b00000000_11111111;
+        }
+        else {
+            return this.read();
+        }
+    }
+
+    // 16-bit writes
+    public void writeHigh(int value) {
+        if (this.size == 16) {
+            this.write(value & 0b11111111_00000000);
+        }
+        else {
+            this.write(value);
+        }
+    }
+    public void writeLow(int value) {
+        if (this.size == 16) {
+            this.write(value & 0b00000000_11111111);
+        }
+        else {
+            this.write(value);
+        }
+    }
+
     public final String getName() {
         return this.name;
     }

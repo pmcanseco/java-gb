@@ -174,8 +174,11 @@ public class Z80 {
         // temp variables to temporarily hold stuff
         int address;
         int temp;
+        int result;
         int lowerValue;
         int upperValue;
+        String upperRegister = "";
+        String lowerRegister = "";
         switch(opcode) {
             //<editor-fold desc="3.3.1.1 8-Bit Loads - LD nn, n" defaultstate="collapsed">
             /*
@@ -349,6 +352,7 @@ public class Z80 {
                 mmu.rawWrite(mmu.readWord(registerPC.read()), registerA.read());
                 registerPC.inc(); registerPC.inc(); break; // LD (nn),A EA 16
             //</editor-fold>
+            //<editor-fold desc="3.3.1.5 -- 3.3.1.20 8-bit Loads" defaultstate="collapsed">
             case 0xF2:
                 // Put value at address $FF00 + register C into A , takes 8 cycles
                 load(registerA, mmu.rawRead(registerC.read() + 0xFF00));
@@ -389,6 +393,8 @@ public class Z80 {
                 // Put memory address $FF00+n into A. 12 cycles
                 load(registerA, mmu.rawRead(0xFF00 + registerPC.read()));
                 break;
+            //</editor-fold>
+            //<editor-fold desc="3.3.2.1 -- 3.3.2.5 16-bit Loads" defaultstate="collapsed">
             case 0x01:
                 // LD BC,nn 01 12
                 load(registerC, mmu.rawRead(registerPC.read()));
@@ -428,10 +434,81 @@ public class Z80 {
                     temp = -((~temp + 1) & 255); // 2's complement
                 }
                 registerPC.inc();
-                temp += registerSP.read();
-                registerH.write((temp >> 8) & 255);
-                registerL.write(temp & 255);
-                // todo flags affected
+                result = temp + registerSP.read();
+                registerH.write((result >> 8) & 255);
+                registerL.write(result & 255); // this is fishy
+
+                // flags affected
+                registerFlags.clearZ();
+                registerFlags.clearN();
+                if (((registerSP.read() ^ temp ^ result) & 0x100) == 0x100) {
+                    registerFlags.setC();
+                }
+                if (((registerSP.read() ^ temp ^ result) & 0x10) == 0x10) {
+                    registerFlags.setH();
+                }
+                break;
+            case 0x08:
+                // LD (nn),SP 08 20 (TWENTY CYCLES)
+                // Put Stack Pointer (SP) at address n.
+                // LD (nn),SP
+                lowerValue = mmu.rawRead(registerPC.read());
+                registerPC.inc();
+                upperValue = mmu.rawRead(registerPC.read());
+                registerPC.inc();
+                address = ((upperValue << 8) + lowerValue);
+                mmu.rawWrite(address, registerSP.readLow());
+                mmu.rawWrite(address + 1, registerSP.readHigh());
+                break;
+            //</editor-fold>
+
+            // TODO end load function here, separate these two into Push and Pop
+
+            case 0xF5:
+            case 0xC5:
+            case 0xD5:
+            case 0xE5:
+                // PUSH AF F5 16
+                // PUSH BC C5 16
+                // PUSH DE D5 16
+                // PUSH HL E5 16
+
+                // Description:
+                //   Push register pair nn onto stack.
+                //   Decrement Stack Pointer (SP) twice.
+                temp = 0;
+                switch(opcode) {
+                    case 0xF5: temp = readCombinedRegisters(registerA, registerFlags); break;
+                    case 0xC5: temp = readCombinedRegisters(registerB, registerC); break;
+                    case 0xD5: temp = readCombinedRegisters(registerD, registerE); break;
+                    case 0xE5: temp = readCombinedRegisters(registerH, registerL); break;
+                }
+                registerSP.dec();
+                mmu.rawWrite(registerSP.read(), temp & 0b11111111_00000000);
+                registerSP.dec();
+                mmu.rawWrite(registerSP.read(), temp & 0b00000000_11111111);
+                break;
+            case 0xF1:
+            case 0xC1:
+            case 0xD1:
+            case 0xE1:
+                // POP AF F1 12
+                // POP BC C1 12
+                // POP DE D1 12
+                // POP HL E1 12
+                switch(opcode) {
+                    case 0xF1: upperRegister = "A"; lowerRegister = "F"; break;
+                    case 0xC1: upperRegister = "B"; lowerRegister = "C"; break;
+                    case 0xD1: upperRegister = "D"; lowerRegister = "E"; break;
+                    case 0xE1: upperRegister = "H"; lowerRegister = "L"; break;
+                }
+                // Description:
+                //   Pop two bytes off stack into register pair nn.
+                //   Increment Stack Pointer (SP) twice
+                load(search(upperRegister), mmu.rawRead(registerSP.read()));
+                registerSP.inc();
+                load(search(lowerRegister), mmu.rawRead(registerSP.read()));
+                registerSP.inc();
         }
     }
 
