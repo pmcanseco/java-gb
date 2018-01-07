@@ -7,7 +7,7 @@ public class FlagsRegister extends Register {
         C
     }
 
-    public FlagsRegister(String regName, int regSize, int regVal) {
+    FlagsRegister(String regName, int regSize, int regVal) {
         super(regName, regSize, regVal);
     }
 

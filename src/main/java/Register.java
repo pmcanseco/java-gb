@@ -99,14 +99,14 @@ public class Register {
         }
     }
 
-    public final String getName() {
+    private String getName() {
         return this.name;
     }
     public final int getSize() {
         return this.size;
     }
     public String toString() {
-        return "Register " + this.name + " (" + this.size + "-bit): " + this.value;
+        return "Register " + getName() + " (" + getSize() + "-bit): " + read();
     }
 }
 

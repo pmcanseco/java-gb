@@ -730,7 +730,6 @@ public class Z80 {
         // save result
         load(registerA, result);
     }
-
     public void adc(int opcode) throws InvalidPropertiesFormatException {
         /*  3.3.3.2 ADC A,n
             Description:
@@ -849,7 +848,6 @@ public class Z80 {
         // save result
         load(registerA, result);
     }
-
     public void sbc(int opcode) throws InvalidPropertiesFormatException {
         /* 3.3.3.4 SBC A,n
             Description:
@@ -907,6 +905,108 @@ public class Z80 {
 
         // save result
         load(registerA, result);
+    }
+
+    public void and(int opcode) throws InvalidPropertiesFormatException {
+        /* 3.3.3.5 AND n
+            Description:
+               Logically AND n with A, result in A.
+            Use with:
+               n = A,B,C,D,E,H,L,(HL),#
+            Flags affected:
+               Z - Set if result is zero.
+               N - Reset.
+               H - Set.
+               C - Reset.
+            Opcodes:
+            Instruction Parameters Opcode Cycles
+             AND            A        A7     4
+             AND            B        A0     4
+             AND            C        A1     4
+             AND            D        A2     4
+             AND            E        A3     4
+             AND            H        A4     4
+             AND            L        A5     4
+             AND            (HL)     A6     8
+             AND            #        E6     8
+         */
+        int second;
+        switch (opcode) {
+            case 0xA7: second = registerA.read(); break;
+            case 0xA0: second = registerB.read(); break;
+            case 0xA1: second = registerC.read(); break;
+            case 0xA2: second = registerD.read(); break;
+            case 0xA3: second = registerE.read(); break;
+            case 0xA4: second = registerH.read(); break;
+            case 0xA5: second = registerL.read(); break;
+            case 0xA6: second = mmu.rawRead(readCombinedRegisters(registerH, registerL)); break;
+            case 0xE6: second = mmu.rawRead(registerPC.read()); registerPC.inc(); break;
+            default:
+                System.out.println(String.format("Error: Opcode %05X does not belong to and(int opcode) . ", opcode));
+                return;
+        }
+
+        // do the and
+        load(registerA, registerA.read() & second);
+
+        // flags affected
+        if (registerA.read() == 0) {
+            registerFlags.setZ();
+        }
+        registerFlags.clearN();
+        registerFlags.setH();
+        registerFlags.clearC();
+    }
+
+    public void or(int opcode) throws InvalidPropertiesFormatException {
+        /* 3.3.3.6. OR n
+            Description:
+               Logical OR n with register A, result in A.
+            Use with:
+               n = A,B,C,D,E,H,L,(HL),#
+            Flags affected:
+               Z - Set if result is zero.
+               N - Reset.
+               H - Reset.
+               C - Reset.
+            Opcodes:
+            Instruction Parameters Opcode Cycles
+             OR             A        B7     4
+             OR             B        B0     4
+             OR             C        B1     4
+             OR             D        B2     4
+             OR             E        B3     4
+             OR             H        B4     4
+             OR             L        B5     4
+             OR             (HL)     B6     8
+             OR             #        F6     8
+        */
+        int second;
+        switch (opcode) {
+            case 0xB7: second = registerA.read(); break;
+            case 0xB0: second = registerB.read(); break;
+            case 0xB1: second = registerC.read(); break;
+            case 0xB2: second = registerD.read(); break;
+            case 0xB3: second = registerE.read(); break;
+            case 0xB4: second = registerH.read(); break;
+            case 0xB5: second = registerL.read(); break;
+            case 0xB6: second = mmu.rawRead(readCombinedRegisters(registerH, registerL)); break;
+            case 0xF6: second = mmu.rawRead(registerPC.read()); registerPC.inc(); break;
+            default:
+                System.out.println(String.format("Error: Opcode %05X does not belong to or(int opcode) . ", opcode));
+                return;
+        }
+
+        // do the or
+        load(registerA, registerA.read() | second);
+
+        // flags affected
+        if (registerA.read() == 0) {
+            registerFlags.setZ();
+        }
+        registerFlags.clearN();
+        registerFlags.clearH();
+        registerFlags.clearC();
     }
 
 }

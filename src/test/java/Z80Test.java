@@ -159,7 +159,7 @@ public class Z80Test extends AbstractTest{
                     z80uut.sub(opcode);
                     final int expected = as8bitNumber(opcodeToExpectedValueMap.get(opcode)); // account for overflow
                     final int actual = z80uut.getRegisterValue("A");
-                    log("expected = " + expected + ", actual = " + actual);
+                    //log("expected = " + expected + ", actual = " + actual);
                     assertEquals(expected, actual);
 
                     // clean up A back to previous value
