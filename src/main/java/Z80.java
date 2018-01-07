@@ -957,7 +957,6 @@ public class Z80 {
         registerFlags.setH();
         registerFlags.clearC();
     }
-
     public void or(int opcode) throws InvalidPropertiesFormatException {
         /* 3.3.3.6. OR n
             Description:
@@ -999,6 +998,56 @@ public class Z80 {
 
         // do the or
         load(registerA, registerA.read() | second);
+
+        // flags affected
+        if (registerA.read() == 0) {
+            registerFlags.setZ();
+        }
+        registerFlags.clearN();
+        registerFlags.clearH();
+        registerFlags.clearC();
+    }
+    public void xor(int opcode) throws InvalidPropertiesFormatException {
+        /* 3.3.3.7 XOR n
+            Description:
+               Logical exclusive OR n with register A, result in A.
+            Use with:
+               n = A,B,C,D,E,H,L,(HL),#
+            Flags affected:
+               Z - Set if result is zero.
+               N - Reset.
+               H - Reset.
+               C - Reset.
+            Opcodes:
+            Instruction Parameters Opcode Cycles
+             XOR            A       AF      4
+             XOR            B       A8      4
+             XOR            C       A9      4
+             XOR            D       AA      4
+             XOR            E       AB      4
+             XOR            H       AC      4
+             XOR            L       AD      4
+             XOR            (HL)    AE      8
+             XOR            *       EE      8
+        */
+        int second;
+        switch (opcode) {
+            case 0xAF: second = registerA.read(); break;
+            case 0xA8: second = registerB.read(); break;
+            case 0xA9: second = registerC.read(); break;
+            case 0xAA: second = registerD.read(); break;
+            case 0xAB: second = registerE.read(); break;
+            case 0xAC: second = registerH.read(); break;
+            case 0xAD: second = registerL.read(); break;
+            case 0xAE: second = mmu.rawRead(readCombinedRegisters(registerH, registerL)); break;
+            case 0xEE: second = mmu.rawRead(registerPC.read()); registerPC.inc(); break;
+            default:
+                System.out.println(String.format("Error: Opcode %05X does not belong to xor(int opcode) . ", opcode));
+                return;
+        }
+
+        // do the xor
+        load(registerA, registerA.read() ^ second);
 
         // flags affected
         if (registerA.read() == 0) {
