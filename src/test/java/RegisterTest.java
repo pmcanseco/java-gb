@@ -88,4 +88,14 @@ public class RegisterTest extends AbstractTest {
         assertEquals(value, fr.read());
         // TODO finish testing register flags
     }
+
+    @Test
+    public void testReadWriteHighLow() {
+        Register r = new Register("R", 16, 0);
+        int value = rng.nextInt(65536);
+        r.write(value);
+
+        assertEquals(value & 0b11111111_00000000, r.readHigh());
+        assertEquals(value & 0b00000000_11111111, r.readLow());
+    }
 }

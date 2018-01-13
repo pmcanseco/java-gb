@@ -1057,5 +1057,165 @@ public class Z80 {
         registerFlags.clearH();
         registerFlags.clearC();
     }
+    public void cp(int opcode) throws InvalidPropertiesFormatException {
+        /* 3.3.3.8. CP n
+           Description:
+               Compare A with n. This is basically an A - n
+               subtraction instruction but the results are thrown
+               away.
+           Use with:
+               n = A,B,C,D,E,H,L,(HL),#
+           Flags affected:
+               Z - Set if result is zero. (Set if A = n.)
+               N - Set.
+               H - Set if no borrow from bit 4.
+               C - Set for no borrow. (Set if A < n.)
+           Opcodes:
+           Instruction Parameters Opcode Cycles
+                CP          A       BF      4
+                CP          B       B8      4
+                CP          C       B9      4
+                CP          D       BA      4
+                CP          E       BB      4
+                CP          H       BC      4
+                CP          L       BD      4
+                CP          (HL)    BE      8
+                CP          #       FE      8
+         */
+        int second;
+        switch (opcode) {
+            case 0xBF: second = registerA.read(); break;
+            case 0xB8: second = registerB.read(); break;
+            case 0xB9: second = registerC.read(); break;
+            case 0xBA: second = registerD.read(); break;
+            case 0xBB: second = registerE.read(); break;
+            case 0xBC: second = registerH.read(); break;
+            case 0xBD: second = registerL.read(); break;
+            case 0xBE: second = mmu.rawRead(readCombinedRegisters(registerH, registerL)); break;
+            case 0xFE: second = mmu.rawRead(registerPC.read()); registerPC.inc(); break;
+            default:
+                System.out.println(String.format("Error: Opcode %05X does not belong to cp(int opcode) . ", opcode));
+                return;
+        }
 
+        // do the subtraction
+        int result = registerA.read() - second;
+
+        // flags affected
+        registerFlags.setN();
+        if (result == 0) {
+            registerFlags.setZ();
+        }
+        if (result < 0) {
+            registerFlags.setC();
+            result &= 0b1111_1111;
+        }
+        if (result < 0b0000_1111) {
+            registerFlags.setH();
+        }
+
+        // throw away result :-)
+    }
+    public void inc(int opcode) throws InvalidPropertiesFormatException {
+        /* 3.3.3.9. INC n
+            Description:
+               Increment register n.
+            Use with:
+               n = A,B,C,D,E,H,L,(HL)
+            Flags affected:
+               Z - Set if result is zero.
+               N - Reset.
+               H - Set if carry from bit 3.
+               C - Not affected.
+            Opcodes:
+            Instruction Parameters Opcode Cycles
+             INC            A       3C      4
+             INC            B       04      4
+             INC            C       0C      4
+             INC            D       14      4
+             INC            E       1C      4
+             INC            H       24      4
+             INC            L       2C      4
+             INC            (HL)    34      12
+        */
+        int value;
+        switch (opcode) {
+            case 0x3C: registerA.inc(); value = registerA.read(); break;
+            case 0x04: registerB.inc(); value = registerB.read(); break;
+            case 0x0C: registerC.inc(); value = registerC.read(); break;
+            case 0x14: registerD.inc(); value = registerD.read(); break;
+            case 0x1C: registerE.inc(); value = registerE.read(); break;
+            case 0x24: registerH.inc(); value = registerH.read(); break;
+            case 0x2C: registerL.inc(); value = registerL.read(); break;
+            case 0x34:
+                int address = readCombinedRegisters(registerH, registerL);
+                value = mmu.rawRead(address);
+                value += 1;
+                mmu.rawWrite(address, value);
+                break;
+            default:
+                System.out.println(String.format("Error: Opcode %05X does not belong to inc(int opcode) . ", opcode));
+                return;
+        }
+
+        // flags affected
+        if (value == 0) {
+            registerFlags.setZ();
+        }
+        registerFlags.clearN();
+        if (value > 0b0000_1111) {
+            registerFlags.setH();
+        }
+    }
+    public void dec(int opcode) throws InvalidPropertiesFormatException {
+        /* 3.3.3.10. DEC n
+            Description:
+               Decrement register n.
+            Use with:
+               n = A,B,C,D,E,H,L,(HL)
+            Flags affected:
+               Z - Set if reselt is zero.
+               N - Set.
+               H - Set if no borrow from bit 4.
+               C - Not affected.
+            Opcodes:
+            Instruction Parameters Opcode Cycles
+               DEC          A       3D      4
+               DEC          B       05      4
+               DEC          C       0D      4
+               DEC          D       15      4
+               DEC          E       1D      4
+               DEC          H       25      4
+               DEC          L       2D      4
+               DEC          (HL)    35      12
+         */
+        int value;
+        switch (opcode) {
+            case 0x3D: registerA.dec(); value = registerA.read(); break;
+            case 0x05: registerB.dec(); value = registerB.read(); break;
+            case 0x0D: registerC.dec(); value = registerC.read(); break;
+            case 0x15: registerD.dec(); value = registerD.read(); break;
+            case 0x1D: registerE.dec(); value = registerE.read(); break;
+            case 0x25: registerH.dec(); value = registerH.read(); break;
+            case 0x2D: registerL.dec(); value = registerL.read(); break;
+            case 0x35:
+                int address = readCombinedRegisters(registerH, registerL);
+                value = mmu.rawRead(address);
+                value -= 1;
+                mmu.rawWrite(address, value);
+                break;
+            default:
+                System.out.println(String.format("Error: Opcode %05X does not belong to dec(int opcode) . ", opcode));
+                return;
+        }
+
+        // flags affected
+        if (value == 0) {
+            registerFlags.setZ();
+        }
+        registerFlags.setN();
+        if (value < 0b0000_1111) {
+            registerFlags.setH();
+        }
+    }
 }

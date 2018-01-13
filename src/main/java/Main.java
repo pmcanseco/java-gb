@@ -2,7 +2,7 @@
 public class Main {
 
     public static void main(String[] args) {
-        Cartridge cart = new Cartridge("C:\\Users\\Pablo\\Desktop\\cpu_instrs.gb", true);
+        Cartridge cart = new Cartridge(Main.class.getResource("cpu_instrs.gb").getPath(), true);
         MemoryManager mmu = new MemoryManager(cart);
         Z80 z80 = new Z80(mmu);
         z80.getRegisterValue("A");

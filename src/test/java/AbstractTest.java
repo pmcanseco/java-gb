@@ -7,7 +7,7 @@ public class AbstractTest {
     @Rule
     public MethodRule watchman = new TestWatchman() {
         public void starting(FrameworkMethod method) {
-            System.out.println("\u001B[36m[ START   ] \u001B[0m" + method.getName() + "()");
+            System.out.println("\u001B[32m[ RUN     ] \u001B[0m" + method.getName() + "()");
         }
         public void succeeded(FrameworkMethod method) {
             System.out.println("\u001B[32m[      OK ] \u001B[0m");
