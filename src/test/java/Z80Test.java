@@ -18,7 +18,7 @@ public class Z80Test extends AbstractTest{
     private Random rng = new Random();
 
     // utility methods
-    private void randomize8bitRegisters() {
+    private void randomizeRegisters() {
         String[] registers = { "A", "B", "C", "D", "E", "H", "L", "PC", "SP"};
         for (String register : registers) {
             Register reg = z80uut.search(register);
@@ -106,7 +106,7 @@ public class Z80Test extends AbstractTest{
         for(int i = 0; i < 10; i++) {
             try {
                 Map<Integer, Integer> opcodeToExpectedValueMap = new HashMap<>();
-                randomize8bitRegisters();
+                randomizeRegisters();
                 randomizeMemory();
                 final int currentRegisterAValue = z80uut.getRegisterValue("A");
 
@@ -141,7 +141,7 @@ public class Z80Test extends AbstractTest{
         for(int i = 0; i < 10; i++) {
             try {
                 Map<Integer, Integer> opcodeToExpectedValueMap = new HashMap<>();
-                randomize8bitRegisters();
+                randomizeRegisters();
                 randomizeMemory();
                 final int currentRegisterAValue = z80uut.getRegisterValue("A");
 

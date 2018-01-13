@@ -788,6 +788,81 @@ public class Z80 {
         // save result
         load(registerA, result);
     }
+    public void add16(int opcode) throws InvalidPropertiesFormatException {
+        /*  3.3.4.1. ADD HL,n
+            Description:
+               Add n to HL.
+            Use with:
+               n = BC,DE,HL,SP
+            Flags affected:
+               Z - Not affected.
+               N - Reset.
+               H - Set if carry from bit 11.
+               C - Set if carry from bit 15.
+            Opcodes:
+            Instruction Parameters Opcode Cycles
+             ADD         HL,BC      09      8
+             ADD         HL,DE      19      8
+             ADD         HL,HL      29      8
+             ADD         HL,SP      39      8
+
+             Flags affected:
+               Z - Reset.
+               N - Reset.
+               H - Set or reset according to operation.
+               C - Set or reset according to operation.
+             ADD         SP,#       E8      16
+        */
+        int value;
+        Register destReg = null;
+        switch (opcode) {
+            case 0x09: value = readCombinedRegisters(registerB, registerC); break;
+            case 0x19: value = readCombinedRegisters(registerD, registerE); break;
+            case 0x29: value = readCombinedRegisters(registerH, registerL); break;
+            case 0x39: value = registerSP.read(); break;
+            case 0xE8: value = mmu.rawRead(registerPC.read()); registerPC.inc(); break;
+            default:
+                System.out.println(String.format("Error: Opcode %05X does not belong to add16(int opcode) . ", opcode));
+                return;
+
+        }
+
+        // do the add
+        if (opcode == 0xE8) {
+            value += registerSP.read();
+
+            // flags affected
+            registerFlags.clearZ();
+            registerFlags.clearN();
+            if (value > 0b00001111_11111111) {
+                registerFlags.setH();
+            }
+            if (value > 65535) {
+                registerFlags.setC();
+                value &= 0b11111111_11111111;
+            }
+
+            // save result
+            registerSP.write(value);
+        }
+        else {
+            value += readCombinedRegisters(registerH, registerL);
+
+            // flags affected
+            registerFlags.clearN();
+            if (value > 0b00001111_11111111) {
+                registerFlags.setH();
+            }
+            if (value > 65535) {
+                registerFlags.setC();
+                value &= 0b11111111_11111111;
+            }
+
+            // save result
+            writeCombinedRegisters(registerH, registerL, value);
+        }
+
+    }
 
     public void sub(int opcode) throws InvalidPropertiesFormatException {
         /* 3.3.3.3 SUB n
@@ -1166,6 +1241,48 @@ public class Z80 {
             registerFlags.setH();
         }
     }
+    public void inc16(int opcode) throws InvalidPropertiesFormatException {
+        /* 3.3.4.3. INC nn
+            Description:
+               Increment register nn.
+            Use with:
+               nn = BC,DE,HL,SP
+            Flags affected:
+               None.
+            Opcodes:
+            Instruction Parameters Opcode Cycles
+             INC            BC      03      8
+             INC            DE      13      8
+             INC            HL      23      8
+             INC            SP      33      8
+        */
+        int value;
+        Register highReg = null;
+        Register lowReg = null;
+        switch (opcode) {
+            case 0x03:
+                highReg = registerB;
+                lowReg = registerC;
+                break;
+            case 0x13:
+                highReg = registerD;
+                lowReg = registerE;
+                break;
+            case 0x23:
+                highReg = registerH;
+                lowReg = registerL;
+                break;
+            case 0x33:
+                registerSP.inc();
+                return;
+            default:
+                System.out.println(String.format("Error: Opcode %05X does not belong to inc16(int opcode) . ", opcode));
+                return;
+        }
+        value = readCombinedRegisters(highReg, lowReg);
+        value += 1;
+        writeCombinedRegisters(highReg, lowReg, value);
+    }
     public void dec(int opcode) throws InvalidPropertiesFormatException {
         /* 3.3.3.10. DEC n
             Description:
@@ -1216,5 +1333,47 @@ public class Z80 {
         if (value < 0b0000_1111) {
             registerFlags.setH();
         }
+    }
+    public void dec16(int opcode) throws InvalidPropertiesFormatException {
+        /* 3.3.4.4. DEC nn
+            Description:
+               Decrement register nn.
+            Use with:
+               nn = BC,DE,HL,SP
+            Flags affected:
+               None.
+            Opcodes:
+            Instruction Parameters Opcode Cycles
+             DEC            BC      0B      8
+             DEC            DE      1B      8
+             DEC            HL      2B      8
+             DEC            SP      3B      8
+        */
+        int value;
+        Register highReg = null;
+        Register lowReg = null;
+        switch (opcode) {
+            case 0x03:
+                highReg = registerB;
+                lowReg = registerC;
+                break;
+            case 0x13:
+                highReg = registerD;
+                lowReg = registerE;
+                break;
+            case 0x23:
+                highReg = registerH;
+                lowReg = registerL;
+                break;
+            case 0x33:
+                registerSP.dec();
+                return;
+            default:
+                System.out.println(String.format("Error: Opcode %05X does not belong to dec16(int opcode) . ", opcode));
+                return;
+        }
+        value = readCombinedRegisters(highReg, lowReg);
+        value -= 1;
+        writeCombinedRegisters(highReg, lowReg, value);
     }
 }
