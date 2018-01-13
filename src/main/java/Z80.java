@@ -1190,6 +1190,7 @@ public class Z80 {
 
         // throw away result :-)
     }
+
     public void inc(int opcode) throws InvalidPropertiesFormatException {
         /* 3.3.3.9. INC n
             Description:
@@ -1283,6 +1284,7 @@ public class Z80 {
         value += 1;
         writeCombinedRegisters(highReg, lowReg, value);
     }
+
     public void dec(int opcode) throws InvalidPropertiesFormatException {
         /* 3.3.3.10. DEC n
             Description:
@@ -1375,5 +1377,65 @@ public class Z80 {
         value = readCombinedRegisters(highReg, lowReg);
         value -= 1;
         writeCombinedRegisters(highReg, lowReg, value);
+    }
+
+    private int swapUtil(int value) {
+        int upper = value & 0b1111_0000;
+        int lower = value & 0b0000_1111;
+        lower <<= 4;
+        upper >>= 4;
+        value = 0;
+        value |= upper;
+        value |= lower;
+        return value;
+    }
+    public void swap(int opcode) throws InvalidPropertiesFormatException {
+        /* 3.3.5.1. SWAP n
+            Description:
+               Swap upper & lower nibles of n.
+            Use with:
+               n = A,B,C,D,E,H,L,(HL)
+            Flags affected:
+               Z - Set if result is zero.
+               N - Reset.
+               H - Reset.
+               C - Reset.
+            Opcodes:
+            Instruction Parameters Opcode Cycles
+               SWAP         A       CB 37   8
+               SWAP         B       CB 30   8
+               SWAP         C       CB 31   8
+               SWAP         D       CB 32   8
+               SWAP         E       CB 33   8
+               SWAP         H       CB 34   8
+               SWAP         L       CB 35   8
+               SWAP         (HL)    CB 36   16
+         */
+        int value;
+        switch (opcode) {
+            case 0xCB37: value = swapUtil(registerA.read()); registerA.write(value); break;
+            case 0xCB30: value = swapUtil(registerB.read()); registerB.write(value); break;
+            case 0xCB31: value = swapUtil(registerC.read()); registerC.write(value); break;
+            case 0xCB32: value = swapUtil(registerD.read()); registerD.write(value); break;
+            case 0xCB33: value = swapUtil(registerE.read()); registerE.write(value); break;
+            case 0xCB34: value = swapUtil(registerH.read()); registerH.write(value); break;
+            case 0xCB35: value = swapUtil(registerL.read()); registerL.write(value); break;
+            case 0xCB36:
+                int address = readCombinedRegisters(registerH, registerL);
+                value = swapUtil(mmu.rawRead(address));
+                mmu.rawWrite(address, value);
+                break;
+            default:
+                System.out.println(String.format("Error: Opcode %05X does not belong to swap(int opcode) . ", opcode));
+                return;
+        }
+
+        // flags affected
+        if (value == 0) {
+            registerFlags.setZ();
+        }
+        registerFlags.clearN();
+        registerFlags.clearH();
+        registerFlags.clearC();
     }
 }
