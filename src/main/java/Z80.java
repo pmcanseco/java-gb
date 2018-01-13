@@ -631,7 +631,6 @@ public class Z80 {
         mmu.rawWrite(registerSP.read(), temp & 0b00000000_11111111);
 
     }
-
     public void pop(int opcode) {
         // 3.3.2.7 POP nn
         Register upperRegister;

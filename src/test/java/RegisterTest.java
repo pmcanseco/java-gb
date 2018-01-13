@@ -97,5 +97,6 @@ public class RegisterTest extends AbstractTest {
 
         assertEquals(value & 0b11111111_00000000, r.readHigh());
         assertEquals(value & 0b00000000_11111111, r.readLow());
+        // TODO test writes
     }
 }
