@@ -42,6 +42,10 @@ public class Z80 {
 
     private MemoryManager mmu;
 
+    private boolean interruptsEnabled = true;
+    private boolean pendingInterruptDisable = false;
+    private boolean pendingInterruptEnable = false;
+
     Z80(MemoryManager memMgr) {
         // initialize 8-bit registers
         registerA = new Register("A", 8, 0);
@@ -170,6 +174,8 @@ public class Z80 {
     public void load(Register destinationRegister, int number) {
         destinationRegister.write(number);
     }
+
+    // opcode implementations
     public void load(int opcode) throws InvalidPropertiesFormatException {
         // temp variables to temporarily hold stuff
         int address;
@@ -1438,4 +1444,196 @@ public class Z80 {
         registerFlags.clearH();
         registerFlags.clearC();
     }
+
+    public void daa(int opcode) {
+        if (opcode != 0x27) {
+            System.out.println("Why are we even in daa() if opcode " + opcode + " isn't 0x27?");
+            return;
+        }
+        /* 3.3.5.2. DAA
+            Description:
+             Decimal adjust register A.
+             This instruction adjusts register A so that the
+             correct representation of Binary Coded Decimal (BCD)
+             is obtained.
+            Flags affected:
+             Z - Set if register A is zero.
+             N - Not affected.
+             H - Reset.
+             C - Set or reset according to operation.
+
+            Opcodes:
+            Instruction Parameters Opcode Cycles
+                DAA         -/-     27      4
+        */
+        // The above doesn't explain much. Going with this implementation:
+        // http://z80-heaven.wikidot.com/instructions-set:daa
+        /*
+           When this instruction is executed, the A register is BCD corrected using the contents of the flags.
+           The exact process is the following: if the least significant four bits of A contain a non-BCD digit
+           (i. e. it is greater than 9) or the H flag is set, then $06 is added to the register. Then the four
+           most significant bits are checked. If this more significant digit also happens to be greater than 9
+           or the C flag is set, then $60 is added. ( $ = hex )
+         */
+        int value = registerA.read();
+        int lower = value & 0b0000_1111;
+        if (lower > 9 || registerFlags.readH()) {
+            value += 0x06;
+        }
+        int upper = value & 0b1111_0000;
+        if (upper > 9 || registerFlags.readC()) {
+            value += 0x60;
+        }
+
+        // flags affected
+        if (value > 255) {
+            registerFlags.setC();
+            value &= 255;
+        }
+        if (value == 0) {
+            registerFlags.setZ();
+        }
+        registerFlags.clearH();
+
+        // save result
+        registerA.write(value);
+    }
+
+    public void cpl(int opcode) {
+        /* 3.3.5.3. CPL
+            Description:
+             Complement A register. (Flip all bits.)
+            Flags affected:
+             Z - Not affected.
+             N - Set.
+             H - Set.
+             C - Not affected.
+            Opcodes:
+            Instruction Parameters Opcode Cycles
+             CPL           -/-      2F      4
+         */
+        if (opcode != 0x2F) {
+            System.out.println("Why are we even in cpl() if opcode " + opcode + " isn't 0x2F?");
+            return;
+        }
+
+        // do the flip
+        registerA.write( ~ registerA.read() );
+
+        // flags affected
+        registerFlags.setN();
+        registerFlags.setH();
+    }
+    public void ccf(int opcode) {
+        /*
+            3.3.5.4. CCF
+            Description:
+             Complement carry flag.
+             If C flag is set, then reset it.
+             If C flag is reset, then set it.
+            Flags affected:
+             Z - Not affected.
+             N - Reset.
+             H - Reset.
+             C - Complemented.
+            Opcodes:
+            Instruction Parameters Opcode Cycles
+             CCF -/- 3F 4
+         */
+        if (opcode != 0x3F) {
+            System.out.println("Why are we even in ccf() if opcode " + opcode + " isn't 0x3F?");
+            return;
+        }
+
+        registerFlags.clearN();
+        registerFlags.clearH();
+
+        if (registerFlags.readC())
+            registerFlags.clearC();
+        else
+            registerFlags.setC();
+    }
+    public void scf(int opcode) {
+        /*
+            3.3.5.5. SCF
+            Description:
+             Set Carry flag.
+            Flags affected:
+             Z - Not affected.
+             N - Reset.
+             H - Reset.
+             C - Set.
+            Opcodes:
+            Instruction Parameters Opcode Cycles
+             SCF            -/-      37     4
+         */
+        if (opcode != 0x37) {
+            System.out.println("Why are we even in scf() if opcode " + opcode + " isn't 0x37?");
+            return;
+        }
+
+        registerFlags.clearN();
+        registerFlags.clearH();
+        registerFlags.setC();
+    }
+
+    public void nopHaltStop(int opcode) {
+        if (opcode == 0x00) {
+            // NOP - 4 cycles, 0x00 opcode
+            System.out.println("NOP - No operation.");
+        }
+        else if (opcode == 0x76) {
+            // HALT - power down CPU until interrupt occurs. Opcode 0x76. 4 cycles.
+            System.out.println("HALT");
+            while (true) {
+                // TODO - wait until an interrupt happens then break
+            }
+        }
+        else if (opcode == 0x1000) {
+            // STOP - halt cpu and lcd display until button pressed. Opcode 0x1000. 4 cycles.
+            System.out.println("STOP");
+            while (true) {
+                // TODO - wait until button is pressed then break
+            }
+        }
+        else {
+            System.out.println("We're in nopHaltStop() but opcode " + opcode + " isn't 0x00, 0x76, or 0x1000");
+        }
+    }
+    public void diEi(int opcode) {
+        /*
+            9. DI
+            Description:
+             This instruction disables interrupts but not
+             immediately. Interrupts are disabled after
+             instruction after DI is executed.
+            Flags affected:
+             None.
+            Opcodes:
+            Instruction Parameters Opcode Cycles
+             DI -/- F3 4
+
+
+            10. EI
+            Description:
+             Enable interrupts. This intruction enables interrupts
+             but not immediately. Interrupts are enabled after
+             instruction after EI is executed.
+            Flags affected:
+             None.
+            Opcodes:
+            Instruction Parameters Opcode Cycles
+            EI -/- FB 4
+         */
+        if (opcode == 0xF3) {
+            pendingInterruptDisable = true;
+        }
+        else if (opcode == 0xFB) {
+            pendingInterruptEnable = true;
+        }
+        else {
+            System.out.println("Why are we even in diEi() if opcode " + opcode + " isn't 0xF3 or 0xFB?");
+        }
+    }
+
 }
