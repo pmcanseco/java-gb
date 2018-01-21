@@ -1636,4 +1636,42 @@ public class Z80 {
         }
     }
 
+    public void rlca(int opcode) {
+        /*
+        1. RLCA
+        Description:
+         Rotate A left. Old bit 7 to Carry flag.
+        Flags affected:
+        Z - Set if result is zero.
+         N - Reset.
+         H - Reset.
+         C - Contains old bit 7 data.
+        Opcodes:
+        Instruction Parameters Opcode Cycles
+         RLCA -/- 07 4
+         */
+        if (opcode != 0x07) {
+            System.out.println("Wrong opcode handler. " + opcode + " shouldn't be handled by rlca()");
+            return;
+        }
+
+        // perform operation
+        int result = (registerA.read() << 1) | (registerA.read() >> 7);
+        registerA.write(result);
+        boolean bit7 = ((registerA.read() & 0b10000000) >> 7) == 1;
+
+        // flags affected
+        if (result == 0) {
+            registerFlags.setZ();
+        }
+        registerFlags.clearN();
+        registerFlags.clearH();
+        if (bit7) {
+            registerFlags.setC();
+        }
+        else {
+            registerFlags.clearC();
+        }
+    }
+
 }
