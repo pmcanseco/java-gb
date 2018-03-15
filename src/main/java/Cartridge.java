@@ -54,7 +54,7 @@ public class Cartridge {
         try {
             byte[] tempRom = Files.readAllBytes(new File(romPath).toPath());
             rom = new int[tempRom.length];
-            for(int i = 0; i < tempRom.length; i++) {
+            for (int i = 0; i < tempRom.length; i++) {
                 rom[i] = tempRom[i] & 0xFF;
             }
             setTitle();
@@ -73,14 +73,14 @@ public class Cartridge {
     private void setTitle() {
         // bytes at 0x0134 through 0x0143 contain the title
         StringBuilder sb = new StringBuilder();
-        for(int i=0x134; i<0x143; i++) sb.append((char) this.rom[i]);
+        for (int i=0x134; i<0x143; i++) sb.append((char) this.rom[i]);
         this.title = sb.toString();
     }
 
     private void setLocale() {
         // 0x014A contains the destination code. 0 = Japan, 1 = not Japan
-        if(rom[0x14A] == 0x00)  locale = Locale.Japanese;
-        else if(rom[0x14A] == 0x01) locale = Locale.World;
+        if (rom[0x14A] == 0x00)  locale = Locale.Japanese;
+        else if (rom[0x14A] == 0x01) locale = Locale.World;
         else locale = Locale.Unknown;
     }
 
@@ -105,7 +105,7 @@ public class Cartridge {
         // The GAME WON'T WORK if this headerChecksum is incorrect.
         headerChecksum = rom[0x014D];
         expectedHeaderChecksum = 0;
-        for(int i = 0x0134; i <= 0x014C; i++) {
+        for (int i = 0x0134; i <= 0x014C; i++) {
             expectedHeaderChecksum = expectedHeaderChecksum - rom[i] - 1;
         }
         expectedHeaderChecksum &= 255; // mask to lower 8 bits
@@ -118,7 +118,7 @@ public class Cartridge {
         expectedLogoChecksum = 0;
         logoChecksum = 0;
         for (int i : MemoryManager.getBiosLogo()) expectedLogoChecksum += i;
-        for(int i=0x104; i <= 0x0133; i++) logoChecksum += rom[i];
+        for (int i=0x104; i <= 0x0133; i++) logoChecksum += rom[i];
     }
 
     public String toString() {
