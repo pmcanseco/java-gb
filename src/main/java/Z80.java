@@ -1888,7 +1888,73 @@ public class Z80 {
         else {
             registerFlags.clearC();
         }
+    }
+    
+    public void rrcn(int opcode) throws InvalidPropertiesFormatException {
+        /*
+        7. RRC n
+        Description:
+        Rotate n right. Old bit 0 to Carry flag.
+        Use with:
+        n = A,B,C,D,E,H,L,(HL)
+        Flags affected:
+        Z - Set if result is zero.
+        N - Reset.
+        H - Reset.
+        C - Contains old bit 0 data.
+        Opcodes:
+        Instruction Parameters Opcode Cycles
+        RRC A CB 0F 8
+        RRC B CB 08 8
+        RRC C CB 09 8
+        RRC D CB 0A 8
+        RRC E CB 0B 8
+        RRC H CB 0C 8
+        RRC L CB 0D 8
+        RRC (HL) CB 0E 16
+        */
+        // read value
+        int value = 0;
+        switch(opcode) {
+            case 0xCB0F: value = registerA.read(); break;
+            case 0xCB08: value = registerB.read(); break;
+            case 0xCB09: value = registerC.read(); break;
+            case 0xCB0A: value = registerD.read(); break;
+            case 0xCB0B: value = registerE.read(); break;
+            case 0xCB0C: value = registerH.read(); break;
+            case 0xCB0D: value = registerL.read(); break;
+            case 0xCB0E: value = mmu.rawRead(readCombinedRegisters(registerH, registerL)); break;
+        }
         
+        // perform operation
+        int oldbit0 = value & 0b00000001;
+        value >>= 1;
+        int result = value | (oldbit0 << 7);
+        
+        // write result
+        switch(opcode) {
+            case 0xCB0F: registerA.write(result); break;
+            case 0xCB08: registerB.write(result); break;
+            case 0xCB09: registerC.write(result); break;
+            case 0xCB0A: registerD.write(result); break;
+            case 0xCB0B: registerE.write(result); break;
+            case 0xCB0C: registerH.write(result); break;
+            case 0xCB0D: registerL.write(result); break;
+            case 0xCB0E: mmu.rawWrite(readCombinedRegisters(registerH, registerL), result); break;
+        }
+    
+        // flags affected
+        if (result == 0) {
+            registerFlags.setZ();
+        }
+        registerFlags.clearN();
+        registerFlags.clearH();
+        if (bit7) {
+            registerFlags.setC();
+        }
+        else {
+            registerFlags.clearC();
+        }
     }
 
 }
