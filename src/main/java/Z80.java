@@ -1823,5 +1823,72 @@ public class Z80 {
         registerFlags.clearN();
         registerFlags.clearZ();
     }
+    
+    public void rln(int opcode) throws InvalidPropertiesFormatException {
+        /*
+        6. RL n
+        Description:
+            Rotate n left through Carry flag.
+        Use with:
+            n = A,B,C,D,E,H,L,(HL)
+        Flags affected:
+            Z - Set if result is zero.
+            N - Reset.
+            H - Reset.
+            C - Contains old bit 7 data.
+        Opcodes:
+        Instruction Parameters Opcode Cycles
+        RL              A       CB 17   8
+        RL              B       CB 10   8
+        RL              C       CB 11   8
+        RL              D       CB 12   8
+        RL              E       CB 13   8
+        RL              H       CB 14   8
+        RL              L       CB 15   8
+        RL              (HL)    CB 16   16
+        */
+        // read value
+        int value = 0;
+        switch(opcode) {
+            case 0xCB17: value = registerA.read(); break;
+            case 0xCB10: value = registerB.read(); break;
+            case 0xCB11: value = registerC.read(); break;
+            case 0xCB12: value = registerD.read(); break;
+            case 0xCB13: value = registerE.read(); break;
+            case 0xCB14: value = registerH.read(); break;
+            case 0xCB15: value = registerL.read(); break;
+            case 0xCB16: value = mmu.rawRead(readCombinedRegisters(registerH, registerL)); break;
+        }
+        
+        // perform operation
+        int result = (value << 1) | (value >> 7);
+        boolean bit7 = ((value & 0b10000000) >> 7) == 1;
+
+        // write result
+        switch(opcode) {
+            case 0xCB17: registerA.write(result); break;
+            case 0xCB10: registerB.write(result); break;
+            case 0xCB11: registerC.write(result); break;
+            case 0xCB12: registerD.write(result); break;
+            case 0xCB13: registerE.write(result); break;
+            case 0xCB14: registerH.write(result); break;
+            case 0xCB15: registerL.write(result); break;
+            case 0xCB16: mmu.rawWrite(readCombinedRegisters(registerH, registerL), result); break;
+        }
+
+        // flags affected
+        if (result == 0) {
+            registerFlags.setZ();
+        }
+        registerFlags.clearN();
+        registerFlags.clearH();
+        if (bit7) {
+            registerFlags.setC();
+        }
+        else {
+            registerFlags.clearC();
+        }
+        
+    }
 
 }
