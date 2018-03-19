@@ -1763,7 +1763,7 @@ public class Z80 {
         registerFlags.clearN();
     }
     
-    public void rlcn(int opcode) throws InvalidPropertiesFormatException {
+    public void rlc(int opcode) throws InvalidPropertiesFormatException {
         /*
         5. RLC n
         Description:
@@ -1824,7 +1824,7 @@ public class Z80 {
         registerFlags.clearZ();
     }
     
-    public void rln(int opcode) throws InvalidPropertiesFormatException {
+    public void rl(int opcode) throws InvalidPropertiesFormatException {
         /*
         6. RL n
         Description:
@@ -1890,7 +1890,7 @@ public class Z80 {
         }
     }
     
-    public void rrcn(int opcode) throws InvalidPropertiesFormatException {
+    public void rrc(int opcode) throws InvalidPropertiesFormatException {
         /*
         7. RRC n
         Description:
@@ -1949,12 +1949,380 @@ public class Z80 {
         }
         registerFlags.clearN();
         registerFlags.clearH();
-        if (bit7) {
-            registerFlags.setC();
-        }
-        else {
-            registerFlags.clearC();
-        }
     }
 
+    public void rr(int opcode) throws InvalidPropertiesFormatException {
+        /*
+        8. RR n
+        Description:
+        Rotate n right through Carry flag.
+        Use with:
+        n = A,B,C,D,E,H,L,(HL)
+        Flags affected:
+        Z - Set if result is zero.
+        N - Reset.
+        H - Reset.
+        C - Contains old bit 0 data.
+        Opcodes:
+        Instruction Parameters Opcode Cycles
+        RR A CB 1F 8
+        RR B CB 18 8
+        RR C CB 19 8
+        RR D CB 1A 8
+        RR E CB 1B 8
+        RR H CB 1C 8
+        RR L CB 1D 8
+        RR (HL) CB 1E 16
+        */
+        // read value
+        int value = 0;
+        switch(opcode) {
+            case 0xCB1F: value = registerA.read(); break;
+            case 0xCB18: value = registerB.read(); break;
+            case 0xCB19: value = registerC.read(); break;
+            case 0xCB1A: value = registerD.read(); break;
+            case 0xCB1B: value = registerE.read(); break;
+            case 0xCB1C: value = registerH.read(); break;
+            case 0xCB1D: value = registerL.read(); break;
+            case 0xCB1E: value = mmu.rawRead(readCombinedRegisters(registerH, registerL)); break;
+        }
+        
+        // perform operation
+        int newcarry = value & 0b00000001;
+        int oldcarry = registerFlags.readC() ? 1 : 0;
+        int result = (value >> 1) | (oldcarry << 7);
+        
+        // write result
+        switch(opcode) {
+            case 0xCB1F: registerA.write(result); break;
+            case 0xCB18: registerB.write(result); break;
+            case 0xCB19: registerC.write(result); break;
+            case 0xCB1A: registerD.write(result); break;
+            case 0xCB1B: registerE.write(result); break;
+            case 0xCB1C: registerH.write(result); break;
+            case 0xCB1D: registerL.write(result); break;
+            case 0xCB1E: mmu.rawWrite(readCombinedRegisters(registerH, registerL), result); break;
+        }
+        
+        // flags affected
+        if (newcarry == 1) registerFlags.setC();
+        else               registerFlags.clearC();
+        if (result == 0)   registerFlags.setZ();
+        else               registerFlags.clearZ();
+        registerFlags.clearN();
+        registerFlags.clearH();
+    }
+    
+    public void sla(int opcode) throws InvalidPropertiesFormatException {
+        /*
+        9. SLA n
+        Description:
+        Shift n left into Carry. LSB of n set to 0.
+        Use with:
+        n = A,B,C,D,E,H,L,(HL)
+        Flags affected:
+        Z - Set if result is zero.
+        N - Reset.
+        H - Reset.
+        C - Contains old bit 7 data.
+        Opcodes:
+        Instruction Parameters Opcode Cycles
+        SLA A CB 27 8
+        SLA B CB 20 8
+        SLA C CB 21 8
+        SLA D CB 22 8
+        SLA E CB 23 8
+        SLA H CB 24 8
+        SLA L CB 25 8
+        SLA (HL) CB 26 16
+        */
+        // read value
+        int value = 0;
+        switch(opcode) {
+            case 0xCB27: value = registerA.read(); break;
+            case 0xCB20: value = registerB.read(); break;
+            case 0xCB21: value = registerC.read(); break;
+            case 0xCB22: value = registerD.read(); break;
+            case 0xCB23: value = registerE.read(); break;
+            case 0xCB24: value = registerH.read(); break;
+            case 0xCB25: value = registerL.read(); break;
+            case 0xCB26: value = mmu.rawRead(readCombinedRegisters(registerH, registerL)); break;
+        }
+        
+        // perform operation
+        boolean carry = ( (value & 0b10000000) == 1);
+        int result = value << 1;
+        
+        // store result
+        switch(opcode) {
+            case 0xCB27: registerA.write(result); break;
+            case 0xCB20: registerB.write(result); break;
+            case 0xCB21: registerC.write(result); break;
+            case 0xCB22: registerD.write(result); break;
+            case 0xCB23: registerE.write(result); break;
+            case 0xCB24: registerH.write(result); break;
+            case 0xCB25: registerL.write(result); break;
+            case 0xCB26: mmu.rawWrite(readCombinedRegisters(registerH, registerL), result); break;
+        }
+        
+        // flags affected
+        if (result == 0) registerFlags.setZ();
+        else             registerFlags.clearZ();
+        if (carry)       registerFlags.setC();
+        else             registerFlags.clearC();
+        registerFlags.clearN();
+        registerFlags.clearH();
+    }
+    
+    public void sra(int opcode) throws InvalidPropertiesFormatException {
+        /*
+        10. SRA n
+        Description:
+            Shift n right into Carry. MSB doesn't change.
+        Use with:
+            n = A,B,C,D,E,H,L,(HL)
+        Flags affected:
+            Z - Set if result is zero.
+            N - Reset.
+            H - Reset.
+            C - Contains old bit 0 data.
+        Opcodes:
+        Instruction Parameters Opcode Cycles
+        SRA A    CB 2F 8
+        SRA B    CB 28 8
+        SRA C    CB 29 8
+        SRA D    CB 2A 8
+        SRA E    CB 2B 8
+        SRA H    CB 2C 8
+        SRA L    CB 2D 8
+        SRA (HL) CB 2E 16
+        */
+        // read value
+        int value = 0;
+        switch(opcode) {
+            case 0xCB2F: value = registerA.read(); break;
+            case 0xCB28: value = registerB.read(); break;
+            case 0xCB29: value = registerC.read(); break;
+            case 0xCB2A: value = registerD.read(); break;
+            case 0xCB2B: value = registerE.read(); break;
+            case 0xCB2C: value = registerH.read(); break;
+            case 0xCB2D: value = registerL.read(); break;
+            case 0xCB2E: value = mmu.rawRead(readCombinedRegisters(registerH, registerL)); break;
+        }
+        
+        // perform the operation
+        boolean carry = ( (value & 1) != 0 );
+        int result = (value >> 1) | (value & 0b10000000);
+        
+        // store result
+        switch(opcode) {
+            case 0xCB2F: registerA.write(result); break;
+            case 0xCB28: registerB.write(result); break;
+            case 0xCB29: registerC.write(result); break;
+            case 0xCB2A: registerD.write(result); break;
+            case 0xCB2B: registerE.write(result); break;
+            case 0xCB2C: registerH.write(result); break;
+            case 0xCB2D: registerL.write(result); break;
+            case 0xCB2E: mmu.rawWrite(readCombinedRegisters(registerH, registerL), result); break;
+        }
+        
+        // flags affected
+        if (carry)       registerFlags.setC();
+        else             registerFlags.clearC();
+        if (result == 0) registerFlags.setZ();
+        else             registerFlags.clearZ();
+        registerFlags.clearH();
+        registerFlags.clearN();
+    }
+    
+    public void srl(int opcode) throws InvalidPropertiesFormatException {
+        /*
+        11. SRL n
+        Description:
+        Shift n right into Carry. MSB set to 0.
+        Use with:
+        n = A,B,C,D,E,H,L,(HL)
+        Flags affected:
+        Z - Set if result is zero.
+        N - Reset.
+        H - Reset.
+        C - Contains old bit 0 data.
+        Opcodes:
+        Instruction Parameters Opcode Cycles
+        SRL A CB 3F 8
+        SRL B CB 38 8
+        SRL C CB 39 8
+        SRL D CB 3A 8
+        SRL E CB 3B 8
+        SRL H CB 3C 8
+        SRL L CB 3D 8
+        SRL (HL) CB 3E 16
+        */
+        // read value
+        int value = 0;
+        switch(opcode) {
+            case 0xCB3F: value = registerA.read(); break;
+            case 0xCB38: value = registerB.read(); break;
+            case 0xCB39: value = registerC.read(); break;
+            case 0xCB3A: value = registerD.read(); break;
+            case 0xCB3B: value = registerE.read(); break;
+            case 0xCB3C: value = registerH.read(); break;
+            case 0xCB3D: value = registerL.read(); break;
+            case 0xCB3E: value = mmu.rawRead(readCombinedRegisters(registerH, registerL)); break;
+        }
+        
+        // perform the operation
+        boolean carry = (value & 0b00000001) != 0;
+        int result = value >> 1;
+        
+        // store result
+        switch(opcode) {
+            case 0xCB3F: registerA.write(result); break;
+            case 0xCB38: registerB.write(result); break;
+            case 0xCB39: registerC.write(result); break;
+            case 0xCB3A: registerD.write(result); break;
+            case 0xCB3B: registerE.write(result); break;
+            case 0xCB3C: registerH.write(result); break;
+            case 0xCB3D: registerL.write(result); break;
+            case 0xCB3E: mmu.rawWrite(readCombinedRegisters(registerH, registerL), result); break;
+        }
+        
+        // flags affected
+        if (result == 0) registerFlags.setZ();
+        else             registerFlags.clearZ();
+        if (carry)       registerFlags.setC();
+        else             registerFlags.clearC();
+        registerFlags.clearN();
+        registerFlags.clearH();
+    }
+    
+    public int cbHelperRead(int opcode) throws InvalidPropertiesFormatException{
+        // see which register we'll use by looking only at
+        // the least significant hex digit (0x000F, or 0b00001111 mask)
+        int value = 0;
+        switch(opcode & 0b00001111) {
+            case 0x0: case 0x8:
+                value = registerB.read(); break;
+            case 0x1: case 0x9:
+                value = registerC.read(); break;
+            case 0x2: case 0xA:
+                value = registerD.read(); break;
+            case 0x3: case 0xB:
+                value = registerE.read(); break;
+            case 0x4: case 0xC:
+                value = registerH.read(); break;
+            case 0x5: case 0xD:
+                value = registerL.read(); break;
+            case 0x6: case 0xE:
+                value = mmu.rawRead(readCombinedRegisters(registerH, registerL)); break;
+            case 0x7: case 0xF:
+                value = registerA.read(); break;
+        }
+        
+        return value;
+    }
+    public void cbHelperWrite(int opcode, int value) throws InvalidPropertiesFormatException {
+        // see which register we'll use by looking only at the least significant
+        // hex digit (0x000F or 0b00001111 mask)
+        switch(opcode & 0b00001111) {
+            case 0x0: case 0x8:
+                registerB.write(value); break;
+            case 0x1: case 0x9:
+                registerC.write(value); break;
+            case 0x2: case 0xA:
+                registerD.write(value); break;
+            case 0x3: case 0xB:
+                registerE.write(value); break;
+            case 0x4: case 0xC:
+                registerH.write(value); break;
+            case 0x5: case 0xD:
+                registerL.write(value); break;
+            case 0x6: case 0xE:
+                mmu.rawWrite(readCombinedRegisters(registerH, registerL), value); break;
+            case 0x7: case 0xF:
+                registerA.write(value); break;
+        }
+    }
+    public void bit(int opcode) throws InvalidPropertiesFormatException {
+        // this is going to be an interesting one....
+        // starting at opcode 0xCB4X where X is:
+        //    opcode:     0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F  0
+        //    register:   B  C  D  E  H  L mHL A  B  C  D  E  H  L mHL A  B
+        //    bit:        0  0  0  0  0  0  0  0  1  1  1  1  1  1  1  1  2
+        //    ... and so on.
+        // Flags affected:
+        //    Z - Set if bit b of register r is 0.
+        //    N - Reset.
+        //    H - Set.
+        //    C - Not affected.
+        // Timing:  any CPU register is 8 cycles. Memory location is 16 cycles. 
+        ////////////////////////////////////////////////////////////////////////
+        
+        // validate opcode actually belongs in this function:
+        if (opcode < 0xCB40 || opcode > 0xCB7F) {
+            System.out.println("Opcode " + opcode + " doesn't belong in bit()");
+        }
+        
+        // get the value we'll be looking at
+        int value = cbHelperRead(opcode);
+        
+        // next let's grab the bit index
+        int bitIndex = (opcode - 0xCB40) / 8;
+        
+        // read the bit at `bitindex` of the value we found earlier:
+        boolean bitValue = ( (value >> bitIndex) & 1 ) == 1 ? true : false;
+        
+        // flags affected
+        if (bitValue) registerFlags.clearZ();
+        else          registerFlags.setZ();
+        registerFlags.setH();
+        registerFlags.clearN();
+    }
+    public void res(int opcode) throws InvalidPropertiesFormatException {
+        // see bit function above. This works the same way except 
+        // instead of reading the bit, it just sets it to 0 and affects
+        // no flags. Starts at 0xCB80
+        
+        // validate opcode actually belongs in this function:
+        if (opcode < 0xCB80 || opcode > 0xCBBF) {
+            System.out.println("Opcode " + opcode + " doesn't belong in res()");
+        }
+        
+        // get the value we'll be looking at
+        int value = cbHelperRead(opcode);
+        
+        // next let's grab the bit index
+        int bitIndex = (opcode - 0xCB80) / 8;
+        int mask = 1 << bitIndex; // shift 1 to it's spot based on the index
+        mask = ~mask; // negate it so every bit is 1 except for the one we're clearing
+        
+        // now let's set it to 0.
+        value = (value & mask); // AND the value with the mask in order to clear the specified bit.
+        
+        // store result
+        cbHelperWrite(opcode, value);
+    }
+    public void set(int opcode) throws InvalidPropertiesFormatException {
+        // see bit instruction above. This one works the same way except
+        // instead of reading the bit, it will just set the bit in question to 1
+        // with no flags affected. Starts at 0xCBC0 and ends at 0xCC00.
+        
+        // validate opcode actually belongs in this function:
+        if (opcode < 0xCBC0 || opcode > 0xCBFF) {
+            System.out.println("Opcode " + opcode + " doesn't belong in set()");
+        }
+        
+        // get the value we'll be looking at
+        int value = cbHelperRead(opcode);
+        
+        // next let's grab the bit index
+        int bitIndex = (opcode - 0xCBC0) / 8;
+        int mask = 1 << bitIndex; // shift 1 to it's spot based on the index
+        
+        // now let's set it to 0.
+        value = (value | mask); // AND the value with the mask in order to clear the specified bit.
+        
+        // store result
+        cbHelperWrite(opcode, value);
+    }
 }
