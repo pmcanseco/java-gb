@@ -1673,5 +1673,155 @@ public class Z80 {
             registerFlags.clearC();
         }
     }
+    
+    public void rla(int opcode) {
+        /*
+        2. RLA
+            Description:
+                Rotate A left through Carry flag.
+            Flags affected:
+                Z - Set if result is zero.
+                N - Reset.
+                H - Reset.
+                C - Contains old bit 7 data.
+            Opcodes:
+            Instruction Parameters Opcode Cycles
+            RLA         -/-         17      4
+            
+            NOTE according to https://github.com/simias/gb-rs,
+            the above is wrong and the below implementation is right.
+        */
+        int result = registerA.read();
+
+        boolean newcarry = (result >> 7) != 0;
+        int oldcarry = registerFlags.readC() ? 1 : 0;
+    
+        registerA.write((result << 1) | oldcarry);
+    
+        if (newcarry) {
+            registerFlags.setC();
+        }
+        else {
+            registerFlags.clearC();
+        }
+        registerFlags.clearZ();
+        registerFlags.clearH();
+        registerFlags.clearN();
+    }
+    
+    public void rrca(int opcode) {
+        /*
+        3. RRCA
+        Description:
+            Rotate A right. Old bit 0 to Carry flag.
+        Flags affected:
+            Z - Set if result is zero.
+            N - Reset.
+            H - Reset.
+            C - Contains old bit 0 data.
+        Opcodes:
+        Instruction Parameters Opcode Cycles
+        RRCA        -/-         0F      4
+        */
+        int value = registerA.read();
+        int oldbit0 = value & 0b00000001;
+        value >>= 1;
+        registerA.write(value | (oldbit0 << 7));
+        
+        // flags affected
+        if (oldbit0 != 0) registerFlags.setC();
+        else              registerFlags.clearC();
+        registerFlags.clearH();
+        registerFlags.clearN();
+        registerFlags.clearZ();
+    }
+    
+    public void rra(int opcode) {
+        /*
+        4. RRA
+        Description:
+            Rotate A right through Carry flag.
+        Flags affected:
+            Z - Set if result is zero.
+            N - Reset.
+            H - Reset.
+            C - Contains old bit 0 data.
+        Opcodes:
+        Instruction Parameters Opcode Cycles
+        RRA -/- 1F 4
+        */
+        
+        int value = registerA.read();
+        int newcarry = value & 0b00000001;
+        int oldcarry = registerFlags.readC() ? 1 : 0;
+        registerA.write((value >> 1) | (oldcarry << 7));
+        
+        if (newcarry == 1) registerFlags.setC();
+        else               registerFlags.clearC();
+        registerFlags.clearZ();
+        registerFlags.clearH();
+        registerFlags.clearN();
+    }
+    
+    public void rlcn(int opcode) throws InvalidPropertiesFormatException {
+        /*
+        5. RLC n
+        Description:
+            Rotate n left. Old bit 7 to Carry flag.
+        Use with:
+            n = A,B,C,D,E,H,L,(HL)
+        Flags affected:
+            Z - Set if result is zero.
+            N - Reset.
+            H - Reset.
+            C - Contains old bit 7 data.
+        Opcodes:
+        Instruction Parameters Opcode Cycles
+        RLC         A           CB 07   8
+        RLC         B           CB 00   8
+        RLC         C           CB 01   8
+        RLC         D           CB 02   8
+        RLC         E           CB 03   8
+        RLC         H           CB 04   8
+        RLC         L           CB 05   8
+        RLC         (HL)        CB 06   16
+        */
+        
+        // read value
+        int value = 0;
+        switch(opcode) {
+            case 0xCB07: value = registerA.read(); break;
+            case 0xCB00: value = registerB.read(); break;
+            case 0xCB01: value = registerC.read(); break;
+            case 0xCB02: value = registerD.read(); break;
+            case 0xCB03: value = registerE.read(); break;
+            case 0xCB04: value = registerH.read(); break;
+            case 0xCB05: value = registerL.read(); break;
+            case 0xCB06: value = mmu.rawRead(readCombinedRegisters(registerH, registerL)); break;
+        }
+        
+        // perform operation
+        int result = (value << 1) | (value >> 7);
+        boolean bit7 = ((registerA.read() & 0b10000000) >> 7) == 1;
+        
+        // write result
+        switch(opcode) {
+            case 0xCB07: registerA.write(result); break;
+            case 0xCB00: registerB.write(result); break;
+            case 0xCB01: registerC.write(result); break;
+            case 0xCB02: registerD.write(result); break;
+            case 0xCB03: registerE.write(result); break;
+            case 0xCB04: registerH.write(result); break;
+            case 0xCB05: registerL.write(result); break;
+            case 0xCB06: mmu.rawWrite(readCombinedRegisters(registerH, registerL), result); break;
+        }
+        
+        // flags affected
+        if (bit7) registerFlags.setC();
+        else      registerFlags.clearC();
+        registerFlags.clearH();
+        registerFlags.clearN();
+        registerFlags.clearZ();
+    }
 
 }
