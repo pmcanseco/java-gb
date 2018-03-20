@@ -603,6 +603,24 @@ public class Z80 {
         }
     }
 
+    private void pushHelper(int value) {
+        // Description:
+        //   Push register pair nn onto stack.
+        //   Decrement Stack Pointer (SP) twice.
+        registerSP.dec();
+        mmu.rawWrite(registerSP.read(), value & 0b11111111_00000000);
+        registerSP.dec();
+        mmu.rawWrite(registerSP.read(), value & 0b00000000_11111111);
+    }
+    private int popHelper() {
+        int high = mmu.rawRead(registerSP.read());
+        registerSP.inc();
+        int low  = mmu.rawRead(registerSP.read());
+        registerSP.inc();
+        high <<= 8;
+        return (high | low);
+        
+    }
     public void push(int opcode) throws InvalidPropertiesFormatException {
         // 3.3.2.6 PUSH nn
         int temp;
@@ -628,14 +646,7 @@ public class Z80 {
                 return;
         }
 
-        // Description:
-        //   Push register pair nn onto stack.
-        //   Decrement Stack Pointer (SP) twice.
-        registerSP.dec();
-        mmu.rawWrite(registerSP.read(), temp & 0b11111111_00000000);
-        registerSP.dec();
-        mmu.rawWrite(registerSP.read(), temp & 0b00000000_11111111);
-
+        pushHelper(temp);
     }
     public void pop(int opcode) {
         // 3.3.2.7 POP nn
@@ -2261,6 +2272,7 @@ public class Z80 {
         // validate opcode actually belongs in this function:
         if (opcode < 0xCB40 || opcode > 0xCB7F) {
             System.out.println("Opcode " + opcode + " doesn't belong in bit()");
+            return;
         }
         
         // get the value we'll be looking at
@@ -2286,6 +2298,7 @@ public class Z80 {
         // validate opcode actually belongs in this function:
         if (opcode < 0xCB80 || opcode > 0xCBBF) {
             System.out.println("Opcode " + opcode + " doesn't belong in res()");
+            return;
         }
         
         // get the value we'll be looking at
@@ -2310,6 +2323,7 @@ public class Z80 {
         // validate opcode actually belongs in this function:
         if (opcode < 0xCBC0 || opcode > 0xCBFF) {
             System.out.println("Opcode " + opcode + " doesn't belong in set()");
+            return;
         }
         
         // get the value we'll be looking at
@@ -2324,5 +2338,393 @@ public class Z80 {
         
         // store result
         cbHelperWrite(opcode, value);
+    }
+    
+    public void jump(int opcode) {
+        /*
+        1. JP nn
+        Description:
+        Jump to address nn.
+        Use with:
+        nn = two byte immediate value. (LS byte first.)
+        Opcodes:
+        Instruction Parameters Opcode Cycles
+        JP nn C3 12
+        */
+        if (opcode != 0xC3) {
+            System.out.println("Opcode " + opcode + " doesn't belong in jump()");
+            return;
+        }
+        
+        int address = mmu.rawRead(registerPC.read()); // least significant byte
+        registerPC.inc();
+        int temp = mmu.rawRead(registerPC.read()); // most significant byte
+        temp <<= 8;
+        address |= temp;
+        load(registerPC, address); // load it into PC so it will be executed next.
+    }
+    public void jpcc(int opcode) {
+        /*
+        2. JP cc,nn
+        Description:
+        Jump to address n if following condition is true:
+        cc = NZ, Jump if Z flag is reset.
+        cc = Z, Jump if Z flag is set.
+        cc = NC, Jump if C flag is reset.
+        cc = C, Jump if C flag is set.
+        Use with:
+        nn = two byte immediate value. (LS byte first.)
+        Opcodes:
+        Instruction Parameters Opcode Cycles
+        JP NZ,nn C2 12
+        JP Z,nn CA 12
+        JP NC,nn D2 12
+        JP C,nn DA 12
+        */
+        if (opcode != 0xC2 &&
+            opcode != 0xCA &&
+            opcode != 0xD2 &&
+            opcode != 0xDA) {
+            System.out.println("Opcode " + opcode + " doesn't belong in jpcc()");
+            return;
+        }
+        
+        boolean condition = false;
+        switch (opcode) {
+            case 0xC2: 
+                condition = (!registerFlags.readZ());
+                break;
+            case 0xCA: 
+                condition = registerFlags.readZ();
+                break;
+            case 0xD2: 
+                condition = (!registerFlags.readC());
+                break;
+            case 0xDA: 
+                condition = registerFlags.readC();
+                break;
+        }
+        
+        // if our condition for jumping is false, don't jump
+        if (!condition) {
+            return;
+        }
+        
+        // else perform jump
+        int address = mmu.rawRead(registerPC.read()); // least significant byte
+        registerPC.inc();
+        int temp = mmu.rawRead(registerPC.read()); // most significant byte
+        temp <<= 8;
+        address |= temp;
+        load(registerPC, address); // load it into PC so it will be executed next.
+    }
+    public void jphl(int opcode) throws InvalidPropertiesFormatException {
+        /*
+        3. JP (HL)
+        Description:
+        Jump to address contained in HL.
+        Opcodes:
+        Instruction Parameters Opcode Cycles
+        JP (HL) E9 4
+        */
+        if (opcode != 0xE9) {
+            System.out.println("Opcode " + opcode + " doesn't belong in jphl()");
+            return;
+        }
+        
+        load(registerPC, mmu.rawRead(readCombinedRegisters(registerH, registerL))); 
+    }
+    public void jr(int opcode) {
+        /*
+        4. JR n
+        Description:
+        Add n to current address and jump to it.
+        Use with:
+        n = one byte signed immediate value
+        Opcodes:
+        Instruction Parameters Opcode Cycles
+        JR n 18 8
+        */
+        if (opcode != 0x18) {
+            System.out.println("Opcode " + opcode + " doesn't belong in jr()");
+            return;
+        }
+        
+        int n = mmu.rawRead(registerPC.read());
+        int address = registerPC.read();
+        address += n;
+        load(registerPC, address);
+    }
+    public void jrcc(int opcode) {
+        /*
+        5. JR cc,n
+        Description:
+        If following condition is true then add n to current
+        address and jump to it:
+        Use with:
+        n = one byte signed immediate value
+        cc = NZ, Jump if Z flag is reset.
+        cc = Z, Jump if Z flag is set.
+        cc = NC, Jump if C flag is reset.
+        cc = C, Jump if C flag is set.
+        Opcodes:
+        Instruction Parameters Opcode Cycles
+        JR NZ,* 20 8
+        JR Z,* 28 8
+        JR NC,* 30 8
+        JR C,* 38 8
+        */
+        if (opcode != 0x20 &&
+            opcode != 0x28 &&
+            opcode != 0x30 &&
+            opcode != 0x38) {
+            System.out.println("Opcode " + opcode + " doesn't belong in jrcc()");
+            return;
+        }
+        
+        boolean condition = false;
+        switch (opcode) {
+            case 0x20: 
+                condition = (!registerFlags.readZ());
+                break;
+            case 0x28: 
+                condition = registerFlags.readZ();
+                break;
+            case 0x30: 
+                condition = (!registerFlags.readC());
+                break;
+            case 0x38: 
+                condition = registerFlags.readC();
+                break;
+        }
+        
+        // if our condition for jumping is false, don't jump
+        if (!condition) {
+            return;
+        }
+        
+        int n = mmu.rawRead(registerPC.read());
+        int address = registerPC.read();
+        address += n;
+        load(registerPC, address);
+    }
+    
+    public void call(int opcode) {
+        /*
+        1. CALL nn
+        Description:
+        Push address of next instruction onto stack and then
+        jump to address nn.
+        Use with:
+        nn = two byte immediate value. (LS byte first.)
+        Opcodes:
+        Instruction Parameters Opcode Cycles
+        CALL nn CD 12
+        */
+        if (opcode != 0x12) {
+            System.out.println("Opcode " + opcode + " doesn't belong in call()");
+            return;
+        }
+        
+        // push address of next instruction onto stack.
+        pushHelper(registerPC.read());
+        registerPC.inc();
+        
+        // jump to address nn two byte immediate value. (LS byte first)
+        int address = mmu.rawRead(registerPC.read()); // least significant byte
+        registerPC.inc();
+        int temp = mmu.rawRead(registerPC.read());    // most significant byte
+        temp <<= 8;
+        address |= temp;                              // combine
+        load(registerPC, address);                    // jump to this address.
+    }
+    public void callcc(int opcode) {
+        /*2. CALL cc,nn
+        Description:
+        Call address n if following condition is true:
+        cc = NZ, Call if Z flag is reset.
+        cc = Z, Call if Z flag is set.
+        cc = NC, Call if C flag is reset.
+        cc = C, Call if C flag is set.
+        Use with:
+        nn = two byte immediate value. (LS byte first.)
+        Opcodes:
+        Instruction Parameters Opcode Cycles
+        CALL NZ,nn C4 12
+        CALL Z,nn CC 12
+        CALL NC,nn D4 12
+        CALL C,nn DC 12
+        */
+        if (opcode != 0xC4 &&
+            opcode != 0xCC &&
+            opcode != 0xD4 &&
+            opcode != 0xDC) {
+            System.out.println("Opcode " + opcode + " doesn't belong in callcc()");
+            return;
+        }
+        
+        boolean condition = false;
+        switch (opcode) {
+            case 0xC4: 
+                condition = (!registerFlags.readZ());
+                break;
+            case 0xCC: 
+                condition = registerFlags.readZ();
+                break;
+            case 0xD4: 
+                condition = (!registerFlags.readC());
+                break;
+            case 0xDC: 
+                condition = registerFlags.readC();
+                break;
+        }
+        
+        // if our condition for jumping is false, don't jump
+        if (!condition) {
+            return;
+        }
+        
+        // jump to address nn two byte immediate value. (LS byte first)
+        int address = mmu.rawRead(registerPC.read()); // least significant byte
+        registerPC.inc();
+        int temp = mmu.rawRead(registerPC.read());    // most significant byte
+        temp <<= 8;
+        address |= temp;                              // combine
+        load(registerPC, address);                    // jump to this address.
+    }
+    
+    public void rst(int opcode) {
+        /*
+        1. RST n
+        Description:
+        Push present address onto stack.
+        Jump to address $0000 + n.
+        Use with:
+        n = $00,$08,$10,$18,$20,$28,$30,$38
+        Opcodes:
+        Instruction Parameters Opcode Cycles
+        RST 00H C7 32
+        RST 08H CF 32
+        RST 10H D7 32
+        RST 18H DF 32
+        RST 20H E7 32
+        RST 28H EF 32
+        RST 30H F7 32
+        RST 38H FF 32
+        */
+        if (opcode != 0xC7 &&
+            opcode != 0xCF &&
+            opcode != 0xD7 &&
+            opcode != 0xDF &&
+            opcode != 0xE7 &&
+            opcode != 0xEF &&
+            opcode != 0xF7 &&
+            opcode != 0xFF) {
+            System.out.println("Opcode " + opcode + " doesn't belong in rst()");
+            return;
+        }
+        
+        // push address of instruction onto stack.
+        pushHelper(registerPC.read());
+        
+        int address = 0;
+        switch (opcode) {
+            case 0xC7: address = 0x00; break;
+            case 0xCF: address = 0x08; break;
+            case 0xD7: address = 0x10; break;
+            case 0xDF: address = 0x18; break;
+            case 0xE7: address = 0x20; break;
+            case 0xEF: address = 0x28; break;
+            case 0xF7: address = 0x30; break;
+            case 0xFF: address = 0x38; break;
+        }
+        load(registerPC, address);
+    }
+    
+    private void retHelper() {
+        int address = popHelper();
+        load(registerPC, address);
+    }
+    public void ret(int opcode) {
+        /*
+        1. RET
+        Description:
+        Pop two bytes from stack & jump to that address.
+        Opcodes:
+        Instruction Parameters Opcode Cycles
+        RET -/- C9 8
+        */
+        if (opcode != 0xC9) {
+            System.out.println("Opcode " + opcode + " doesn't belong in ret()");
+            return;
+        }
+        
+        retHelper();
+    }
+    public void retcc(int opcode) {
+        /*
+        2. RET cc
+        Description:
+        Return if following condition is true:
+        Use with:
+        cc = NZ, Return if Z flag is reset.
+        cc = Z, Return if Z flag is set.
+        cc = NC, Return if C flag is reset.
+        cc = C, Return if C flag is set.
+        Opcodes:
+        Instruction Parameters Opcode Cycles
+        RET NZ C0 8
+        RET Z C8 8
+        RET NC D0 8
+        RET C D8 8
+        */
+        if (opcode != 0xC0 &&
+            opcode != 0xC8 &&
+            opcode != 0xD0 &&
+            opcode != 0xD8) {
+            System.out.println("Opcode " + opcode + " doesn't belong in retcc()");
+            return;
+        }
+        
+        boolean condition = false;
+        switch (opcode) {
+            case 0xC4: 
+                condition = (!registerFlags.readZ());
+                break;
+            case 0xCC: 
+                condition = registerFlags.readZ();
+                break;
+            case 0xD4: 
+                condition = (!registerFlags.readC());
+                break;
+            case 0xDC: 
+                condition = registerFlags.readC();
+                break;
+        }
+        
+        // if our condition for jumping is false, don't jump
+        if (!condition) {
+            return;
+        }
+        
+        // actually return/jump
+        retHelper();
+    }
+    public void reti(int opcode) {
+        /*3. RETI
+        Description:
+        Pop two bytes from stack & jump to that address then
+        enable interrupts.
+        Opcodes:
+        Instruction Parameters Opcode Cycles
+        RETI -/- D9 8
+        */
+        if (opcode != 0xD9) {
+            System.out.println("Opcode " + opcode + " doesn't belong in ret()");
+            return;
+        }
+        
+        retHelper();
+        interruptsEnabled = true;
     }
 }
