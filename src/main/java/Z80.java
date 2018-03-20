@@ -46,6 +46,8 @@ public class Z80 extends Logger {
     private boolean pendingInterruptDisable = false;
     private boolean pendingInterruptEnable = false;
 
+    private Map<Integer, Runnable> instructionMap = new HashMap<>();
+
     Z80(MemoryManager memMgr) {
         // initialize 8-bit registers
         registerA = new Register("A", 8, 0);
@@ -83,6 +85,269 @@ public class Z80 extends Logger {
 
         this.mmu = memMgr;
         logDebug("initialized.");
+
+        logInfo("Populating instructionMap<Opcode, Function>");
+        instructionMap.put(0x00, () -> nopHaltStop(0x00));
+        instructionMap.put(0x01, () -> load(0x01));
+        instructionMap.put(0x02, () -> load(0x02));
+        instructionMap.put(0x03, () -> inc16(0x03));
+        instructionMap.put(0x04, () -> inc(0x04));
+        instructionMap.put(0x05, () -> dec(0x05));
+        instructionMap.put(0x06, () -> load(0x06));
+        instructionMap.put(0x07, () -> rlca(0x07));
+        instructionMap.put(0x08, () -> rst(0x08));
+        instructionMap.put(0x09, () -> add16(0x09));
+        instructionMap.put(0x0a, () -> load(0x0a));
+        instructionMap.put(0x0b, () -> dec16(0x0b));
+        instructionMap.put(0x0c, () -> inc(0x0c));
+        instructionMap.put(0x0d, () -> dec(0x0d));
+        instructionMap.put(0x0e, () -> load(0x0e));
+        instructionMap.put(0x0f, () -> rrca(0x0f));
+        instructionMap.put(0x10, () -> nopHaltStop(0x10));
+        instructionMap.put(0x11, () -> load(0x11));
+        instructionMap.put(0x12, () -> load(0x12));
+        instructionMap.put(0x13, () -> inc16(0x13));
+        instructionMap.put(0x14, () -> inc(0x14));
+        instructionMap.put(0x15, () -> dec(0x15));
+        instructionMap.put(0x16, () -> load(0x16));
+        instructionMap.put(0x17, () -> rla(0x17));
+        instructionMap.put(0x18, () -> jr(0x18));
+        instructionMap.put(0x19, () -> add16(0x19));
+        instructionMap.put(0x1a, () -> load(0x1a));
+        instructionMap.put(0x1b, () -> dec16(0x1b));
+        instructionMap.put(0x1c, () -> inc(0x1c));
+        instructionMap.put(0x1d, () -> dec(0x1d));
+        instructionMap.put(0x1e, () -> load(0x1e));
+        instructionMap.put(0x1f, () -> rra(0x1f));
+        instructionMap.put(0x20, () -> jrcc(0x20));
+        instructionMap.put(0x21, () -> load(0x21));
+        instructionMap.put(0x22, () -> load(0x22));
+        instructionMap.put(0x23, () -> inc16(0x23));
+        instructionMap.put(0x24, () -> inc(0x24));
+        instructionMap.put(0x25, () -> dec(0x25));
+        instructionMap.put(0x26, () -> load(0x26));
+        instructionMap.put(0x27, () -> daa(0x27));
+        instructionMap.put(0x28, () -> jrcc(0x28));
+        instructionMap.put(0x29, () -> add16(0x29));
+        instructionMap.put(0x2a, () -> load(0x2a));
+        instructionMap.put(0x2b, () -> dec16(0x2b));
+        instructionMap.put(0x2c, () -> inc(0x2c));
+        instructionMap.put(0x2d, () -> dec(0x2d));
+        instructionMap.put(0x2e, () -> load(0x2e));
+        instructionMap.put(0x2f, () -> cpl(0x2f));
+        instructionMap.put(0x30, () -> jrcc(0x30));
+        instructionMap.put(0x31, () -> load(0x31));
+        instructionMap.put(0x32, () -> load(0x32));
+        instructionMap.put(0x33, () -> inc16(0x33));
+        instructionMap.put(0x34, () -> inc16(0x34));
+        instructionMap.put(0x35, () -> dec16(0x35));
+        instructionMap.put(0x36, () -> load(0x36));
+        instructionMap.put(0x37, () -> scf(0x37));
+        instructionMap.put(0x38, () -> jrcc(0x38));
+        instructionMap.put(0x39, () -> add16(0x39));
+        instructionMap.put(0x3a, () -> load(0x3a));
+        instructionMap.put(0x3b, () -> dec16(0x3b));
+        instructionMap.put(0x3c, () -> inc(0x3c));
+        instructionMap.put(0x3d, () -> dec(0x3d));
+        instructionMap.put(0x3e, () -> load(0x3e));
+        instructionMap.put(0x3f, () -> ccf(0x3f));
+        instructionMap.put(0x40, () -> load(0x40));
+        instructionMap.put(0x41, () -> load(0x41));
+        instructionMap.put(0x42, () -> load(0x42));
+        instructionMap.put(0x43, () -> load(0x43));
+        instructionMap.put(0x44, () -> load(0x44));
+        instructionMap.put(0x45, () -> load(0x45));
+        instructionMap.put(0x46, () -> load(0x46));
+        instructionMap.put(0x47, () -> load(0x47));
+        instructionMap.put(0x48, () -> load(0x48));
+        instructionMap.put(0x49, () -> load(0x49));
+        instructionMap.put(0x4a, () -> load(0x4a));
+        instructionMap.put(0x4b, () -> load(0x4b));
+        instructionMap.put(0x4c, () -> load(0x4c));
+        instructionMap.put(0x4d, () -> load(0x4d));
+        instructionMap.put(0x4e, () -> load(0x4e));
+        instructionMap.put(0x4f, () -> load(0x4f));
+        instructionMap.put(0x50, () -> load(0x50));
+        instructionMap.put(0x51, () -> load(0x51));
+        instructionMap.put(0x52, () -> load(0x52));
+        instructionMap.put(0x53, () -> load(0x53));
+        instructionMap.put(0x54, () -> load(0x54));
+        instructionMap.put(0x55, () -> load(0x55));
+        instructionMap.put(0x56, () -> load(0x56));
+        instructionMap.put(0x57, () -> load(0x57));
+        instructionMap.put(0x58, () -> load(0x58));
+        instructionMap.put(0x59, () -> load(0x59));
+        instructionMap.put(0x5a, () -> load(0x5a));
+        instructionMap.put(0x5b, () -> load(0x5b));
+        instructionMap.put(0x5c, () -> load(0x5c));
+        instructionMap.put(0x5d, () -> load(0x5d));
+        instructionMap.put(0x5e, () -> load(0x5e));
+        instructionMap.put(0x5f, () -> load(0x5f));
+        instructionMap.put(0x60, () -> load(0x60));
+        instructionMap.put(0x61, () -> load(0x61));
+        instructionMap.put(0x62, () -> load(0x62));
+        instructionMap.put(0x63, () -> load(0x63));
+        instructionMap.put(0x64, () -> load(0x64));
+        instructionMap.put(0x65, () -> load(0x65));
+        instructionMap.put(0x66, () -> load(0x66));
+        instructionMap.put(0x67, () -> load(0x67));
+        instructionMap.put(0x68, () -> load(0x68));
+        instructionMap.put(0x69, () -> load(0x69));
+        instructionMap.put(0x6a, () -> load(0x6a));
+        instructionMap.put(0x6b, () -> load(0x6b));
+        instructionMap.put(0x6c, () -> load(0x6c));
+        instructionMap.put(0x6d, () -> load(0x6d));
+        instructionMap.put(0x6e, () -> load(0x6e));
+        instructionMap.put(0x6f, () -> load(0x6f));
+        instructionMap.put(0x70, () -> load(0x70));
+        instructionMap.put(0x71, () -> load(0x71));
+        instructionMap.put(0x72, () -> load(0x72));
+        instructionMap.put(0x73, () -> load(0x73));
+        instructionMap.put(0x74, () -> load(0x74));
+        instructionMap.put(0x75, () -> load(0x75));
+        instructionMap.put(0x76, () -> nopHaltStop(0x76));
+        instructionMap.put(0x77, () -> load(0x77));
+        instructionMap.put(0x78, () -> load(0x78));
+        instructionMap.put(0x79, () -> load(0x79));
+        instructionMap.put(0x7a, () -> load(0x7a));
+        instructionMap.put(0x7b, () -> load(0x7b));
+        instructionMap.put(0x7c, () -> load(0x7c));
+        instructionMap.put(0x7d, () -> load(0x7d));
+        instructionMap.put(0x7e, () -> load(0x7e));
+        instructionMap.put(0x7f, () -> load(0x7f));
+        instructionMap.put(0x80, () -> add(0x80));
+        instructionMap.put(0x81, () -> add(0x81));
+        instructionMap.put(0x82, () -> add(0x82));
+        instructionMap.put(0x83, () -> add(0x83));
+        instructionMap.put(0x84, () -> add(0x84));
+        instructionMap.put(0x85, () -> add(0x85));
+        instructionMap.put(0x86, () -> add(0x86));
+        instructionMap.put(0x87, () -> add(0x87));
+        instructionMap.put(0x88, () -> adc(0x88));
+        instructionMap.put(0x89, () -> adc(0x89));
+        instructionMap.put(0x8a, () -> adc(0x8a));
+        instructionMap.put(0x8b, () -> adc(0x8b));
+        instructionMap.put(0x8c, () -> adc(0x8c));
+        instructionMap.put(0x8d, () -> adc(0x8d));
+        instructionMap.put(0x8e, () -> adc(0x8e));
+        instructionMap.put(0x8f, () -> adc(0x8f));
+        instructionMap.put(0x90, () -> sub(0x90));
+        instructionMap.put(0x91, () -> sub(0x91));
+        instructionMap.put(0x92, () -> sub(0x92));
+        instructionMap.put(0x93, () -> sub(0x93));
+        instructionMap.put(0x94, () -> sub(0x94));
+        instructionMap.put(0x95, () -> sub(0x95));
+        instructionMap.put(0x96, () -> sub(0x96));
+        instructionMap.put(0x97, () -> sub(0x97));
+        instructionMap.put(0x98, () -> sbc(0x98));
+        instructionMap.put(0x99, () -> sbc(0x99));
+        instructionMap.put(0x9a, () -> sbc(0x9a));
+        instructionMap.put(0x9b, () -> sbc(0x9b));
+        instructionMap.put(0x9c, () -> sbc(0x9c));
+        instructionMap.put(0x9d, () -> sbc(0x9d));
+        instructionMap.put(0x9e, () -> sbc(0x9e));
+        instructionMap.put(0x9f, () -> sbc(0x9f));
+        instructionMap.put(0xa0, () -> and(0xa0));
+        instructionMap.put(0xa1, () -> and(0xa1));
+        instructionMap.put(0xa2, () -> and(0xa2));
+        instructionMap.put(0xa3, () -> and(0xa3));
+        instructionMap.put(0xa4, () -> and(0xa4));
+        instructionMap.put(0xa5, () -> and(0xa5));
+        instructionMap.put(0xa6, () -> and(0xa6));
+        instructionMap.put(0xa7, () -> and(0xa7));
+        instructionMap.put(0xa8, () -> xor(0xa8));
+        instructionMap.put(0xa9, () -> xor(0xa9));
+        instructionMap.put(0xaa, () -> xor(0xaa));
+        instructionMap.put(0xab, () -> xor(0xab));
+        instructionMap.put(0xac, () -> xor(0xac));
+        instructionMap.put(0xad, () -> xor(0xad));
+        instructionMap.put(0xae, () -> xor(0xae));
+        instructionMap.put(0xaf, () -> xor(0xaf));
+        instructionMap.put(0xb0, () -> or(0xb0));
+        instructionMap.put(0xb1, () -> or(0xb1));
+        instructionMap.put(0xb2, () -> or(0xb2));
+        instructionMap.put(0xb3, () -> or(0xb3));
+        instructionMap.put(0xb4, () -> or(0xb4));
+        instructionMap.put(0xb5, () -> or(0xb5));
+        instructionMap.put(0xb6, () -> or(0xb6));
+        instructionMap.put(0xb7, () -> or(0xb7));
+        instructionMap.put(0xb8, () -> cp(0xb8));
+        instructionMap.put(0xb9, () -> cp(0xb9));
+        instructionMap.put(0xba, () -> cp(0xba));
+        instructionMap.put(0xbb, () -> cp(0xbb));
+        instructionMap.put(0xbc, () -> cp(0xbc));
+        instructionMap.put(0xbd, () -> cp(0xbd));
+        instructionMap.put(0xbe, () -> cp(0xbe));
+        instructionMap.put(0xbf, () -> cp(0xbf));
+        instructionMap.put(0xc0, () -> retcc(0xc0));
+        instructionMap.put(0xc1, () -> pop(0xc1));
+        instructionMap.put(0xc2, () -> jpcc(0xc2));
+        instructionMap.put(0xc3, () -> jump(0xc3));
+        instructionMap.put(0xc4, () -> callcc(0xc4));
+        instructionMap.put(0xc5, () -> push(0xc5));
+        instructionMap.put(0xc6, () -> add(0xc6));
+        instructionMap.put(0xc7, () -> rst(0xc7));
+        instructionMap.put(0xc8, () -> retcc(0xc8));
+        instructionMap.put(0xc9, () -> ret(0xc9));
+        instructionMap.put(0xca, () -> jpcc(0xca));
+        instructionMap.put(0xcb, () -> logFatal("Opcode 0xCB shouldn't be executed as-is."));
+        instructionMap.put(0xcc, () -> callcc(0xcc));
+        instructionMap.put(0xcd, () -> call(0xcd));
+        instructionMap.put(0xce, () -> adc(0xce));
+        instructionMap.put(0xcf, () -> rst(0xcf));
+        instructionMap.put(0xd0, () -> retcc(0xd0));
+        instructionMap.put(0xd1, () -> pop(0xd1));
+        instructionMap.put(0xd2, () -> jpcc(0xd2));
+        instructionMap.put(0xd3, () -> logFatal("Opcode 0xD3 is invalid."));
+        instructionMap.put(0xd4, () -> callcc(0xd4));
+        instructionMap.put(0xd5, () -> push(0xd5));
+        instructionMap.put(0xd6, () -> sub(0xd6));
+        instructionMap.put(0xd7, () -> rst(0xd7));
+        instructionMap.put(0xd8, () -> retcc(0xd8));
+        instructionMap.put(0xd9, () -> reti(0xd9));
+        instructionMap.put(0xda, () -> jpcc(0xda));
+        instructionMap.put(0xdb, () -> logFatal("Opcode 0xDB is invalid."));
+        instructionMap.put(0xdc, () -> callcc(0xdc));
+        instructionMap.put(0xdd, () -> logFatal("Opcode 0xDD is invalid."));
+        instructionMap.put(0xde, () -> sbc(0xde));
+        instructionMap.put(0xdf, () -> rst(0xdf));
+        instructionMap.put(0xe0, () -> load(0xe0));
+        instructionMap.put(0xe1, () -> pop(0xe1));
+        instructionMap.put(0xe2, () -> load(0xe2));
+        instructionMap.put(0xe3, () -> logFatal("Opcode 0xE3 is invalid."));
+        instructionMap.put(0xe4, () -> logFatal("Opcode 0xE4 is invalid."));
+        instructionMap.put(0xe5, () -> push(0xe5));
+        instructionMap.put(0xe6, () -> and(0xe6));
+        instructionMap.put(0xe7, () -> rst(0xe7));
+        instructionMap.put(0xe8, () -> add16(0xe8));
+        instructionMap.put(0xe9, () -> jphl(0xe9));
+        instructionMap.put(0xea, () -> load(0xea));
+        instructionMap.put(0xeb, () -> logFatal("Opcode 0xEB is invalid."));
+        instructionMap.put(0xec, () -> logFatal("Opcode 0xEC is invalid."));
+        instructionMap.put(0xed, () -> logFatal("Opcode 0xED is invalid."));
+        instructionMap.put(0xee, () -> xor(0xee));
+        instructionMap.put(0xef, () -> rst(0xef));
+        instructionMap.put(0xf0, () -> load(0xf0));
+        instructionMap.put(0xf1, () -> pop(0xf1));
+        instructionMap.put(0xf2, () -> load(0xf2));
+        instructionMap.put(0xf3, () -> diEi(0xf3));
+        instructionMap.put(0xf4, () -> logFatal("Opcode 0xF4 is invalid."));
+        instructionMap.put(0xf5, () -> push(0xf5));
+        instructionMap.put(0xf6, () -> or(0xf6));
+        instructionMap.put(0xf7, () -> rst(0xf7));
+        instructionMap.put(0xf8, () -> load(0xf8));
+        instructionMap.put(0xf9, () -> load(0xf9));
+        instructionMap.put(0xfa, () -> load(0xfa));
+        instructionMap.put(0xfb, () -> diEi(0xfb));
+        instructionMap.put(0xfc, () -> logFatal("Opcode 0xFC is invalid."));
+        instructionMap.put(0xfd, () -> logFatal("Opcode 0xFD is invalid."));
+        instructionMap.put(0xfe, () -> cp(0xfe));
+        instructionMap.put(0xff, () -> rst(0xff));
+    }
+
+    // main loop
+    public void main() {
+
     }
 
     // utility functions
@@ -128,7 +393,7 @@ public class Z80 extends Logger {
         Register r = search(name);
         return r != null && r.readBit(index);
     }
-    public int readCombinedRegisters(final String upper, final String lower) throws InvalidPropertiesFormatException {
+    public int readCombinedRegisters(final String upper, final String lower) {
         Register u = search(upper);
         Register l = search(lower);
         if(u != null && l != null) {
@@ -139,7 +404,7 @@ public class Z80 extends Logger {
             return -1;
         }
     }
-    public void writeCombinedRegisters(final String upper, final String lower, int value) throws InvalidPropertiesFormatException {
+    public void writeCombinedRegisters(final String upper, final String lower, int value) {
         Register u = search(upper);
         Register l = search(lower);
         if(u != null && l != null) {
@@ -150,18 +415,19 @@ public class Z80 extends Logger {
         }
     }
 
-    private int readCombinedRegisters(Register upper, Register lower) throws InvalidPropertiesFormatException {
+    private int readCombinedRegisters(Register upper, Register lower) {
         if (upper.getSize() != 8 || lower.getSize() != 8) {
-            throw new InvalidPropertiesFormatException("one of the registers to combine wasn't an 8-bit register");
+            logFatal("one of the registers to combine wasn't an 8-bit register");
+            return -1;
         }
         int result = upper.read();
         result <<= 8;
         result |= lower.read();
         return result;
     }
-    private void writeCombinedRegisters(Register upper, Register lower, final int value) throws InvalidPropertiesFormatException {
+    private void writeCombinedRegisters(Register upper, Register lower, final int value) {
         if (upper.getSize() != 8 || lower.getSize() != 8) {
-            throw new InvalidPropertiesFormatException("one of the registers to combine wasn't an 8-bit register");
+            logFatal("one of the registers to combine wasn't an 8-bit register");
         }
         int upper8bits = value / 256; // shift right  by 8 bits;
         int lower8bits = value & 0b0000000011111111; // mask out the upper 8 bits.
@@ -177,7 +443,7 @@ public class Z80 extends Logger {
     }
 
     // opcode implementations
-    public void load(int opcode) throws InvalidPropertiesFormatException {
+    public void load(int opcode) {
         // temp variables to temporarily hold stuff
         int address;
         int temp;
@@ -622,7 +888,7 @@ public class Z80 extends Logger {
         return (high | low);
 
     }
-    public void push(int opcode) throws InvalidPropertiesFormatException {
+    public void push(int opcode) {
         // 3.3.2.6 PUSH nn
         int temp;
         switch (opcode) {
@@ -688,7 +954,7 @@ public class Z80 extends Logger {
         }
     }
 
-    public void add(int opcode) throws InvalidPropertiesFormatException {
+    public void add(int opcode) {
         /*  3.3.3.1 ADD A,n
             1. ADD A,n
             Description:
@@ -747,7 +1013,7 @@ public class Z80 extends Logger {
         // save result
         load(registerA, result);
     }
-    public void adc(int opcode) throws InvalidPropertiesFormatException {
+    public void adc(int opcode) {
         /*  3.3.3.2 ADC A,n
             Description:
                Add n + Carry flag to A.
@@ -806,7 +1072,7 @@ public class Z80 extends Logger {
         // save result
         load(registerA, result);
     }
-    public void add16(int opcode) throws InvalidPropertiesFormatException {
+    public void add16(int opcode) {
         /*  3.3.4.1. ADD HL,n
             Description:
                Add n to HL.
@@ -882,7 +1148,7 @@ public class Z80 extends Logger {
 
     }
 
-    public void sub(int opcode) throws InvalidPropertiesFormatException {
+    public void sub(int opcode) {
         /* 3.3.3.3 SUB n
             Description:
                Subtract n from A.
@@ -940,7 +1206,7 @@ public class Z80 extends Logger {
         // save result
         load(registerA, result);
     }
-    public void sbc(int opcode) throws InvalidPropertiesFormatException {
+    public void sbc(int opcode)  {
         /* 3.3.3.4 SBC A,n
             Description:
                Subtract n + Carry flag from A.
@@ -999,7 +1265,7 @@ public class Z80 extends Logger {
         load(registerA, result);
     }
 
-    public void and(int opcode) throws InvalidPropertiesFormatException {
+    public void and(int opcode)  {
         /* 3.3.3.5 AND n
             Description:
                logDebugically AND n with A, result in A.
@@ -1049,7 +1315,7 @@ public class Z80 extends Logger {
         registerFlags.setH();
         registerFlags.clearC();
     }
-    public void or(int opcode) throws InvalidPropertiesFormatException {
+    public void or(int opcode)  {
         /* 3.3.3.6. OR n
             Description:
                logDebugical OR n with register A, result in A.
@@ -1099,7 +1365,7 @@ public class Z80 extends Logger {
         registerFlags.clearH();
         registerFlags.clearC();
     }
-    public void xor(int opcode) throws InvalidPropertiesFormatException {
+    public void xor(int opcode)  {
         /* 3.3.3.7 XOR n
             Description:
                logDebugical exclusive OR n with register A, result in A.
@@ -1149,7 +1415,7 @@ public class Z80 extends Logger {
         registerFlags.clearH();
         registerFlags.clearC();
     }
-    public void cp(int opcode) throws InvalidPropertiesFormatException {
+    public void cp(int opcode)  {
         /* 3.3.3.8. CP n
            Description:
                Compare A with n. This is basically an A - n
@@ -1209,7 +1475,7 @@ public class Z80 extends Logger {
         // throw away result :-)
     }
 
-    public void inc(int opcode) throws InvalidPropertiesFormatException {
+    public void inc(int opcode)  {
         /* 3.3.3.9. INC n
             Description:
                Increment register n.
@@ -1260,7 +1526,7 @@ public class Z80 extends Logger {
             registerFlags.setH();
         }
     }
-    public void inc16(int opcode) throws InvalidPropertiesFormatException {
+    public void inc16(int opcode)  {
         /* 3.3.4.3. INC nn
             Description:
                Increment register nn.
@@ -1303,7 +1569,7 @@ public class Z80 extends Logger {
         writeCombinedRegisters(highReg, lowReg, value);
     }
 
-    public void dec(int opcode) throws InvalidPropertiesFormatException {
+    public void dec(int opcode)  {
         /* 3.3.3.10. DEC n
             Description:
                Decrement register n.
@@ -1354,7 +1620,7 @@ public class Z80 extends Logger {
             registerFlags.setH();
         }
     }
-    public void dec16(int opcode) throws InvalidPropertiesFormatException {
+    public void dec16(int opcode)  {
         /* 3.3.4.4. DEC nn
             Description:
                Decrement register nn.
@@ -1373,19 +1639,19 @@ public class Z80 extends Logger {
         Register highReg = null;
         Register lowReg = null;
         switch (opcode) {
-            case 0x03:
+            case 0x0B:
                 highReg = registerB;
                 lowReg = registerC;
                 break;
-            case 0x13:
+            case 0x1B:
                 highReg = registerD;
                 lowReg = registerE;
                 break;
-            case 0x23:
+            case 0x2B:
                 highReg = registerH;
                 lowReg = registerL;
                 break;
-            case 0x33:
+            case 0x3B:
                 registerSP.dec();
                 return;
             default:
@@ -1407,7 +1673,7 @@ public class Z80 extends Logger {
         value |= lower;
         return value;
     }
-    public void swap(int opcode) throws InvalidPropertiesFormatException {
+    public void swap(int opcode)  {
         /* 3.3.5.1. SWAP n
             Description:
                Swap upper & lower nibles of n.
@@ -1776,7 +2042,7 @@ public class Z80 extends Logger {
         registerFlags.clearN();
     }
 
-    public void rlc(int opcode) throws InvalidPropertiesFormatException {
+    public void rlc(int opcode)  {
         /*
         5. RLC n
         Description:
@@ -1837,7 +2103,7 @@ public class Z80 extends Logger {
         registerFlags.clearZ();
     }
 
-    public void rl(int opcode) throws InvalidPropertiesFormatException {
+    public void rl(int opcode)  {
         /*
         6. RL n
         Description:
@@ -1903,7 +2169,7 @@ public class Z80 extends Logger {
         }
     }
 
-    public void rrc(int opcode) throws InvalidPropertiesFormatException {
+    public void rrc(int opcode)  {
         /*
         7. RRC n
         Description:
@@ -1964,7 +2230,7 @@ public class Z80 extends Logger {
         registerFlags.clearH();
     }
 
-    public void rr(int opcode) throws InvalidPropertiesFormatException {
+    public void rr(int opcode)  {
         /*
         8. RR n
         Description:
@@ -2026,7 +2292,7 @@ public class Z80 extends Logger {
         registerFlags.clearH();
     }
 
-    public void sla(int opcode) throws InvalidPropertiesFormatException {
+    public void sla(int opcode)  {
         /*
         9. SLA n
         Description:
@@ -2087,7 +2353,7 @@ public class Z80 extends Logger {
         registerFlags.clearH();
     }
 
-    public void sra(int opcode) throws InvalidPropertiesFormatException {
+    public void sra(int opcode)  {
         /*
         10. SRA n
         Description:
@@ -2148,7 +2414,7 @@ public class Z80 extends Logger {
         registerFlags.clearN();
     }
 
-    public void srl(int opcode) throws InvalidPropertiesFormatException {
+    public void srl(int opcode)  {
         /*
         11. SRL n
         Description:
@@ -2209,7 +2475,7 @@ public class Z80 extends Logger {
         registerFlags.clearH();
     }
 
-    private int cbHelperRead(int opcode) throws InvalidPropertiesFormatException{
+    private int cbHelperRead(int opcode) {
         // see which register we'll use by looking only at
         // the least significant hex digit (0x000F, or 0b00001111 mask)
         int value = 0;
@@ -2234,7 +2500,7 @@ public class Z80 extends Logger {
 
         return value;
     }
-    private void cbHelperWrite(int opcode, int value) throws InvalidPropertiesFormatException {
+    private void cbHelperWrite(int opcode, int value)  {
         // see which register we'll use by looking only at the least significant
         // hex digit (0x000F or 0b00001111 mask)
         switch(opcode & 0b00001111) {
@@ -2256,7 +2522,7 @@ public class Z80 extends Logger {
                 registerA.write(value); break;
         }
     }
-    public void bit(int opcode) throws InvalidPropertiesFormatException {
+    public void bit(int opcode)  {
         // this is going to be an interesting one....
         // starting at opcode 0xCB4X where X is:
         //    opcode:     0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F  0
@@ -2292,7 +2558,7 @@ public class Z80 extends Logger {
         registerFlags.setH();
         registerFlags.clearN();
     }
-    public void res(int opcode) throws InvalidPropertiesFormatException {
+    public void res(int opcode)  {
         // see bit function above. This works the same way except
         // instead of reading the bit, it just sets it to 0 and affects
         // no flags. Starts at 0xCB80
@@ -2317,7 +2583,7 @@ public class Z80 extends Logger {
         // store result
         cbHelperWrite(opcode, value);
     }
-    public void set(int opcode) throws InvalidPropertiesFormatException {
+    public void set(int opcode)  {
         // see bit instruction above. This one works the same way except
         // instead of reading the bit, it will just set the bit in question to 1
         // with no flags affected. Starts at 0xCBC0 and ends at 0xCC00.
@@ -2420,7 +2686,7 @@ public class Z80 extends Logger {
         address |= temp;
         load(registerPC, address); // load it into PC so it will be executed next.
     }
-    public void jphl(int opcode) throws InvalidPropertiesFormatException {
+    public void jphl(int opcode)  {
         /*
         3. JP (HL)
         Description:

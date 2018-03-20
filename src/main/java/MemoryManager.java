@@ -23,10 +23,18 @@ public class MemoryManager extends Logger {
     public static int[] getBiosLogo() {
         return hexStringToByteArray(bios.toLowerCase().substring(336, 432));
     }
+    private static int[] getBios() {
+        return hexStringToByteArray(bios.toLowerCase());
+    }
 
     public final int memorySize = 0xFFFF;
+
     private int[] ram = new int[memorySize];
     private Cartridge cartridge;
+
+
+
+    private boolean inBios = true;
 
     MemoryManager(Cartridge cart) {
         this.cartridge = cart;
@@ -40,9 +48,28 @@ public class MemoryManager extends Logger {
 
     public int rawRead(int address) throws IndexOutOfBoundsException {
         if (isValidMemoryAddress(address)) {
+
+            if (address > -1 && address < 0x1000) {
+                if (address < 0x100) {
+                    if (inBios) {
+                        return getBios()[address];
+                    }
+                    else {
+                        return ram[address];
+                    }
+                }
+            }
+            else if (address >= 0x1000 && address < 0x8000) {
+                return ram[address];
+            }
+
+
             return ram[address];
+
         }
-        else { throw new IndexOutOfBoundsException(address + " isn't a valid memory address."); }
+        else {
+            throw new IndexOutOfBoundsException(address + " isn't a valid memory address.");
+        }
     }
 
     public void rawWrite(int address, int value) throws IndexOutOfBoundsException, NumberFormatException {
