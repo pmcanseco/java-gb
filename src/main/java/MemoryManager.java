@@ -48,22 +48,6 @@ public class MemoryManager extends Logger {
 
     public int rawRead(int address) throws IndexOutOfBoundsException {
         if (isValidMemoryAddress(address)) {
-
-            if (address > -1 && address < 0x1000) {
-                if (address < 0x100) {
-                    if (inBios) {
-                        return getBios()[address];
-                    }
-                    else {
-                        return ram[address];
-                    }
-                }
-            }
-            else if (address >= 0x1000 && address < 0x8000) {
-                return ram[address];
-            }
-
-
             return ram[address];
 
         }
