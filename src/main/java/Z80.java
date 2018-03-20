@@ -2273,7 +2273,7 @@ public class Z80 extends Logger {
 
         // validate opcode actually belongs in this function:
         if (opcode < 0xCB40 || opcode > 0xCB7F) {
-            System.out.println("Opcode " + opcode + " doesn't belong in bit()");
+            logError("Opcode " + opcode + " doesn't belong in bit()");
             return;
         }
 
@@ -2299,7 +2299,7 @@ public class Z80 extends Logger {
 
         // validate opcode actually belongs in this function:
         if (opcode < 0xCB80 || opcode > 0xCBBF) {
-            System.out.println("Opcode " + opcode + " doesn't belong in res()");
+            logError("Opcode " + opcode + " doesn't belong in res()");
             return;
         }
 
@@ -2324,7 +2324,7 @@ public class Z80 extends Logger {
 
         // validate opcode actually belongs in this function:
         if (opcode < 0xCBC0 || opcode > 0xCBFF) {
-            System.out.println("Opcode " + opcode + " doesn't belong in set()");
+            logError("Opcode " + opcode + " doesn't belong in set()");
             return;
         }
 
@@ -2354,7 +2354,7 @@ public class Z80 extends Logger {
         JP nn C3 12
         */
         if (opcode != 0xC3) {
-            System.out.println("Opcode " + opcode + " doesn't belong in jump()");
+            logError("Opcode " + opcode + " doesn't belong in jump()");
             return;
         }
 
@@ -2387,7 +2387,7 @@ public class Z80 extends Logger {
             opcode != 0xCA &&
             opcode != 0xD2 &&
             opcode != 0xDA) {
-            System.out.println("Opcode " + opcode + " doesn't belong in jpcc()");
+            logError("Opcode " + opcode + " doesn't belong in jpcc()");
             return;
         }
 
@@ -2430,7 +2430,7 @@ public class Z80 extends Logger {
         JP (HL) E9 4
         */
         if (opcode != 0xE9) {
-            System.out.println("Opcode " + opcode + " doesn't belong in jphl()");
+            logError("Opcode " + opcode + " doesn't belong in jphl()");
             return;
         }
 
@@ -2448,7 +2448,7 @@ public class Z80 extends Logger {
         JR n 18 8
         */
         if (opcode != 0x18) {
-            System.out.println("Opcode " + opcode + " doesn't belong in jr()");
+            logError("Opcode " + opcode + " doesn't belong in jr()");
             return;
         }
 
@@ -2480,7 +2480,7 @@ public class Z80 extends Logger {
             opcode != 0x28 &&
             opcode != 0x30 &&
             opcode != 0x38) {
-            System.out.println("Opcode " + opcode + " doesn't belong in jrcc()");
+            logError("Opcode " + opcode + " doesn't belong in jrcc()");
             return;
         }
 
@@ -2524,7 +2524,7 @@ public class Z80 extends Logger {
         CALL nn CD 12
         */
         if (opcode != 0x12) {
-            System.out.println("Opcode " + opcode + " doesn't belong in call()");
+            logError("Opcode " + opcode + " doesn't belong in call()");
             return;
         }
 
@@ -2561,7 +2561,7 @@ public class Z80 extends Logger {
             opcode != 0xCC &&
             opcode != 0xD4 &&
             opcode != 0xDC) {
-            System.out.println("Opcode " + opcode + " doesn't belong in callcc()");
+            logError("Opcode " + opcode + " doesn't belong in callcc()");
             return;
         }
 
@@ -2622,7 +2622,7 @@ public class Z80 extends Logger {
             opcode != 0xEF &&
             opcode != 0xF7 &&
             opcode != 0xFF) {
-            System.out.println("Opcode " + opcode + " doesn't belong in rst()");
+            logError("Opcode " + opcode + " doesn't belong in rst()");
             return;
         }
 
@@ -2657,7 +2657,7 @@ public class Z80 extends Logger {
         RET -/- C9 8
         */
         if (opcode != 0xC9) {
-            System.out.println("Opcode " + opcode + " doesn't belong in ret()");
+            logError("Opcode " + opcode + " doesn't belong in ret()");
             return;
         }
 
@@ -2684,7 +2684,7 @@ public class Z80 extends Logger {
             opcode != 0xC8 &&
             opcode != 0xD0 &&
             opcode != 0xD8) {
-            System.out.println("Opcode " + opcode + " doesn't belong in retcc()");
+            logError("Opcode " + opcode + " doesn't belong in retcc()");
             return;
         }
 
@@ -2722,7 +2722,7 @@ public class Z80 extends Logger {
         RETI -/- D9 8
         */
         if (opcode != 0xD9) {
-            System.out.println("Opcode " + opcode + " doesn't belong in ret()");
+            logError("Opcode " + opcode + " doesn't belong in ret()");
             return;
         }
 

@@ -1,5 +1,7 @@
 public class FlagsRegister extends Register {
 
+    // the ordinal number of each element here is used
+    // as an index to the corresponding bit in the register.
     public enum FlagIndex {
         Z,
         N,

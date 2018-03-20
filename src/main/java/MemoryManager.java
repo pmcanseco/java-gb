@@ -1,7 +1,7 @@
 /**
  * Created by Pablo Canseco on 12/24/2017.
  */
-public class MemoryManager {
+public class MemoryManager extends Logger {
 
     private final static String bios =
             "31FEFFAF21FF9F32CB7C20FB2126FF0E" +
@@ -90,7 +90,7 @@ public class MemoryManager {
 
     private boolean isValidMemoryAddress(int address) {
         if (address < 0 || address > memorySize) {
-            System.out.println("Address " + address + " is not in memory range (" + memorySize + ").");
+            logError("Address " + address + " is not in memory range (" + memorySize + ").");
             return false;
         }
         return true;
