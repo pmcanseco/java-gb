@@ -6,9 +6,9 @@ import java.util.Map;
  * Created by Pablo Canseco on 12/22/2017.
  * An Object-Oriented Approach to a Gameboy Z80 Processor Emulator
  */
-public class Z80 {
+public class Z80 extends Logger {
 
-    // 8-bit registers, constructed in the LegacyZ80 constructor.
+    // 8-bit registers
     private Register registerA;
     private Register registerB;
     private Register registerC;
@@ -28,7 +28,7 @@ public class Z80 {
     // * NOTE * The lower 4 bits always read zero even if 1 is written to them.
     private FlagsRegister registerFlags;
 
-    // 16-bit registers, also constructed in the LegacyZ80 constructor.
+    // 16-bit registers
     private Register registerPC; // program counter
     private Register registerSP; // stack pointer
     //private Register registerI;
@@ -82,6 +82,7 @@ public class Z80 {
         //sixteenBitRegisters.put("IME", registerIME);
 
         this.mmu = memMgr;
+        logDebug("initialized.");
     }
 
     // utility functions
@@ -94,7 +95,7 @@ public class Z80 {
         }
         else {
             // unknown register?
-            System.out.println("Unknown register");
+            logDebug("Unknown register");
             return null;
         }
     }
@@ -107,7 +108,7 @@ public class Z80 {
         }
         else {
             // unknown register?
-            System.out.println("Unknown register");
+            logError("Unknown register");
             return -1;
         }
     }
@@ -120,7 +121,7 @@ public class Z80 {
         }
         else {
             // unknown register?
-            System.out.println("Unknown register");
+            logError("Unknown register");
         }
     }
     public boolean getRegisterBit(final String name, int index) {
@@ -134,7 +135,7 @@ public class Z80 {
             return readCombinedRegisters(u, l);
         }
         else {
-            System.out.println("Did not find one of registers " + upper + ", " + lower);
+            logDebug("Did not find one of registers " + upper + ", " + lower);
             return -1;
         }
     }
@@ -145,7 +146,7 @@ public class Z80 {
             writeCombinedRegisters(u, l, value);
         }
         else {
-            System.out.println("Did not find one of registers " + upper + ", " + lower);
+            logDebug("Did not find one of registers " + upper + ", " + lower);
         }
     }
 
@@ -599,7 +600,7 @@ public class Z80 {
                 break;
             //</editor-fold>
             default:
-                System.out.println(String.format("Error: Opcode %05X does not belong to load(int opcode) . ", opcode));
+                logDebug(String.format("logError: Opcode %05X does not belong to load(int opcode) . ", opcode));
         }
     }
 
@@ -619,7 +620,7 @@ public class Z80 {
         registerSP.inc();
         high <<= 8;
         return (high | low);
-        
+
     }
     public void push(int opcode) throws InvalidPropertiesFormatException {
         // 3.3.2.6 PUSH nn
@@ -642,7 +643,7 @@ public class Z80 {
                 temp = readCombinedRegisters(registerH, registerL);
                 break;
             default:
-                System.out.println(String.format("Error: Opcode %05X does not belong to push(int opcode) . ", opcode));
+                logDebug(String.format("logError: Opcode %05X does not belong to push(int opcode) . ", opcode));
                 return;
         }
 
@@ -666,7 +667,7 @@ public class Z80 {
             case 0xE1:
                 upperRegister = registerH; lowerRegister = registerL; break;
             default:
-                System.out.println(String.format("Error: Opcode %05X does not belong to pop(int opcode) . ", opcode));
+                logDebug(String.format("logError: Opcode %05X does not belong to pop(int opcode) . ", opcode));
                 return;
         }
 
@@ -682,8 +683,8 @@ public class Z80 {
             registerSP.inc();
         }
         else {
-            // error out
-            System.out.println("Error: found call to pop() but either upper or lower register didn't get populated.");
+            // logError out
+            logDebug("logError: found call to pop() but either upper or lower register didn't get populated.");
         }
     }
 
@@ -724,7 +725,7 @@ public class Z80 {
             case 0x86: second = mmu.rawRead(readCombinedRegisters(registerH, registerL)); break;
             case 0xC6: second = mmu.rawRead(registerPC.read()); registerPC.inc(); break;
             default:
-                System.out.println(String.format("Error: Opcode %05X does not belong to add(int opcode) . ", opcode));
+                logDebug(String.format("logError: Opcode %05X does not belong to add(int opcode) . ", opcode));
                 return;
         }
         // do the addition
@@ -781,7 +782,7 @@ public class Z80 {
             case 0x8E: second = mmu.rawRead(readCombinedRegisters(registerH, registerL)); break;
             case 0xCE: second = mmu.rawRead(registerPC.read()); registerPC.inc(); break;
             default:
-                System.out.println(String.format("Error: Opcode %05X does not belong to adc(int opcode) . ", opcode));
+                logDebug(String.format("logError: Opcode %05X does not belong to adc(int opcode) . ", opcode));
                 return;
         }
 
@@ -839,7 +840,7 @@ public class Z80 {
             case 0x39: value = registerSP.read(); break;
             case 0xE8: value = mmu.rawRead(registerPC.read()); registerPC.inc(); break;
             default:
-                System.out.println(String.format("Error: Opcode %05X does not belong to add16(int opcode) . ", opcode));
+                logDebug(String.format("logError: Opcode %05X does not belong to add16(int opcode) . ", opcode));
                 return;
 
         }
@@ -916,7 +917,7 @@ public class Z80 {
             case 0x96: second = mmu.rawRead(readCombinedRegisters(registerH, registerL)); break;
             case 0xD6: second = mmu.rawRead(registerPC.read()); registerPC.inc(); break;
             default:
-                System.out.println(String.format("Error: Opcode %05X does not belong to sub(int opcode) . ", opcode));
+                logDebug(String.format("logError: Opcode %05X does not belong to sub(int opcode) . ", opcode));
                 return;
         }
 
@@ -973,7 +974,7 @@ public class Z80 {
             case 0x9D: second = registerL.read(); break;
             case 0x9E: second = mmu.rawRead(readCombinedRegisters(registerH, registerL)); break;
             default:
-                System.out.println(String.format("Error: Opcode %05X does not belong to sbc(int opcode) . ", opcode));
+                logDebug(String.format("logError: Opcode %05X does not belong to sbc(int opcode) . ", opcode));
                 return;
         }
 
@@ -1001,7 +1002,7 @@ public class Z80 {
     public void and(int opcode) throws InvalidPropertiesFormatException {
         /* 3.3.3.5 AND n
             Description:
-               Logically AND n with A, result in A.
+               logDebugically AND n with A, result in A.
             Use with:
                n = A,B,C,D,E,H,L,(HL),#
             Flags affected:
@@ -1033,7 +1034,7 @@ public class Z80 {
             case 0xA6: second = mmu.rawRead(readCombinedRegisters(registerH, registerL)); break;
             case 0xE6: second = mmu.rawRead(registerPC.read()); registerPC.inc(); break;
             default:
-                System.out.println(String.format("Error: Opcode %05X does not belong to and(int opcode) . ", opcode));
+                logDebug(String.format("logError: Opcode %05X does not belong to and(int opcode) . ", opcode));
                 return;
         }
 
@@ -1051,7 +1052,7 @@ public class Z80 {
     public void or(int opcode) throws InvalidPropertiesFormatException {
         /* 3.3.3.6. OR n
             Description:
-               Logical OR n with register A, result in A.
+               logDebugical OR n with register A, result in A.
             Use with:
                n = A,B,C,D,E,H,L,(HL),#
             Flags affected:
@@ -1083,7 +1084,7 @@ public class Z80 {
             case 0xB6: second = mmu.rawRead(readCombinedRegisters(registerH, registerL)); break;
             case 0xF6: second = mmu.rawRead(registerPC.read()); registerPC.inc(); break;
             default:
-                System.out.println(String.format("Error: Opcode %05X does not belong to or(int opcode) . ", opcode));
+                logDebug(String.format("logError: Opcode %05X does not belong to or(int opcode) . ", opcode));
                 return;
         }
 
@@ -1101,7 +1102,7 @@ public class Z80 {
     public void xor(int opcode) throws InvalidPropertiesFormatException {
         /* 3.3.3.7 XOR n
             Description:
-               Logical exclusive OR n with register A, result in A.
+               logDebugical exclusive OR n with register A, result in A.
             Use with:
                n = A,B,C,D,E,H,L,(HL),#
             Flags affected:
@@ -1133,7 +1134,7 @@ public class Z80 {
             case 0xAE: second = mmu.rawRead(readCombinedRegisters(registerH, registerL)); break;
             case 0xEE: second = mmu.rawRead(registerPC.read()); registerPC.inc(); break;
             default:
-                System.out.println(String.format("Error: Opcode %05X does not belong to xor(int opcode) . ", opcode));
+                logDebug(String.format("logError: Opcode %05X does not belong to xor(int opcode) . ", opcode));
                 return;
         }
 
@@ -1185,7 +1186,7 @@ public class Z80 {
             case 0xBE: second = mmu.rawRead(readCombinedRegisters(registerH, registerL)); break;
             case 0xFE: second = mmu.rawRead(registerPC.read()); registerPC.inc(); break;
             default:
-                System.out.println(String.format("Error: Opcode %05X does not belong to cp(int opcode) . ", opcode));
+                logDebug(String.format("logError: Opcode %05X does not belong to cp(int opcode) . ", opcode));
                 return;
         }
 
@@ -1246,7 +1247,7 @@ public class Z80 {
                 mmu.rawWrite(address, value);
                 break;
             default:
-                System.out.println(String.format("Error: Opcode %05X does not belong to inc(int opcode) . ", opcode));
+                logDebug(String.format("logError: Opcode %05X does not belong to inc(int opcode) . ", opcode));
                 return;
         }
 
@@ -1294,7 +1295,7 @@ public class Z80 {
                 registerSP.inc();
                 return;
             default:
-                System.out.println(String.format("Error: Opcode %05X does not belong to inc16(int opcode) . ", opcode));
+                logDebug(String.format("logError: Opcode %05X does not belong to inc16(int opcode) . ", opcode));
                 return;
         }
         value = readCombinedRegisters(highReg, lowReg);
@@ -1340,7 +1341,7 @@ public class Z80 {
                 mmu.rawWrite(address, value);
                 break;
             default:
-                System.out.println(String.format("Error: Opcode %05X does not belong to dec(int opcode) . ", opcode));
+                logDebug(String.format("logError: Opcode %05X does not belong to dec(int opcode) . ", opcode));
                 return;
         }
 
@@ -1388,7 +1389,7 @@ public class Z80 {
                 registerSP.dec();
                 return;
             default:
-                System.out.println(String.format("Error: Opcode %05X does not belong to dec16(int opcode) . ", opcode));
+                logDebug(String.format("logError: Opcode %05X does not belong to dec16(int opcode) . ", opcode));
                 return;
         }
         value = readCombinedRegisters(highReg, lowReg);
@@ -1443,7 +1444,7 @@ public class Z80 {
                 mmu.rawWrite(address, value);
                 break;
             default:
-                System.out.println(String.format("Error: Opcode %05X does not belong to swap(int opcode) . ", opcode));
+                logDebug(String.format("logError: Opcode %05X does not belong to swap(int opcode) . ", opcode));
                 return;
         }
 
@@ -1458,7 +1459,7 @@ public class Z80 {
 
     public void daa(int opcode) {
         if (opcode != 0x27) {
-            System.out.println("Why are we even in daa() if opcode " + opcode + " isn't 0x27?");
+            logDebug("Why are we even in daa() if opcode " + opcode + " isn't 0x27?");
             return;
         }
         /* 3.3.5.2. DAA
@@ -1524,7 +1525,7 @@ public class Z80 {
              CPL           -/-      2F      4
          */
         if (opcode != 0x2F) {
-            System.out.println("Why are we even in cpl() if opcode " + opcode + " isn't 0x2F?");
+            logDebug("Why are we even in cpl() if opcode " + opcode + " isn't 0x2F?");
             return;
         }
 
@@ -1552,7 +1553,7 @@ public class Z80 {
              CCF -/- 3F 4
          */
         if (opcode != 0x3F) {
-            System.out.println("Why are we even in ccf() if opcode " + opcode + " isn't 0x3F?");
+            logDebug("Why are we even in ccf() if opcode " + opcode + " isn't 0x3F?");
             return;
         }
 
@@ -1579,7 +1580,7 @@ public class Z80 {
              SCF            -/-      37     4
          */
         if (opcode != 0x37) {
-            System.out.println("Why are we even in scf() if opcode " + opcode + " isn't 0x37?");
+            logDebug("Why are we even in scf() if opcode " + opcode + " isn't 0x37?");
             return;
         }
 
@@ -1591,24 +1592,24 @@ public class Z80 {
     public void nopHaltStop(int opcode) {
         if (opcode == 0x00) {
             // NOP - 4 cycles, 0x00 opcode
-            System.out.println("NOP - No operation.");
+            logDebug("NOP - No operation.");
         }
         else if (opcode == 0x76) {
             // HALT - power down CPU until interrupt occurs. Opcode 0x76. 4 cycles.
-            System.out.println("HALT");
-            while (true) {
+            logDebug("HALT");
+            /*while (true) {
                 // TODO - wait until an interrupt happens then break
-            }
+            }*/
         }
         else if (opcode == 0x1000) {
             // STOP - halt cpu and lcd display until button pressed. Opcode 0x1000. 4 cycles.
-            System.out.println("STOP");
-            while (true) {
+            logDebug("STOP");
+            /*while (true) {
                 // TODO - wait until button is pressed then break
-            }
+            }*/
         }
         else {
-            System.out.println("We're in nopHaltStop() but opcode " + opcode + " isn't 0x00, 0x76, or 0x1000");
+            logDebug("We're in nopHaltStop() but opcode " + opcode + " isn't 0x00, 0x76, or 0x1000");
         }
     }
     public void diEi(int opcode) {
@@ -1643,7 +1644,7 @@ public class Z80 {
             pendingInterruptEnable = true;
         }
         else {
-            System.out.println("Why are we even in diEi() if opcode " + opcode + " isn't 0xF3 or 0xFB?");
+            logDebug("Why are we even in diEi() if opcode " + opcode + " isn't 0xF3 or 0xFB?");
         }
     }
 
@@ -1662,12 +1663,13 @@ public class Z80 {
          RLCA -/- 07 4
          */
         if (opcode != 0x07) {
-            System.out.println("Wrong opcode handler. " + opcode + " shouldn't be handled by rlca()");
+            logDebug("Wrong opcode handler. " + opcode + " shouldn't be handled by rlca()");
             return;
         }
 
         // perform operation
-        int result = (registerA.read() << 1) | (registerA.read() >> 7);
+        int regA = registerA.read();
+        int result = (regA << 1) | (regA >> 7);
         registerA.write(result);
         boolean bit7 = ((registerA.read() & 0b10000000) >> 7) == 1;
 
@@ -1684,7 +1686,7 @@ public class Z80 {
             registerFlags.clearC();
         }
     }
-    
+
     public void rla(int opcode) {
         /*
         2. RLA
@@ -1698,7 +1700,7 @@ public class Z80 {
             Opcodes:
             Instruction Parameters Opcode Cycles
             RLA         -/-         17      4
-            
+
             NOTE according to https://github.com/simias/gb-rs,
             the above is wrong and the below implementation is right.
         */
@@ -1706,9 +1708,9 @@ public class Z80 {
 
         boolean newcarry = (result >> 7) != 0;
         int oldcarry = registerFlags.readC() ? 1 : 0;
-    
+
         registerA.write((result << 1) | oldcarry);
-    
+
         if (newcarry) {
             registerFlags.setC();
         }
@@ -1719,7 +1721,7 @@ public class Z80 {
         registerFlags.clearH();
         registerFlags.clearN();
     }
-    
+
     public void rrca(int opcode) {
         /*
         3. RRCA
@@ -1738,7 +1740,7 @@ public class Z80 {
         int oldbit0 = value & 0b00000001;
         value >>= 1;
         registerA.write(value | (oldbit0 << 7));
-        
+
         // flags affected
         if (oldbit0 != 0) registerFlags.setC();
         else              registerFlags.clearC();
@@ -1746,7 +1748,7 @@ public class Z80 {
         registerFlags.clearN();
         registerFlags.clearZ();
     }
-    
+
     public void rra(int opcode) {
         /*
         4. RRA
@@ -1761,19 +1763,19 @@ public class Z80 {
         Instruction Parameters Opcode Cycles
         RRA -/- 1F 4
         */
-        
+
         int value = registerA.read();
         int newcarry = value & 0b00000001;
         int oldcarry = registerFlags.readC() ? 1 : 0;
         registerA.write((value >> 1) | (oldcarry << 7));
-        
+
         if (newcarry == 1) registerFlags.setC();
         else               registerFlags.clearC();
         registerFlags.clearZ();
         registerFlags.clearH();
         registerFlags.clearN();
     }
-    
+
     public void rlc(int opcode) throws InvalidPropertiesFormatException {
         /*
         5. RLC n
@@ -1797,7 +1799,7 @@ public class Z80 {
         RLC         L           CB 05   8
         RLC         (HL)        CB 06   16
         */
-        
+
         // read value
         int value = 0;
         switch(opcode) {
@@ -1810,11 +1812,11 @@ public class Z80 {
             case 0xCB05: value = registerL.read(); break;
             case 0xCB06: value = mmu.rawRead(readCombinedRegisters(registerH, registerL)); break;
         }
-        
+
         // perform operation
         int result = (value << 1) | (value >> 7);
         boolean bit7 = ((registerA.read() & 0b10000000) >> 7) == 1;
-        
+
         // write result
         switch(opcode) {
             case 0xCB07: registerA.write(result); break;
@@ -1826,7 +1828,7 @@ public class Z80 {
             case 0xCB05: registerL.write(result); break;
             case 0xCB06: mmu.rawWrite(readCombinedRegisters(registerH, registerL), result); break;
         }
-        
+
         // flags affected
         if (bit7) registerFlags.setC();
         else      registerFlags.clearC();
@@ -1834,7 +1836,7 @@ public class Z80 {
         registerFlags.clearN();
         registerFlags.clearZ();
     }
-    
+
     public void rl(int opcode) throws InvalidPropertiesFormatException {
         /*
         6. RL n
@@ -1870,7 +1872,7 @@ public class Z80 {
             case 0xCB15: value = registerL.read(); break;
             case 0xCB16: value = mmu.rawRead(readCombinedRegisters(registerH, registerL)); break;
         }
-        
+
         // perform operation
         int result = (value << 1) | (value >> 7);
         boolean bit7 = ((value & 0b10000000) >> 7) == 1;
@@ -1900,7 +1902,7 @@ public class Z80 {
             registerFlags.clearC();
         }
     }
-    
+
     public void rrc(int opcode) throws InvalidPropertiesFormatException {
         /*
         7. RRC n
@@ -1936,12 +1938,12 @@ public class Z80 {
             case 0xCB0D: value = registerL.read(); break;
             case 0xCB0E: value = mmu.rawRead(readCombinedRegisters(registerH, registerL)); break;
         }
-        
+
         // perform operation
         int oldbit0 = value & 0b00000001;
         value >>= 1;
         int result = value | (oldbit0 << 7);
-        
+
         // write result
         switch(opcode) {
             case 0xCB0F: registerA.write(result); break;
@@ -1953,7 +1955,7 @@ public class Z80 {
             case 0xCB0D: registerL.write(result); break;
             case 0xCB0E: mmu.rawWrite(readCombinedRegisters(registerH, registerL), result); break;
         }
-    
+
         // flags affected
         if (result == 0) {
             registerFlags.setZ();
@@ -1997,12 +1999,12 @@ public class Z80 {
             case 0xCB1D: value = registerL.read(); break;
             case 0xCB1E: value = mmu.rawRead(readCombinedRegisters(registerH, registerL)); break;
         }
-        
+
         // perform operation
         int newcarry = value & 0b00000001;
         int oldcarry = registerFlags.readC() ? 1 : 0;
         int result = (value >> 1) | (oldcarry << 7);
-        
+
         // write result
         switch(opcode) {
             case 0xCB1F: registerA.write(result); break;
@@ -2014,7 +2016,7 @@ public class Z80 {
             case 0xCB1D: registerL.write(result); break;
             case 0xCB1E: mmu.rawWrite(readCombinedRegisters(registerH, registerL), result); break;
         }
-        
+
         // flags affected
         if (newcarry == 1) registerFlags.setC();
         else               registerFlags.clearC();
@@ -2023,7 +2025,7 @@ public class Z80 {
         registerFlags.clearN();
         registerFlags.clearH();
     }
-    
+
     public void sla(int opcode) throws InvalidPropertiesFormatException {
         /*
         9. SLA n
@@ -2059,11 +2061,11 @@ public class Z80 {
             case 0xCB25: value = registerL.read(); break;
             case 0xCB26: value = mmu.rawRead(readCombinedRegisters(registerH, registerL)); break;
         }
-        
+
         // perform operation
-        boolean carry = ( (value & 0b10000000) == 1);
+        boolean carry = (((value & 0b10000000) >> 8) == 1);
         int result = value << 1;
-        
+
         // store result
         switch(opcode) {
             case 0xCB27: registerA.write(result); break;
@@ -2075,7 +2077,7 @@ public class Z80 {
             case 0xCB25: registerL.write(result); break;
             case 0xCB26: mmu.rawWrite(readCombinedRegisters(registerH, registerL), result); break;
         }
-        
+
         // flags affected
         if (result == 0) registerFlags.setZ();
         else             registerFlags.clearZ();
@@ -2084,7 +2086,7 @@ public class Z80 {
         registerFlags.clearN();
         registerFlags.clearH();
     }
-    
+
     public void sra(int opcode) throws InvalidPropertiesFormatException {
         /*
         10. SRA n
@@ -2120,11 +2122,11 @@ public class Z80 {
             case 0xCB2D: value = registerL.read(); break;
             case 0xCB2E: value = mmu.rawRead(readCombinedRegisters(registerH, registerL)); break;
         }
-        
+
         // perform the operation
         boolean carry = ( (value & 1) != 0 );
         int result = (value >> 1) | (value & 0b10000000);
-        
+
         // store result
         switch(opcode) {
             case 0xCB2F: registerA.write(result); break;
@@ -2136,7 +2138,7 @@ public class Z80 {
             case 0xCB2D: registerL.write(result); break;
             case 0xCB2E: mmu.rawWrite(readCombinedRegisters(registerH, registerL), result); break;
         }
-        
+
         // flags affected
         if (carry)       registerFlags.setC();
         else             registerFlags.clearC();
@@ -2145,7 +2147,7 @@ public class Z80 {
         registerFlags.clearH();
         registerFlags.clearN();
     }
-    
+
     public void srl(int opcode) throws InvalidPropertiesFormatException {
         /*
         11. SRL n
@@ -2181,11 +2183,11 @@ public class Z80 {
             case 0xCB3D: value = registerL.read(); break;
             case 0xCB3E: value = mmu.rawRead(readCombinedRegisters(registerH, registerL)); break;
         }
-        
+
         // perform the operation
         boolean carry = (value & 0b00000001) != 0;
         int result = value >> 1;
-        
+
         // store result
         switch(opcode) {
             case 0xCB3F: registerA.write(result); break;
@@ -2197,7 +2199,7 @@ public class Z80 {
             case 0xCB3D: registerL.write(result); break;
             case 0xCB3E: mmu.rawWrite(readCombinedRegisters(registerH, registerL), result); break;
         }
-        
+
         // flags affected
         if (result == 0) registerFlags.setZ();
         else             registerFlags.clearZ();
@@ -2206,8 +2208,8 @@ public class Z80 {
         registerFlags.clearN();
         registerFlags.clearH();
     }
-    
-    public int cbHelperRead(int opcode) throws InvalidPropertiesFormatException{
+
+    private int cbHelperRead(int opcode) throws InvalidPropertiesFormatException{
         // see which register we'll use by looking only at
         // the least significant hex digit (0x000F, or 0b00001111 mask)
         int value = 0;
@@ -2229,10 +2231,10 @@ public class Z80 {
             case 0x7: case 0xF:
                 value = registerA.read(); break;
         }
-        
+
         return value;
     }
-    public void cbHelperWrite(int opcode, int value) throws InvalidPropertiesFormatException {
+    private void cbHelperWrite(int opcode, int value) throws InvalidPropertiesFormatException {
         // see which register we'll use by looking only at the least significant
         // hex digit (0x000F or 0b00001111 mask)
         switch(opcode & 0b00001111) {
@@ -2266,24 +2268,24 @@ public class Z80 {
         //    N - Reset.
         //    H - Set.
         //    C - Not affected.
-        // Timing:  any CPU register is 8 cycles. Memory location is 16 cycles. 
+        // Timing:  any CPU register is 8 cycles. Memory location is 16 cycles.
         ////////////////////////////////////////////////////////////////////////
-        
+
         // validate opcode actually belongs in this function:
         if (opcode < 0xCB40 || opcode > 0xCB7F) {
             System.out.println("Opcode " + opcode + " doesn't belong in bit()");
             return;
         }
-        
+
         // get the value we'll be looking at
         int value = cbHelperRead(opcode);
-        
+
         // next let's grab the bit index
         int bitIndex = (opcode - 0xCB40) / 8;
-        
+
         // read the bit at `bitindex` of the value we found earlier:
-        boolean bitValue = ( (value >> bitIndex) & 1 ) == 1 ? true : false;
-        
+        boolean bitValue = ((value >> bitIndex) & 1) == 1;
+
         // flags affected
         if (bitValue) registerFlags.clearZ();
         else          registerFlags.setZ();
@@ -2291,27 +2293,27 @@ public class Z80 {
         registerFlags.clearN();
     }
     public void res(int opcode) throws InvalidPropertiesFormatException {
-        // see bit function above. This works the same way except 
+        // see bit function above. This works the same way except
         // instead of reading the bit, it just sets it to 0 and affects
         // no flags. Starts at 0xCB80
-        
+
         // validate opcode actually belongs in this function:
         if (opcode < 0xCB80 || opcode > 0xCBBF) {
             System.out.println("Opcode " + opcode + " doesn't belong in res()");
             return;
         }
-        
+
         // get the value we'll be looking at
         int value = cbHelperRead(opcode);
-        
+
         // next let's grab the bit index
         int bitIndex = (opcode - 0xCB80) / 8;
         int mask = 1 << bitIndex; // shift 1 to it's spot based on the index
         mask = ~mask; // negate it so every bit is 1 except for the one we're clearing
-        
+
         // now let's set it to 0.
         value = (value & mask); // AND the value with the mask in order to clear the specified bit.
-        
+
         // store result
         cbHelperWrite(opcode, value);
     }
@@ -2319,27 +2321,27 @@ public class Z80 {
         // see bit instruction above. This one works the same way except
         // instead of reading the bit, it will just set the bit in question to 1
         // with no flags affected. Starts at 0xCBC0 and ends at 0xCC00.
-        
+
         // validate opcode actually belongs in this function:
         if (opcode < 0xCBC0 || opcode > 0xCBFF) {
             System.out.println("Opcode " + opcode + " doesn't belong in set()");
             return;
         }
-        
+
         // get the value we'll be looking at
         int value = cbHelperRead(opcode);
-        
+
         // next let's grab the bit index
         int bitIndex = (opcode - 0xCBC0) / 8;
         int mask = 1 << bitIndex; // shift 1 to it's spot based on the index
-        
+
         // now let's set it to 0.
         value = (value | mask); // AND the value with the mask in order to clear the specified bit.
-        
+
         // store result
         cbHelperWrite(opcode, value);
     }
-    
+
     public void jump(int opcode) {
         /*
         1. JP nn
@@ -2355,7 +2357,7 @@ public class Z80 {
             System.out.println("Opcode " + opcode + " doesn't belong in jump()");
             return;
         }
-        
+
         int address = mmu.rawRead(registerPC.read()); // least significant byte
         registerPC.inc();
         int temp = mmu.rawRead(registerPC.read()); // most significant byte
@@ -2388,28 +2390,28 @@ public class Z80 {
             System.out.println("Opcode " + opcode + " doesn't belong in jpcc()");
             return;
         }
-        
+
         boolean condition = false;
         switch (opcode) {
-            case 0xC2: 
+            case 0xC2:
                 condition = (!registerFlags.readZ());
                 break;
-            case 0xCA: 
+            case 0xCA:
                 condition = registerFlags.readZ();
                 break;
-            case 0xD2: 
+            case 0xD2:
                 condition = (!registerFlags.readC());
                 break;
-            case 0xDA: 
+            case 0xDA:
                 condition = registerFlags.readC();
                 break;
         }
-        
+
         // if our condition for jumping is false, don't jump
         if (!condition) {
             return;
         }
-        
+
         // else perform jump
         int address = mmu.rawRead(registerPC.read()); // least significant byte
         registerPC.inc();
@@ -2431,8 +2433,8 @@ public class Z80 {
             System.out.println("Opcode " + opcode + " doesn't belong in jphl()");
             return;
         }
-        
-        load(registerPC, mmu.rawRead(readCombinedRegisters(registerH, registerL))); 
+
+        load(registerPC, mmu.rawRead(readCombinedRegisters(registerH, registerL)));
     }
     public void jr(int opcode) {
         /*
@@ -2449,7 +2451,7 @@ public class Z80 {
             System.out.println("Opcode " + opcode + " doesn't belong in jr()");
             return;
         }
-        
+
         int n = mmu.rawRead(registerPC.read());
         int address = registerPC.read();
         address += n;
@@ -2481,34 +2483,34 @@ public class Z80 {
             System.out.println("Opcode " + opcode + " doesn't belong in jrcc()");
             return;
         }
-        
+
         boolean condition = false;
         switch (opcode) {
-            case 0x20: 
+            case 0x20:
                 condition = (!registerFlags.readZ());
                 break;
-            case 0x28: 
+            case 0x28:
                 condition = registerFlags.readZ();
                 break;
-            case 0x30: 
+            case 0x30:
                 condition = (!registerFlags.readC());
                 break;
-            case 0x38: 
+            case 0x38:
                 condition = registerFlags.readC();
                 break;
         }
-        
+
         // if our condition for jumping is false, don't jump
         if (!condition) {
             return;
         }
-        
+
         int n = mmu.rawRead(registerPC.read());
         int address = registerPC.read();
         address += n;
         load(registerPC, address);
     }
-    
+
     public void call(int opcode) {
         /*
         1. CALL nn
@@ -2525,11 +2527,11 @@ public class Z80 {
             System.out.println("Opcode " + opcode + " doesn't belong in call()");
             return;
         }
-        
+
         // push address of next instruction onto stack.
         pushHelper(registerPC.read());
         registerPC.inc();
-        
+
         // jump to address nn two byte immediate value. (LS byte first)
         int address = mmu.rawRead(registerPC.read()); // least significant byte
         registerPC.inc();
@@ -2562,28 +2564,28 @@ public class Z80 {
             System.out.println("Opcode " + opcode + " doesn't belong in callcc()");
             return;
         }
-        
+
         boolean condition = false;
         switch (opcode) {
-            case 0xC4: 
+            case 0xC4:
                 condition = (!registerFlags.readZ());
                 break;
-            case 0xCC: 
+            case 0xCC:
                 condition = registerFlags.readZ();
                 break;
-            case 0xD4: 
+            case 0xD4:
                 condition = (!registerFlags.readC());
                 break;
-            case 0xDC: 
+            case 0xDC:
                 condition = registerFlags.readC();
                 break;
         }
-        
+
         // if our condition for jumping is false, don't jump
         if (!condition) {
             return;
         }
-        
+
         // jump to address nn two byte immediate value. (LS byte first)
         int address = mmu.rawRead(registerPC.read()); // least significant byte
         registerPC.inc();
@@ -2592,7 +2594,7 @@ public class Z80 {
         address |= temp;                              // combine
         load(registerPC, address);                    // jump to this address.
     }
-    
+
     public void rst(int opcode) {
         /*
         1. RST n
@@ -2623,10 +2625,10 @@ public class Z80 {
             System.out.println("Opcode " + opcode + " doesn't belong in rst()");
             return;
         }
-        
+
         // push address of instruction onto stack.
         pushHelper(registerPC.read());
-        
+
         int address = 0;
         switch (opcode) {
             case 0xC7: address = 0x00; break;
@@ -2640,7 +2642,7 @@ public class Z80 {
         }
         load(registerPC, address);
     }
-    
+
     private void retHelper() {
         int address = popHelper();
         load(registerPC, address);
@@ -2658,7 +2660,7 @@ public class Z80 {
             System.out.println("Opcode " + opcode + " doesn't belong in ret()");
             return;
         }
-        
+
         retHelper();
     }
     public void retcc(int opcode) {
@@ -2685,28 +2687,28 @@ public class Z80 {
             System.out.println("Opcode " + opcode + " doesn't belong in retcc()");
             return;
         }
-        
+
         boolean condition = false;
         switch (opcode) {
-            case 0xC4: 
+            case 0xC0:
                 condition = (!registerFlags.readZ());
                 break;
-            case 0xCC: 
+            case 0xC8:
                 condition = registerFlags.readZ();
                 break;
-            case 0xD4: 
+            case 0xD0:
                 condition = (!registerFlags.readC());
                 break;
-            case 0xDC: 
+            case 0xD8:
                 condition = registerFlags.readC();
                 break;
         }
-        
+
         // if our condition for jumping is false, don't jump
         if (!condition) {
             return;
         }
-        
+
         // actually return/jump
         retHelper();
     }
@@ -2723,7 +2725,7 @@ public class Z80 {
             System.out.println("Opcode " + opcode + " doesn't belong in ret()");
             return;
         }
-        
+
         retHelper();
         interruptsEnabled = true;
     }
