@@ -16,7 +16,7 @@ public class MemoryManagerTest extends AbstractTest {
     @Test
     public void testZeroize() {
         for (int i = 0; i < mmu.memorySize; i++) {
-            mmu.rawWrite(i, rng.nextInt(256));
+            mmu.writeByte(i, rng.nextInt(256));
         }
         mmu.zeroize();
         assertArrayEquals(new int[mmu.memorySize], mmu.getRawRam());
@@ -38,20 +38,20 @@ public class MemoryManagerTest extends AbstractTest {
         for (int i = 0; i < 100; i++) {
             int address = rng.nextInt(mmu.memorySize);
             int value = rng.nextInt(256);
-            mmu.rawWrite(address, value);
-            assertEquals(value, mmu.rawRead(address));
+            mmu.writeByte(address, value);
+            assertEquals(value, mmu.readByte(address));
         }
 
         try {
-            mmu.rawRead(mmu.memorySize);
-            fail("should not be able to do mmu.rawRead(mmu.memorySize) without an exception");
+            mmu.readByte(mmu.memorySize);
+            fail("should not be able to do mmu.readByte(mmu.memorySize) without an exception");
         }
         catch (IndexOutOfBoundsException e) {
             // OK
         }
         try {
-            mmu.rawRead(-1);
-            fail("should not be able to do mmu.rawRead(-1) without an exception");
+            mmu.readByte(-1);
+            fail("should not be able to do mmu.readByte(-1) without an exception");
         }
         catch (IndexOutOfBoundsException e) {
             // OK
@@ -59,17 +59,17 @@ public class MemoryManagerTest extends AbstractTest {
 
         // address 0
         int value = rng.nextInt(256);
-        mmu.rawWrite(0, value);
-        assertEquals(value, mmu.rawRead(0));
+        mmu.writeByte(0, value);
+        assertEquals(value, mmu.readByte(0));
 
         // max valid address
         value = rng.nextInt(256);
-        mmu.rawWrite(mmu.memorySize - 1, value);
-        assertEquals(value, mmu.rawRead(mmu.memorySize - 1));
+        mmu.writeByte(mmu.memorySize - 1, value);
+        assertEquals(value, mmu.readByte(mmu.memorySize - 1));
 
         // write value higher than max possible
         try {
-            mmu.rawWrite(rng.nextInt(mmu.memorySize), 256);
+            mmu.writeByte(rng.nextInt(mmu.memorySize), 256);
             fail("should not be able to write values higher than 255 to memory");
         }
         catch (NumberFormatException e) {
@@ -78,7 +78,7 @@ public class MemoryManagerTest extends AbstractTest {
 
         // write value lower than 0
         try {
-            mmu.rawWrite(rng.nextInt(mmu.memorySize), -1);
+            mmu.writeByte(rng.nextInt(mmu.memorySize), -1);
             fail("should not be able to write values lower than 0 to memory");
         }
         catch (NumberFormatException e) {
@@ -94,15 +94,15 @@ public class MemoryManagerTest extends AbstractTest {
 
             // test 16bit write
             mmu.writeWord(address, value);
-            assertEquals(value & 0b00000000_11111111, mmu.rawRead(address));
-            assertEquals((value & 0b11111111_00000000) >> 8, mmu.rawRead(address + 1));
+            assertEquals(value & 0b00000000_11111111, mmu.readByte(address));
+            assertEquals((value & 0b11111111_00000000) >> 8, mmu.readByte(address + 1));
 
             // test 16-bit read
             address = rng.nextInt(mmu.memorySize - 1);
             int upperValue = rng.nextInt(256);
             int lowerValue = rng.nextInt(256);
-            mmu.rawWrite(address, lowerValue);
-            mmu.rawWrite(address + 1, upperValue);
+            mmu.writeByte(address, lowerValue);
+            mmu.writeByte(address + 1, upperValue);
             int expectedValue = (upperValue << 8) + lowerValue;
             assertEquals(expectedValue, mmu.readWord(address));
         }

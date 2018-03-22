@@ -28,7 +28,7 @@ public class Z80Test extends AbstractTest{
     }
     private void randomizeMemory() {
         for (int i = 0; i < mmu.memorySize; i++) {
-            mmu.rawWrite(i, rng.nextInt(256));
+            mmu.writeByte(i, rng.nextInt(256));
         }
     }
     private int as8bitNumber(int number) {
@@ -117,8 +117,8 @@ public class Z80Test extends AbstractTest{
                 opcodeToExpectedValueMap.put(0x83, currentRegisterAValue + z80uut.getRegisterValue("E"));
                 opcodeToExpectedValueMap.put(0x84, currentRegisterAValue + z80uut.getRegisterValue("H"));
                 opcodeToExpectedValueMap.put(0x85, currentRegisterAValue + z80uut.getRegisterValue("L"));
-                opcodeToExpectedValueMap.put(0x86, currentRegisterAValue + mmu.rawRead(z80uut.readCombinedRegisters("H", "L")));
-                opcodeToExpectedValueMap.put(0xC6, currentRegisterAValue + mmu.rawRead(z80uut.getRegisterValue("PC")));
+                opcodeToExpectedValueMap.put(0x86, currentRegisterAValue + mmu.readByte(z80uut.readCombinedRegisters("H", "L")));
+                opcodeToExpectedValueMap.put(0xC6, currentRegisterAValue + mmu.readByte(z80uut.getRegisterValue("PC")));
 
                 for (final int opcode : opcodeToExpectedValueMap.keySet()) {
                     z80uut.add(opcode);
@@ -152,8 +152,8 @@ public class Z80Test extends AbstractTest{
                 opcodeToExpectedValueMap.put(0x93, currentRegisterAValue - z80uut.getRegisterValue("E"));
                 opcodeToExpectedValueMap.put(0x94, currentRegisterAValue - z80uut.getRegisterValue("H"));
                 opcodeToExpectedValueMap.put(0x95, currentRegisterAValue - z80uut.getRegisterValue("L"));
-                opcodeToExpectedValueMap.put(0x96, currentRegisterAValue - mmu.rawRead(z80uut.readCombinedRegisters("H", "L")));
-                opcodeToExpectedValueMap.put(0xD6, currentRegisterAValue - mmu.rawRead(z80uut.getRegisterValue("PC")));
+                opcodeToExpectedValueMap.put(0x96, currentRegisterAValue - mmu.readByte(z80uut.readCombinedRegisters("H", "L")));
+                opcodeToExpectedValueMap.put(0xD6, currentRegisterAValue - mmu.readByte(z80uut.getRegisterValue("PC")));
 
                 for (final int opcode : opcodeToExpectedValueMap.keySet()) {
                     z80uut.sub(opcode);

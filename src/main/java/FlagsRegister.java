@@ -3,10 +3,14 @@ public class FlagsRegister extends Register {
     // the ordinal number of each element here is used
     // as an index to the corresponding bit in the register.
     public enum FlagIndex {
-        Z,
-        N,
+        InvalidBit0,
+        InvalidBit1,
+        InvalidBit2,
+        InvalidBit3,
+        C,
         H,
-        C
+        N,
+        Z
     }
 
     FlagsRegister(String regName, int regSize, int regVal) {

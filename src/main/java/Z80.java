@@ -1,5 +1,4 @@
 import java.util.HashMap;
-import java.util.InvalidPropertiesFormatException;
 import java.util.Map;
 
 /**
@@ -610,7 +609,21 @@ public class Z80 extends Logger {
 
     // main loop
     public void main() {
+        for(int i=0; i<20; i++) {
+            System.out.print(i + ": ");
+            int opcode = mmu.readByte(registerPC.read());
+            registerPC.inc();
 
+            if (opcode == 0xcb) {
+                opcode <<= 8;
+                opcode |= mmu.readByte(registerPC.read());
+                registerPC.inc();
+            }
+
+            System.out.print(String.format("0x%04X", opcode) + " ");
+            instructionMap.get(opcode).run();
+            System.out.println();
+        }
     }
 
     // utility functions
@@ -733,27 +746,27 @@ public class Z80 extends Logger {
              *      LD             L,n     2E      8
              */
             case 0x06:
-                load(registerB, mmu.rawRead(registerPC.read()));
+                load(registerB, mmu.readByte(registerPC.read()));
                 registerPC.inc();
                 break;
             case 0x0E:
-                load(registerC, mmu.rawRead(registerPC.read()));
+                load(registerC, mmu.readByte(registerPC.read()));
                 registerPC.inc();
                 break;
             case 0x16:
-                load(registerD, mmu.rawRead(registerPC.read()));
+                load(registerD, mmu.readByte(registerPC.read()));
                 registerPC.inc();
                 break;
             case 0x1E:
-                load(registerE, mmu.rawRead(registerPC.read()));
+                load(registerE, mmu.readByte(registerPC.read()));
                 registerPC.inc();
                 break;
             case 0x26:
-                load(registerH, mmu.rawRead(registerPC.read()));
+                load(registerH, mmu.readByte(registerPC.read()));
                 registerPC.inc();
                 break;
             case 0x2E:
-                load(registerL, mmu.rawRead(registerPC.read()));
+                load(registerL, mmu.readByte(registerPC.read()));
                 registerPC.inc();
                 break;
             //</editor-fold>
@@ -788,7 +801,7 @@ public class Z80 extends Logger {
                 break;
             case 0x7E:
                 address = readCombinedRegisters(registerH, registerL);
-                load(registerA, mmu.rawRead(address));
+                load(registerA, mmu.readByte(address));
                 break;
             case 0x40:
                 load(registerB, registerB);
@@ -810,7 +823,7 @@ public class Z80 extends Logger {
                 break;
             case 0x46:
                 address = readCombinedRegisters(registerH, registerL);
-                load(registerB, mmu.rawRead(address));
+                load(registerB, mmu.readByte(address));
                 break;
             case 0x48:
                 load(registerC, registerB);
@@ -832,7 +845,7 @@ public class Z80 extends Logger {
                 break;
             case 0x4E:
                 address = readCombinedRegisters(registerH, registerL);
-                load(registerC, mmu.rawRead(address));
+                load(registerC, mmu.readByte(address));
                 break;
             case 0x50:
                 load(registerD, registerB);
@@ -854,7 +867,7 @@ public class Z80 extends Logger {
                 break;
             case 0x56:
                 address = readCombinedRegisters(registerH, registerL);
-                load(registerD, mmu.rawRead(address));
+                load(registerD, mmu.readByte(address));
                 break;
             case 0x58:
                 load(registerE, registerB);
@@ -876,7 +889,7 @@ public class Z80 extends Logger {
                 break;
             case 0x5E:
                 address = readCombinedRegisters(registerH, registerL);
-                load(registerE, mmu.rawRead(address));
+                load(registerE, mmu.readByte(address));
                 break;
             case 0x60:
                 load(registerH, registerB);
@@ -898,7 +911,7 @@ public class Z80 extends Logger {
                 break;
             case 0x66:
                 address = readCombinedRegisters(registerH, registerL);
-                load(registerH, mmu.rawRead(address));
+                load(registerH, mmu.readByte(address));
                 break;
             case 0x68:
                 load(registerL, registerB);
@@ -920,35 +933,35 @@ public class Z80 extends Logger {
                 break;
             case 0x6E:
                 address = readCombinedRegisters(registerH, registerL);
-                load(registerL, mmu.rawRead(address));
+                load(registerL, mmu.readByte(address));
                 break;
             case 0x70:
                 address = readCombinedRegisters(registerH, registerL);
-                mmu.rawWrite(address, registerB.read());
+                mmu.writeByte(address, registerB.read());
                 break;
             case 0x71:
                 address = readCombinedRegisters(registerH, registerL);
-                mmu.rawWrite(address, registerC.read());
+                mmu.writeByte(address, registerC.read());
                 break;
             case 0x72:
                 address = readCombinedRegisters(registerH, registerL);
-                mmu.rawWrite(address, registerD.read());
+                mmu.writeByte(address, registerD.read());
                 break;
             case 0x73:
                 address = readCombinedRegisters(registerH, registerL);
-                mmu.rawWrite(address, registerE.read());
+                mmu.writeByte(address, registerE.read());
                 break;
             case 0x74:
                 address = readCombinedRegisters(registerH, registerL);
-                mmu.rawWrite(address, registerH.read());
+                mmu.writeByte(address, registerH.read());
                 break;
             case 0x75:
                 address = readCombinedRegisters(registerH, registerL);
-                mmu.rawWrite(address, registerL.read());
+                mmu.writeByte(address, registerL.read());
                 break;
             case 0x36: // 12 cycles
                 address = readCombinedRegisters(registerH, registerL);
-                mmu.rawWrite(address, mmu.rawRead(registerPC.read()));
+                mmu.writeByte(address, mmu.readByte(registerPC.read()));
                 registerPC.inc();
                 break;
             //</editor-fold>
@@ -962,18 +975,18 @@ public class Z80 extends Logger {
              *     nn = two byte immediate value. (LS byte first.)
              */
             case 0x0A:
-                load(registerA, mmu.rawRead(readCombinedRegisters(registerB, registerC)));
+                load(registerA, mmu.readByte(readCombinedRegisters(registerB, registerC)));
                 break;  // LD A,(BC) 0A 8
             case 0x1A:
-                load(registerA, mmu.rawRead(readCombinedRegisters(registerD, registerE)));
+                load(registerA, mmu.readByte(readCombinedRegisters(registerD, registerE)));
                 break;  // LD A,(DE) 1A 8
             case 0xFA: // 16 cycles
-                load(registerA, mmu.rawRead(mmu.readWord(registerPC.read())));
+                load(registerA, mmu.readByte(mmu.readWord(registerPC.read())));
                 registerPC.inc();
                 registerPC.inc();
                 break;
             case 0x3E:
-                load(registerA, mmu.rawRead(registerPC.read()));
+                load(registerA, mmu.readByte(registerPC.read()));
                 registerPC.inc();
                 break;  // LD A,# 3E 8
             //</editor-fold>
@@ -1005,16 +1018,16 @@ public class Z80 extends Logger {
                 load(registerL, registerA);
                 break; // LD L,A 6F 4
             case 0x02:
-                mmu.rawWrite(mmu.rawRead(readCombinedRegisters(registerB, registerC)), registerA.read());
+                mmu.writeByte(mmu.readByte(readCombinedRegisters(registerB, registerC)), registerA.read());
                 break; // LD (BC),A 02 8
             case 0x12:
-                mmu.rawWrite(mmu.rawRead(readCombinedRegisters(registerD, registerE)), registerA.read());
+                mmu.writeByte(mmu.readByte(readCombinedRegisters(registerD, registerE)), registerA.read());
                 break; // LD (DE),A 12 8
             case 0x77:
-                mmu.rawWrite(mmu.rawRead(readCombinedRegisters(registerH, registerL)), registerA.read());
+                mmu.writeByte(mmu.readByte(readCombinedRegisters(registerH, registerL)), registerA.read());
                 break; // LD (HL),A 77 8
             case 0xEA: // 16 cycles
-                mmu.rawWrite(mmu.readWord(registerPC.read()), registerA.read());
+                mmu.writeByte(mmu.readWord(registerPC.read()), registerA.read());
                 registerPC.inc();
                 registerPC.inc();
                 break; // LD (nn),A EA 16
@@ -1022,65 +1035,65 @@ public class Z80 extends Logger {
             //<editor-fold desc="3.3.1.5 -- 3.3.1.20 8-bit Loads" defaultstate="collapsed">
             case 0xF2:
                 // Put value at address $FF00 + register C into A , takes 8 cycles
-                load(registerA, mmu.rawRead(registerC.read() + 0xFF00));
+                load(registerA, mmu.readByte(registerC.read() + 0xFF00));
                 break;
             case 0xE2:
                 // Put A into address $FF00 + register C , takes 8 cycles
-                mmu.rawWrite(0xFF00 + registerC.read(), registerA.read());
+                mmu.writeByte(0xFF00 + registerC.read(), registerA.read());
                 break;
             case 0x3A:
                 // Put value at address HL into A, Decrement HL. Takes 8 cycles
                 temp = readCombinedRegisters(registerH, registerL);
-                load(registerA, mmu.rawRead(temp));
+                load(registerA, mmu.readByte(temp));
                 writeCombinedRegisters(registerH, registerL, temp - 1);
                 break;
             case 0x32:
                 // put A into memory address HL. Decrement HL. Takes 8 cycles.
                 temp = readCombinedRegisters(registerH, registerL);
-                mmu.rawWrite(temp, registerA.read());
+                mmu.writeByte(temp, registerA.read());
                 writeCombinedRegisters(registerH, registerL, temp - 1);
                 break;
             case 0x2A:
                 // Put value at address HL into A, Increment HL. Takes 8 cycles
                 temp = readCombinedRegisters(registerH, registerL);
-                load(registerA, mmu.rawRead(temp));
+                load(registerA, mmu.readByte(temp));
                 writeCombinedRegisters(registerH, registerL, temp + 1);
                 break;
             case 0x22:
                 // put A into memory address HL. Increment HL. Takes 8 cycles.
                 temp = readCombinedRegisters(registerH, registerL);
-                mmu.rawWrite(temp, registerA.read());
+                mmu.writeByte(temp, registerA.read());
                 writeCombinedRegisters(registerH, registerL, temp + 1);
                 break;
             case 0xE0:
                 // Put A into memory address $FF00+n . 12 cycles
-                mmu.rawWrite(0xFF00 + registerPC.read(), registerA.read());
+                mmu.writeByte(0xFF00 + registerPC.read(), registerA.read());
                 break;
             case 0xF0:
                 // Put memory address $FF00+n into A. 12 cycles
-                load(registerA, mmu.rawRead(0xFF00 + registerPC.read()));
+                load(registerA, mmu.readByte(0xFF00 + registerPC.read()));
                 break;
             //</editor-fold>
             //<editor-fold desc="3.3.2.1 -- 3.3.2.5 16-bit Loads" defaultstate="collapsed">
             case 0x01:
                 // LD BC,nn 01 12
-                load(registerC, mmu.rawRead(registerPC.read()));
+                load(registerC, mmu.readByte(registerPC.read()));
                 registerPC.inc();
-                load(registerB, mmu.rawRead(registerPC.read()));
+                load(registerB, mmu.readByte(registerPC.read()));
                 registerPC.inc();
                 break;
             case 0x11:
                 // LD DE,nn 11 12
-                load(registerE, mmu.rawRead(registerPC.read()));
+                load(registerE, mmu.readByte(registerPC.read()));
                 registerPC.inc();
-                load(registerD, mmu.rawRead(registerPC.read()));
+                load(registerD, mmu.readByte(registerPC.read()));
                 registerPC.inc();
                 break;
             case 0x21:
                 // LD HL,nn 21 12
-                load(registerL, mmu.rawRead(registerPC.read()));
+                load(registerL, mmu.readByte(registerPC.read()));
                 registerPC.inc();
-                load(registerH, mmu.rawRead(registerPC.read()));
+                load(registerH, mmu.readByte(registerPC.read()));
                 registerPC.inc();
                 break;
             case 0x31:
@@ -1096,7 +1109,7 @@ public class Z80 extends Logger {
             case 0xF8:
                 // LDHL SP,n F8 12
                 // Put SP + n effective address into HL. (n is signed here!)
-                temp = mmu.rawRead(registerPC.read());
+                temp = mmu.readByte(registerPC.read());
                 if (temp > 127) {
                     temp = -((~temp + 1) & 255); // 2's complement
                 }
@@ -1119,13 +1132,13 @@ public class Z80 extends Logger {
                 // LD (nn),SP 08 20 (TWENTY CYCLES)
                 // Put Stack Pointer (SP) at address n.
                 // LD (nn),SP
-                lowerValue = mmu.rawRead(registerPC.read());
+                lowerValue = mmu.readByte(registerPC.read());
                 registerPC.inc();
-                upperValue = mmu.rawRead(registerPC.read());
+                upperValue = mmu.readByte(registerPC.read());
                 registerPC.inc();
                 address = ((upperValue << 8) + lowerValue);
-                mmu.rawWrite(address, registerSP.readLow());
-                mmu.rawWrite(address + 1, registerSP.readHigh());
+                mmu.writeByte(address, registerSP.readLow());
+                mmu.writeByte(address + 1, registerSP.readHigh());
                 break;
             //</editor-fold>
             default:
@@ -1138,14 +1151,14 @@ public class Z80 extends Logger {
         //   Push register pair nn onto stack.
         //   Decrement Stack Pointer (SP) twice.
         registerSP.dec();
-        mmu.rawWrite(registerSP.read(), value & 0b11111111_00000000);
+        mmu.writeByte(registerSP.read(), value & 0b11111111_00000000);
         registerSP.dec();
-        mmu.rawWrite(registerSP.read(), value & 0b00000000_11111111);
+        mmu.writeByte(registerSP.read(), value & 0b00000000_11111111);
     }
     private int popHelper() {
-        int high = mmu.rawRead(registerSP.read());
+        int high = mmu.readByte(registerSP.read());
         registerSP.inc();
-        int low  = mmu.rawRead(registerSP.read());
+        int low  = mmu.readByte(registerSP.read());
         registerSP.inc();
         high <<= 8;
         return (high | low);
@@ -1206,9 +1219,9 @@ public class Z80 extends Logger {
             // Description:
             //   Pop two bytes off stack into register pair nn.
             //   Increment Stack Pointer (SP) twice
-            load(upperRegister, mmu.rawRead(registerSP.read()));
+            load(upperRegister, mmu.readByte(registerSP.read()));
             registerSP.inc();
-            load(lowerRegister, mmu.rawRead(registerSP.read()));
+            load(lowerRegister, mmu.readByte(registerSP.read()));
             registerSP.inc();
         }
         else {
@@ -1251,8 +1264,8 @@ public class Z80 extends Logger {
             case 0x83: second = registerE.read(); break;
             case 0x84: second = registerH.read(); break;
             case 0x85: second = registerL.read(); break;
-            case 0x86: second = mmu.rawRead(readCombinedRegisters(registerH, registerL)); break;
-            case 0xC6: second = mmu.rawRead(registerPC.read()); registerPC.inc(); break;
+            case 0x86: second = mmu.readByte(readCombinedRegisters(registerH, registerL)); break;
+            case 0xC6: second = mmu.readByte(registerPC.read()); registerPC.inc(); break;
             default:
                 logDebug(String.format("logError: Opcode %05X does not belong to add(int opcode) . ", opcode));
                 return;
@@ -1308,8 +1321,8 @@ public class Z80 extends Logger {
             case 0x8B: second = registerE.read(); break;
             case 0x8C: second = registerH.read(); break;
             case 0x8D: second = registerL.read(); break;
-            case 0x8E: second = mmu.rawRead(readCombinedRegisters(registerH, registerL)); break;
-            case 0xCE: second = mmu.rawRead(registerPC.read()); registerPC.inc(); break;
+            case 0x8E: second = mmu.readByte(readCombinedRegisters(registerH, registerL)); break;
+            case 0xCE: second = mmu.readByte(registerPC.read()); registerPC.inc(); break;
             default:
                 logDebug(String.format("logError: Opcode %05X does not belong to adc(int opcode) . ", opcode));
                 return;
@@ -1367,7 +1380,12 @@ public class Z80 extends Logger {
             case 0x19: value = readCombinedRegisters(registerD, registerE); break;
             case 0x29: value = readCombinedRegisters(registerH, registerL); break;
             case 0x39: value = registerSP.read(); break;
-            case 0xE8: value = mmu.rawRead(registerPC.read()); registerPC.inc(); break;
+            case 0xE8:
+                value = mmu.readByte(registerPC.read()); registerPC.inc();
+                if (value > 127) {
+                    value = -((~value + 1) & 255); // 2's complement
+                }
+                break;
             default:
                 logDebug(String.format("logError: Opcode %05X does not belong to add16(int opcode) . ", opcode));
                 return;
@@ -1443,8 +1461,8 @@ public class Z80 extends Logger {
             case 0x93: second = registerE.read(); break;
             case 0x94: second = registerH.read(); break;
             case 0x95: second = registerL.read(); break;
-            case 0x96: second = mmu.rawRead(readCombinedRegisters(registerH, registerL)); break;
-            case 0xD6: second = mmu.rawRead(registerPC.read()); registerPC.inc(); break;
+            case 0x96: second = mmu.readByte(readCombinedRegisters(registerH, registerL)); break;
+            case 0xD6: second = mmu.readByte(registerPC.read()); registerPC.inc(); break;
             default:
                 logDebug(String.format("logError: Opcode %05X does not belong to sub(int opcode) . ", opcode));
                 return;
@@ -1501,7 +1519,7 @@ public class Z80 extends Logger {
             case 0x9B: second = registerE.read(); break;
             case 0x9C: second = registerH.read(); break;
             case 0x9D: second = registerL.read(); break;
-            case 0x9E: second = mmu.rawRead(readCombinedRegisters(registerH, registerL)); break;
+            case 0x9E: second = mmu.readByte(readCombinedRegisters(registerH, registerL)); break;
             default:
                 logDebug(String.format("logError: Opcode %05X does not belong to sbc(int opcode) . ", opcode));
                 return;
@@ -1560,8 +1578,8 @@ public class Z80 extends Logger {
             case 0xA3: second = registerE.read(); break;
             case 0xA4: second = registerH.read(); break;
             case 0xA5: second = registerL.read(); break;
-            case 0xA6: second = mmu.rawRead(readCombinedRegisters(registerH, registerL)); break;
-            case 0xE6: second = mmu.rawRead(registerPC.read()); registerPC.inc(); break;
+            case 0xA6: second = mmu.readByte(readCombinedRegisters(registerH, registerL)); break;
+            case 0xE6: second = mmu.readByte(registerPC.read()); registerPC.inc(); break;
             default:
                 logDebug(String.format("logError: Opcode %05X does not belong to and(int opcode) . ", opcode));
                 return;
@@ -1610,8 +1628,8 @@ public class Z80 extends Logger {
             case 0xB3: second = registerE.read(); break;
             case 0xB4: second = registerH.read(); break;
             case 0xB5: second = registerL.read(); break;
-            case 0xB6: second = mmu.rawRead(readCombinedRegisters(registerH, registerL)); break;
-            case 0xF6: second = mmu.rawRead(registerPC.read()); registerPC.inc(); break;
+            case 0xB6: second = mmu.readByte(readCombinedRegisters(registerH, registerL)); break;
+            case 0xF6: second = mmu.readByte(registerPC.read()); registerPC.inc(); break;
             default:
                 logDebug(String.format("logError: Opcode %05X does not belong to or(int opcode) . ", opcode));
                 return;
@@ -1660,8 +1678,8 @@ public class Z80 extends Logger {
             case 0xAB: second = registerE.read(); break;
             case 0xAC: second = registerH.read(); break;
             case 0xAD: second = registerL.read(); break;
-            case 0xAE: second = mmu.rawRead(readCombinedRegisters(registerH, registerL)); break;
-            case 0xEE: second = mmu.rawRead(registerPC.read()); registerPC.inc(); break;
+            case 0xAE: second = mmu.readByte(readCombinedRegisters(registerH, registerL)); break;
+            case 0xEE: second = mmu.readByte(registerPC.read()); registerPC.inc(); break;
             default:
                 logDebug(String.format("logError: Opcode %05X does not belong to xor(int opcode) . ", opcode));
                 return;
@@ -1712,8 +1730,8 @@ public class Z80 extends Logger {
             case 0xBB: second = registerE.read(); break;
             case 0xBC: second = registerH.read(); break;
             case 0xBD: second = registerL.read(); break;
-            case 0xBE: second = mmu.rawRead(readCombinedRegisters(registerH, registerL)); break;
-            case 0xFE: second = mmu.rawRead(registerPC.read()); registerPC.inc(); break;
+            case 0xBE: second = mmu.readByte(readCombinedRegisters(registerH, registerL)); break;
+            case 0xFE: second = mmu.readByte(registerPC.read()); registerPC.inc(); break;
             default:
                 logDebug(String.format("logError: Opcode %05X does not belong to cp(int opcode) . ", opcode));
                 return;
@@ -1771,9 +1789,9 @@ public class Z80 extends Logger {
             case 0x2C: registerL.inc(); value = registerL.read(); break;
             case 0x34:
                 int address = readCombinedRegisters(registerH, registerL);
-                value = mmu.rawRead(address);
+                value = mmu.readByte(address);
                 value += 1;
-                mmu.rawWrite(address, value);
+                mmu.writeByte(address, value);
                 break;
             default:
                 logDebug(String.format("logError: Opcode %05X does not belong to inc(int opcode) . ", opcode));
@@ -1865,9 +1883,9 @@ public class Z80 extends Logger {
             case 0x2D: registerL.dec(); value = registerL.read(); break;
             case 0x35:
                 int address = readCombinedRegisters(registerH, registerL);
-                value = mmu.rawRead(address);
+                value = mmu.readByte(address);
                 value -= 1;
-                mmu.rawWrite(address, value);
+                mmu.writeByte(address, value);
                 break;
             default:
                 logDebug(String.format("logError: Opcode %05X does not belong to dec(int opcode) . ", opcode));
@@ -1969,8 +1987,8 @@ public class Z80 extends Logger {
             case 0xCB35: value = swapUtil(registerL.read()); registerL.write(value); break;
             case 0xCB36:
                 int address = readCombinedRegisters(registerH, registerL);
-                value = swapUtil(mmu.rawRead(address));
-                mmu.rawWrite(address, value);
+                value = swapUtil(mmu.readByte(address));
+                mmu.writeByte(address, value);
                 break;
             default:
                 logDebug(String.format("logError: Opcode %05X does not belong to swap(int opcode) . ", opcode));
@@ -2215,7 +2233,6 @@ public class Z80 extends Logger {
             registerFlags.clearC();
         }
     }
-
     public void rla(int opcode) {
         /*
         2. RLA
@@ -2277,7 +2294,6 @@ public class Z80 extends Logger {
         registerFlags.clearN();
         registerFlags.clearZ();
     }
-
     public void rra(int opcode) {
         /*
         4. RRA
@@ -2339,7 +2355,7 @@ public class Z80 extends Logger {
             case 0xCB03: value = registerE.read(); break;
             case 0xCB04: value = registerH.read(); break;
             case 0xCB05: value = registerL.read(); break;
-            case 0xCB06: value = mmu.rawRead(readCombinedRegisters(registerH, registerL)); break;
+            case 0xCB06: value = mmu.readByte(readCombinedRegisters(registerH, registerL)); break;
         }
 
         // perform operation
@@ -2355,7 +2371,7 @@ public class Z80 extends Logger {
             case 0xCB03: registerE.write(result); break;
             case 0xCB04: registerH.write(result); break;
             case 0xCB05: registerL.write(result); break;
-            case 0xCB06: mmu.rawWrite(readCombinedRegisters(registerH, registerL), result); break;
+            case 0xCB06: mmu.writeByte(readCombinedRegisters(registerH, registerL), result); break;
         }
 
         // flags affected
@@ -2365,7 +2381,6 @@ public class Z80 extends Logger {
         registerFlags.clearN();
         registerFlags.clearZ();
     }
-
     public void rl(int opcode)  {
         /*
         6. RL n
@@ -2399,7 +2414,7 @@ public class Z80 extends Logger {
             case 0xCB13: value = registerE.read(); break;
             case 0xCB14: value = registerH.read(); break;
             case 0xCB15: value = registerL.read(); break;
-            case 0xCB16: value = mmu.rawRead(readCombinedRegisters(registerH, registerL)); break;
+            case 0xCB16: value = mmu.readByte(readCombinedRegisters(registerH, registerL)); break;
         }
 
         // perform operation
@@ -2415,7 +2430,7 @@ public class Z80 extends Logger {
             case 0xCB13: registerE.write(result); break;
             case 0xCB14: registerH.write(result); break;
             case 0xCB15: registerL.write(result); break;
-            case 0xCB16: mmu.rawWrite(readCombinedRegisters(registerH, registerL), result); break;
+            case 0xCB16: mmu.writeByte(readCombinedRegisters(registerH, registerL), result); break;
         }
 
         // flags affected
@@ -2465,7 +2480,7 @@ public class Z80 extends Logger {
             case 0xCB0B: value = registerE.read(); break;
             case 0xCB0C: value = registerH.read(); break;
             case 0xCB0D: value = registerL.read(); break;
-            case 0xCB0E: value = mmu.rawRead(readCombinedRegisters(registerH, registerL)); break;
+            case 0xCB0E: value = mmu.readByte(readCombinedRegisters(registerH, registerL)); break;
         }
 
         // perform operation
@@ -2482,7 +2497,7 @@ public class Z80 extends Logger {
             case 0xCB0B: registerE.write(result); break;
             case 0xCB0C: registerH.write(result); break;
             case 0xCB0D: registerL.write(result); break;
-            case 0xCB0E: mmu.rawWrite(readCombinedRegisters(registerH, registerL), result); break;
+            case 0xCB0E: mmu.writeByte(readCombinedRegisters(registerH, registerL), result); break;
         }
 
         // flags affected
@@ -2492,7 +2507,6 @@ public class Z80 extends Logger {
         registerFlags.clearN();
         registerFlags.clearH();
     }
-
     public void rr(int opcode)  {
         /*
         8. RR n
@@ -2526,7 +2540,7 @@ public class Z80 extends Logger {
             case 0xCB1B: value = registerE.read(); break;
             case 0xCB1C: value = registerH.read(); break;
             case 0xCB1D: value = registerL.read(); break;
-            case 0xCB1E: value = mmu.rawRead(readCombinedRegisters(registerH, registerL)); break;
+            case 0xCB1E: value = mmu.readByte(readCombinedRegisters(registerH, registerL)); break;
         }
 
         // perform operation
@@ -2543,7 +2557,7 @@ public class Z80 extends Logger {
             case 0xCB1B: registerE.write(result); break;
             case 0xCB1C: registerH.write(result); break;
             case 0xCB1D: registerL.write(result); break;
-            case 0xCB1E: mmu.rawWrite(readCombinedRegisters(registerH, registerL), result); break;
+            case 0xCB1E: mmu.writeByte(readCombinedRegisters(registerH, registerL), result); break;
         }
 
         // flags affected
@@ -2588,7 +2602,7 @@ public class Z80 extends Logger {
             case 0xCB23: value = registerE.read(); break;
             case 0xCB24: value = registerH.read(); break;
             case 0xCB25: value = registerL.read(); break;
-            case 0xCB26: value = mmu.rawRead(readCombinedRegisters(registerH, registerL)); break;
+            case 0xCB26: value = mmu.readByte(readCombinedRegisters(registerH, registerL)); break;
         }
 
         // perform operation
@@ -2604,7 +2618,7 @@ public class Z80 extends Logger {
             case 0xCB23: registerE.write(result); break;
             case 0xCB24: registerH.write(result); break;
             case 0xCB25: registerL.write(result); break;
-            case 0xCB26: mmu.rawWrite(readCombinedRegisters(registerH, registerL), result); break;
+            case 0xCB26: mmu.writeByte(readCombinedRegisters(registerH, registerL), result); break;
         }
 
         // flags affected
@@ -2615,7 +2629,6 @@ public class Z80 extends Logger {
         registerFlags.clearN();
         registerFlags.clearH();
     }
-
     public void sra(int opcode)  {
         /*
         10. SRA n
@@ -2649,7 +2662,7 @@ public class Z80 extends Logger {
             case 0xCB2B: value = registerE.read(); break;
             case 0xCB2C: value = registerH.read(); break;
             case 0xCB2D: value = registerL.read(); break;
-            case 0xCB2E: value = mmu.rawRead(readCombinedRegisters(registerH, registerL)); break;
+            case 0xCB2E: value = mmu.readByte(readCombinedRegisters(registerH, registerL)); break;
         }
 
         // perform the operation
@@ -2665,7 +2678,7 @@ public class Z80 extends Logger {
             case 0xCB2B: registerE.write(result); break;
             case 0xCB2C: registerH.write(result); break;
             case 0xCB2D: registerL.write(result); break;
-            case 0xCB2E: mmu.rawWrite(readCombinedRegisters(registerH, registerL), result); break;
+            case 0xCB2E: mmu.writeByte(readCombinedRegisters(registerH, registerL), result); break;
         }
 
         // flags affected
@@ -2676,7 +2689,6 @@ public class Z80 extends Logger {
         registerFlags.clearH();
         registerFlags.clearN();
     }
-
     public void srl(int opcode)  {
         /*
         11. SRL n
@@ -2710,7 +2722,7 @@ public class Z80 extends Logger {
             case 0xCB3B: value = registerE.read(); break;
             case 0xCB3C: value = registerH.read(); break;
             case 0xCB3D: value = registerL.read(); break;
-            case 0xCB3E: value = mmu.rawRead(readCombinedRegisters(registerH, registerL)); break;
+            case 0xCB3E: value = mmu.readByte(readCombinedRegisters(registerH, registerL)); break;
         }
 
         // perform the operation
@@ -2726,7 +2738,7 @@ public class Z80 extends Logger {
             case 0xCB3B: registerE.write(result); break;
             case 0xCB3C: registerH.write(result); break;
             case 0xCB3D: registerL.write(result); break;
-            case 0xCB3E: mmu.rawWrite(readCombinedRegisters(registerH, registerL), result); break;
+            case 0xCB3E: mmu.writeByte(readCombinedRegisters(registerH, registerL), result); break;
         }
 
         // flags affected
@@ -2756,7 +2768,7 @@ public class Z80 extends Logger {
             case 0x5: case 0xD:
                 value = registerL.read(); break;
             case 0x6: case 0xE:
-                value = mmu.rawRead(readCombinedRegisters(registerH, registerL)); break;
+                value = mmu.readByte(readCombinedRegisters(registerH, registerL)); break;
             case 0x7: case 0xF:
                 value = registerA.read(); break;
         }
@@ -2780,7 +2792,7 @@ public class Z80 extends Logger {
             case 0x5: case 0xD:
                 registerL.write(value); break;
             case 0x6: case 0xE:
-                mmu.rawWrite(readCombinedRegisters(registerH, registerL), value); break;
+                mmu.writeByte(readCombinedRegisters(registerH, registerL), value); break;
             case 0x7: case 0xF:
                 registerA.write(value); break;
         }
@@ -2887,9 +2899,9 @@ public class Z80 extends Logger {
             return;
         }
 
-        int address = mmu.rawRead(registerPC.read()); // least significant byte
+        int address = mmu.readByte(registerPC.read()); // least significant byte
         registerPC.inc();
-        int temp = mmu.rawRead(registerPC.read()); // most significant byte
+        int temp = mmu.readByte(registerPC.read()); // most significant byte
         temp <<= 8;
         address |= temp;
         load(registerPC, address); // load it into PC so it will be executed next.
@@ -2942,9 +2954,9 @@ public class Z80 extends Logger {
         }
 
         // else perform jump
-        int address = mmu.rawRead(registerPC.read()); // least significant byte
+        int address = mmu.readByte(registerPC.read()); // least significant byte
         registerPC.inc();
-        int temp = mmu.rawRead(registerPC.read()); // most significant byte
+        int temp = mmu.readByte(registerPC.read()); // most significant byte
         temp <<= 8;
         address |= temp;
         load(registerPC, address); // load it into PC so it will be executed next.
@@ -2963,7 +2975,7 @@ public class Z80 extends Logger {
             return;
         }
 
-        load(registerPC, mmu.rawRead(readCombinedRegisters(registerH, registerL)));
+        load(registerPC, mmu.readByte(readCombinedRegisters(registerH, registerL)));
     }
     public void jr(int opcode) {
         /*
@@ -2981,7 +2993,11 @@ public class Z80 extends Logger {
             return;
         }
 
-        int n = mmu.rawRead(registerPC.read());
+        int n = mmu.readByte(registerPC.read());
+        if (n > 127) {
+            n = -((~n + 1) & 255); // 2's complement
+        }
+
         int address = registerPC.read();
         address += n;
         load(registerPC, address);
@@ -3034,7 +3050,10 @@ public class Z80 extends Logger {
             return;
         }
 
-        int n = mmu.rawRead(registerPC.read());
+        int n = mmu.readByte(registerPC.read());
+        if (n > 127) {
+            n = -((~n + 1) & 255); // 2's complement
+        }
         int address = registerPC.read();
         address += n;
         load(registerPC, address);
@@ -3062,9 +3081,9 @@ public class Z80 extends Logger {
         registerPC.inc();
 
         // jump to address nn two byte immediate value. (LS byte first)
-        int address = mmu.rawRead(registerPC.read()); // least significant byte
+        int address = mmu.readByte(registerPC.read()); // least significant byte
         registerPC.inc();
-        int temp = mmu.rawRead(registerPC.read());    // most significant byte
+        int temp = mmu.readByte(registerPC.read());    // most significant byte
         temp <<= 8;
         address |= temp;                              // combine
         load(registerPC, address);                    // jump to this address.
@@ -3116,9 +3135,9 @@ public class Z80 extends Logger {
         }
 
         // jump to address nn two byte immediate value. (LS byte first)
-        int address = mmu.rawRead(registerPC.read()); // least significant byte
+        int address = mmu.readByte(registerPC.read()); // least significant byte
         registerPC.inc();
-        int temp = mmu.rawRead(registerPC.read());    // most significant byte
+        int temp = mmu.readByte(registerPC.read());    // most significant byte
         temp <<= 8;
         address |= temp;                              // combine
         load(registerPC, address);                    // jump to this address.
