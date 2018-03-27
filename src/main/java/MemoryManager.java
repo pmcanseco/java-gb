@@ -140,7 +140,7 @@ public class MemoryManager extends Logger {
 
         return 0;
     }
-    public void writeByte(final int address, int value) throws IndexOutOfBoundsException, NumberFormatException {
+    public void writeByte(final int address, final int value) throws IndexOutOfBoundsException, NumberFormatException {
         if (!isValidMemoryAddress(address)) {
             throw new IndexOutOfBoundsException();
         }

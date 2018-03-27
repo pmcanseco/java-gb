@@ -16,10 +16,10 @@ public class AbstractTest {
     void log(String s) {
         System.out.println("-- " + s);
     }
-    /*public void error(String s) {
+    public void error(String s) {
         System.out.println("-- \u001B[31mERROR: " + s + "\u001B[0m");
     }
-    public void warning(String s) {
+    /*public void warning(String s) {
         System.out.println("-- \u001B[33mWARNING: " + s + "\u001B[0m");
     }*/
 }

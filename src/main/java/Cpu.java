@@ -5,7 +5,7 @@ import java.util.Map;
  * Created by Pablo Canseco on 12/22/2017.
  * An Object-Oriented Approach to a Gameboy Z80 Processor Emulator
  */
-public class Z80 extends Logger {
+public class Cpu extends Logger {
 
     // 8-bit registers
     private Register registerA;
@@ -47,7 +47,7 @@ public class Z80 extends Logger {
 
     private Map<Integer, Runnable> instructionMap = new HashMap<>();
 
-    Z80(MemoryManager memMgr) {
+    Cpu(MemoryManager memMgr) {
         // initialize 8-bit registers
         registerA = new Register("A", 8, 0);
         registerB = new Register("B", 8, 0);
@@ -607,22 +607,29 @@ public class Z80 extends Logger {
         //</editor-fold>
     }
 
+    public int fetch() {
+        System.out.print(String.format("PC = 0x%04X", registerPC.read()) + " : ");
+        int opcode = mmu.readByte(registerPC.read());
+        registerPC.inc();
+
+        if (opcode == 0xcb) {
+            opcode <<= 8;
+            opcode |= mmu.readByte(registerPC.read());
+            registerPC.inc();
+        }
+
+        return opcode;
+    }
+    public void execute(int opcode) {
+        instructionMap.get(opcode).run();
+        System.out.println(String.format("opcode = 0x%04X", opcode) + " ");
+    }
+
     // main loop
     public void main() {
-        for(int i=0; i<20; i++) {
-            System.out.print(i + ": ");
-            int opcode = mmu.readByte(registerPC.read());
-            registerPC.inc();
-
-            if (opcode == 0xcb) {
-                opcode <<= 8;
-                opcode |= mmu.readByte(registerPC.read());
-                registerPC.inc();
-            }
-
-            System.out.print(String.format("0x%04X", opcode) + " ");
-            instructionMap.get(opcode).run();
-            System.out.println();
+        while(true) {
+            int opcode = fetch();
+            execute(opcode);
         }
     }
 
@@ -1068,10 +1075,12 @@ public class Z80 extends Logger {
             case 0xE0:
                 // Put A into memory address $FF00+n . 12 cycles
                 mmu.writeByte(0xFF00 + registerPC.read(), registerA.read());
+                registerPC.inc();
                 break;
             case 0xF0:
                 // Put memory address $FF00+n into A. 12 cycles
                 load(registerA, mmu.readByte(0xFF00 + registerPC.read()));
+                registerPC.inc();
                 break;
             //</editor-fold>
             //<editor-fold desc="3.3.2.1 -- 3.3.2.5 16-bit Loads" defaultstate="collapsed">
@@ -1151,14 +1160,14 @@ public class Z80 extends Logger {
         //   Push register pair nn onto stack.
         //   Decrement Stack Pointer (SP) twice.
         registerSP.dec();
-        mmu.writeByte(registerSP.read(), value & 0b11111111_00000000);
+        mmu.writeByte(registerSP.read(), (value & 0b11111111_00000000) >> 8);
         registerSP.dec();
         mmu.writeByte(registerSP.read(), value & 0b00000000_11111111);
     }
     private int popHelper() {
-        int high = mmu.readByte(registerSP.read());
+        int low = mmu.readByte(registerSP.read());
         registerSP.inc();
-        int low  = mmu.readByte(registerSP.read());
+        int high  = mmu.readByte(registerSP.read());
         registerSP.inc();
         high <<= 8;
         return (high | low);
@@ -1219,10 +1228,7 @@ public class Z80 extends Logger {
             // Description:
             //   Pop two bytes off stack into register pair nn.
             //   Increment Stack Pointer (SP) twice
-            load(upperRegister, mmu.readByte(registerSP.read()));
-            registerSP.inc();
-            load(lowerRegister, mmu.readByte(registerSP.read()));
-            registerSP.inc();
+            writeCombinedRegisters(upperRegister, lowerRegister, popHelper());
         }
         else {
             // logError out
@@ -1745,11 +1751,15 @@ public class Z80 extends Logger {
         if (result == 0) {
             registerFlags.setZ();
         }
+        else {
+            registerFlags.clearZ();
+        }
+
         if (result < 0) {
             registerFlags.setC();
             result &= 0b1111_1111;
         }
-        if (result < 0b0000_1111) {
+        if ((registerA.read() & 0b0000_1111) < (0b0000_1111 & second)) {
             registerFlags.setH();
         }
 
@@ -1802,10 +1812,18 @@ public class Z80 extends Logger {
         if (value == 0) {
             registerFlags.setZ();
         }
+        else {
+            registerFlags.clearZ();
+        }
         registerFlags.clearN();
-        if (value > 0b0000_1111) {
+        if ((value & 0b0000_1111) == 0b0000_1111) {
             registerFlags.setH();
         }
+        else {
+            registerFlags.clearH();
+        }
+
+
     }
     public void inc16(int opcode)  {
         /* 3.3.4.3. INC nn
@@ -1872,18 +1890,19 @@ public class Z80 extends Logger {
                DEC          L       2D      4
                DEC          (HL)    35      12
          */
-        int value;
+        int value, oldValue;
         switch (opcode) {
-            case 0x3D: registerA.dec(); value = registerA.read(); break;
-            case 0x05: registerB.dec(); value = registerB.read(); break;
-            case 0x0D: registerC.dec(); value = registerC.read(); break;
-            case 0x15: registerD.dec(); value = registerD.read(); break;
-            case 0x1D: registerE.dec(); value = registerE.read(); break;
-            case 0x25: registerH.dec(); value = registerH.read(); break;
-            case 0x2D: registerL.dec(); value = registerL.read(); break;
+            case 0x3D: oldValue = registerA.read(); registerA.dec(); value = registerA.read(); break;
+            case 0x05: oldValue = registerB.read(); registerB.dec(); value = registerB.read(); break;
+            case 0x0D: oldValue = registerC.read(); registerC.dec(); value = registerC.read(); break;
+            case 0x15: oldValue = registerD.read(); registerD.dec(); value = registerD.read(); break;
+            case 0x1D: oldValue = registerE.read(); registerE.dec(); value = registerE.read(); break;
+            case 0x25: oldValue = registerH.read(); registerH.dec(); value = registerH.read(); break;
+            case 0x2D: oldValue = registerL.read(); registerL.dec(); value = registerL.read(); break;
             case 0x35:
                 int address = readCombinedRegisters(registerH, registerL);
                 value = mmu.readByte(address);
+                oldValue = mmu.readByte(address);
                 value -= 1;
                 mmu.writeByte(address, value);
                 break;
@@ -1897,7 +1916,7 @@ public class Z80 extends Logger {
             registerFlags.setZ();
         }
         registerFlags.setN();
-        if (value < 0b0000_1111) {
+        if ((oldValue & 0b0000_1111) < 1) {
             registerFlags.setH();
         }
     }
@@ -2255,7 +2274,7 @@ public class Z80 extends Logger {
         boolean newcarry = (result >> 7) != 0;
         int oldcarry = registerFlags.readC() ? 1 : 0;
 
-        registerA.write((result << 1) | oldcarry);
+        registerA.write(((result << 1) | oldcarry) & 0b1111_1111);
 
         if (newcarry) {
             registerFlags.setC();
@@ -2418,8 +2437,10 @@ public class Z80 extends Logger {
         }
 
         // perform operation
-        int result = (value << 1) | (value >> 7);
-        boolean bit7 = ((value & 0b10000000) >> 7) == 1;
+        boolean bit7 = ((value & 0b10000000) > 0);
+        boolean oldcarry = registerFlags.readC();
+        int result = (value << 1) & 0b1111_1111;
+        result |= oldcarry ? 1 : 0;
 
         // write result
         switch(opcode) {
@@ -2436,6 +2457,9 @@ public class Z80 extends Logger {
         // flags affected
         if (result == 0) {
             registerFlags.setZ();
+        }
+        else {
+            registerFlags.clearZ();
         }
         registerFlags.clearN();
         registerFlags.clearH();
@@ -2902,6 +2926,7 @@ public class Z80 extends Logger {
         int address = mmu.readByte(registerPC.read()); // least significant byte
         registerPC.inc();
         int temp = mmu.readByte(registerPC.read()); // most significant byte
+        registerPC.inc();
         temp <<= 8;
         address |= temp;
         load(registerPC, address); // load it into PC so it will be executed next.
@@ -2948,15 +2973,17 @@ public class Z80 extends Logger {
                 break;
         }
 
+        int address = mmu.readByte(registerPC.read()); // least significant byte
+        registerPC.inc();
+
         // if our condition for jumping is false, don't jump
         if (!condition) {
             return;
         }
 
         // else perform jump
-        int address = mmu.readByte(registerPC.read()); // least significant byte
-        registerPC.inc();
         int temp = mmu.readByte(registerPC.read()); // most significant byte
+        registerPC.inc();
         temp <<= 8;
         address |= temp;
         load(registerPC, address); // load it into PC so it will be executed next.
@@ -3045,12 +3072,14 @@ public class Z80 extends Logger {
                 break;
         }
 
+        int n = mmu.readByte(registerPC.read());
+        registerPC.inc();
+
         // if our condition for jumping is false, don't jump
         if (!condition) {
             return;
         }
 
-        int n = mmu.readByte(registerPC.read());
         if (n > 127) {
             n = -((~n + 1) & 255); // 2's complement
         }
@@ -3071,21 +3100,23 @@ public class Z80 extends Logger {
         Instruction Parameters Opcode Cycles
         CALL nn CD 12
         */
-        if (opcode != 0x12) {
+        if (opcode != 0xCD) {
             logError("Opcode " + opcode + " doesn't belong in call()");
             return;
         }
 
-        // push address of next instruction onto stack.
-        pushHelper(registerPC.read());
-        registerPC.inc();
 
         // jump to address nn two byte immediate value. (LS byte first)
         int address = mmu.readByte(registerPC.read()); // least significant byte
         registerPC.inc();
         int temp = mmu.readByte(registerPC.read());    // most significant byte
+        registerPC.inc();
         temp <<= 8;
         address |= temp;                              // combine
+
+        // push address of next instruction onto stack.
+        pushHelper(registerPC.read());
+
         load(registerPC, address);                    // jump to this address.
     }
     public void callcc(int opcode) {
@@ -3129,14 +3160,15 @@ public class Z80 extends Logger {
                 break;
         }
 
+        // jump to address nn two byte immediate value. (LS byte first)
+        int address = mmu.readByte(registerPC.read()); // least significant byte
+        registerPC.inc();
+
         // if our condition for jumping is false, don't jump
         if (!condition) {
             return;
         }
 
-        // jump to address nn two byte immediate value. (LS byte first)
-        int address = mmu.readByte(registerPC.read()); // least significant byte
-        registerPC.inc();
         int temp = mmu.readByte(registerPC.read());    // most significant byte
         temp <<= 8;
         address |= temp;                              // combine

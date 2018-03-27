@@ -3,7 +3,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.Random;
 
-public class GPU extends JPanel {
+public class Gpu extends JPanel {
 
     public static final int CONST_VRAM_SIZE = 8192;
 
@@ -84,7 +84,7 @@ public class GPU extends JPanel {
 
     public Random rng = new Random();
 
-    public GPU(int width, int height) {
+    public Gpu(int width, int height) {
         canvas = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         JFrame frame = new JFrame("Gameboy");
         frame.setSize(width, height);
@@ -287,7 +287,7 @@ public class GPU extends JPanel {
         mode = 2;
         modeclock = 0;
 
-        System.out.println("GPU Reset");
+        System.out.println("Gpu Reset");
     }
 
     public static void updatetile(int addr, int val) {
