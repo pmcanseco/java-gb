@@ -167,7 +167,7 @@ public class InstructionsTest extends AbstractTest {
             log("cycle " + i);
             stepUut();
 
-            if (i > 1000000) {
+            if (i > 250000) {
                 fail("cpu reached 1m cycles without breaking out of bios.");
             }
         }
