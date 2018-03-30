@@ -2,9 +2,12 @@
 public class Main {
 
     public static void main(String[] args) {
+        Logger log = new Logger("Main");
+
         Cartridge cart = new Cartridge(Main.class.getResource("cpu_instrs.gb").getPath(), true);
-        MemoryManager mmu = new MemoryManager(cart);
-        Cpu cpu = new Cpu(mmu);
+        Gpu gpu = new Gpu();
+        MemoryManager mmu = new MemoryManager(cart, gpu);
+        Cpu cpu = new Cpu(mmu, gpu);
 
 
         //int width = 300;

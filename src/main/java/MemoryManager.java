@@ -1,8 +1,12 @@
+import java.util.ArrayList;
+import java.util.BitSet;
+import java.util.List;
+
 /**
  * Created by Pablo Canseco on 12/24/2017.
  */
-public class MemoryManager extends Logger {
-
+public class MemoryManager {
+    private Logger log = new Logger(this.getClass().getName());
     private final static String bootrom =
             "31FEFFAF21FF9F32CB7C20FB2126FF0E" +
             "113E8032E20C3EF3E2323E77773EFCE0" +
@@ -28,21 +32,27 @@ public class MemoryManager extends Logger {
     }
 
     private Cartridge cartridge;
+    private Gpu gpu;
     public final int memorySize = 0xFFFF;
 
     private int[] ram = new int[memorySize];
 
     private int[] sram = new int[0x2000]; // 8192
     private int[] io   = new int[0x100];  // 256
-    private int[] vram = new int[0x2000]; // 8192
     private int[] oam  = new int[0x100];  // 256
     private int[] wram = new int[0x2000]; // 8192
     private int[] hram = new int[0x80];   // 128
+    private int interruptFlags;
+    private int interruptEnable;
 
     private boolean inBootrom = true;
 
-    MemoryManager(Cartridge cart) {
+    MemoryManager(Cartridge cart, Gpu gpu) {
         this.cartridge = cart;
+        this.gpu = gpu;
+    }
+    MemoryManager(Cartridge cart) {
+        this(cart, new Gpu());
     }
 
     public void zeroize() {
@@ -64,13 +74,15 @@ public class MemoryManager extends Logger {
                     }
                     else if (address == 0x0100) { // pc is 256
                         inBootrom = false;
+                        log.warning("WE LEFT HE BIOS");
+                        System.exit(0);
                     }
                 }
 
                 return cartridge.readFromAddress(address);
             }
             else if (address >= 0x8000 && address <= 0x9fff) {
-                return vram[address - 0x8000];
+                return gpu.vram[address - 0x8000];
             }
             else if (address >= 0xa000 && address <= 0xbfff) {
                 return sram[address - 0xa000];
@@ -89,30 +101,29 @@ public class MemoryManager extends Logger {
                 return new java.util.Random().nextInt(256);
             }
             else if (address == 0xff40) {
-                //return gpu.control;
-                logDebug("read " + address + ": Read gpu.control");
+                return gpu.lcdControl;
             }
             else if (address == 0xff42) {
-                //return gpu.scrollY;
-                logDebug("read " + address + ": Read gpu.scrollY");
+                log.warning("SCROLLY = " + gpu.scrollY);
+                //dumpVram();
+                return gpu.scrollY;
             }
             else if (address == 0xff43) {
-                //return gpu.scrollX;
-                logDebug("read " + address + ": Read gpu.scrollX");
+                return gpu.scrollX;
             }
             else if (address == 0xff44) {
-                //return gpu.scanline; // read only
-                logDebug("read " + address + ": Read gpu.scanline");
+                log.debug("mmu read gpu.line = " + gpu.line);
+                return gpu.line; // read only
             }
             else if (address == 0xff00) {
                 if((io[0x00] & 0x20) == 0) {
                     //return (unsigned char)(0xc0 | keys.keys1 | 0x10);
-                    logDebug("Unimplemented RAM address " + address + ". Deals with input.");
+                    log.debug("Unimplemented RAM address " + address + ". Deals with input.");
                 }
 
                 else if((io[0x00] & 0x10) == 0) {
                     //return (unsigned char)(0xc0 | keys.keys2 | 0x20);
-                    logDebug("Unimplemented RAM address " + address + ". Deals with input.");
+                    log.debug("Unimplemented RAM address " + address + ". Deals with input.");
                 }
 
                 else if((io[0x00] & 0x30) == 0) {
@@ -123,12 +134,10 @@ public class MemoryManager extends Logger {
                 }
             }
             else if (address == 0xff0f) {
-                //return interrupt.flags;
-                logDebug("Read interrupt.flags");
+                return interruptFlags;
             }
             else if (address == 0xffff) {
-                //return interrupt.enable;
-                logDebug("Read interrupt.enable");
+                return interruptEnable;
             }
             else if (address >= 0xff80 && address <= 0xfffe) {
                 return hram[address - 0xff80];
@@ -156,10 +165,10 @@ public class MemoryManager extends Logger {
             sram[address - 0xa000] = value;
         }
         else if(address >= 0x8000 && address <= 0x9fff) {
-            vram[address - 0x8000] = value;
+            gpu.vram[address - 0x8000] = value;
             if(address <= 0x97ff) {
-                //updateTile(address, value);
-                logDebug("write " + address + " updateTile(address,value");
+                gpu.updateTile(address, value);
+                log.debug("write " + address + " updateTile(address,value");
             }
         }
 
@@ -176,39 +185,39 @@ public class MemoryManager extends Logger {
             hram[address - 0xff80] = value;
         }
         else if(address == 0xff40) {
-            logDebug("write " + address + "gpu.control = value;");
+            gpu.lcdControl = value;
         }
         else if(address == 0xff42) {
-            logDebug("write " + address + "gpu.scrollY = value;");
+            gpu.scrollY = value;
         }
         else if(address == 0xff43) {
-            logDebug("write " + address + "gpu.scrollX = value;");
+            gpu.scrollX = value;
         }
         else if(address == 0xff46) {
-            logDebug("write " + address + "copy(0xfe00, value << 8, 160); // OAM DMA");
+            log.debug("write " + address + "copy(0xfe00, value << 8, 160); // OAM DMA");
         }
         else if(address == 0xff47) { // write only
             //for(int i = 0; i < 4; i++) backgroundPalette[i] = palette[(value >> (i * 2)) & 3];
-            logDebug("write " + address + "gpu update background palette");
+            log.debug("write " + address + " gpu update background palette");
         }
         else if(address == 0xff48) { // write only
             //for(int i = 0; i < 4; i++) spritePalette[0][i] = palette[(value >> (i * 2)) & 3];
-            logDebug("write " + address + "gpu update sprite palette 0");
+            log.debug("write " + address + " gpu update sprite palette 0");
         }
         else if(address == 0xff49) { // write only
             //for(int i = 0; i < 4; i++) spritePalette[1][i] = palette[(value >> (i * 2)) & 3];
-            logDebug("write " + address + "gpu update sprite palette 1");
+            log.debug("write " + address + " gpu update sprite palette 1");
         }
         else if(address >= 0xff00 && address <= 0xff7f) {
             io[address - 0xff00] = value;
         }
         else if(address == 0xff0f) {
-            //interrupt.flags = value;
-            logDebug("write " + address + ": interrupt flags");
+            interruptFlags = value;
+            log.debug("write " + address + ": interrupt flags");
         }
         else if(address == 0xffff) {
-            //interrupt.enable = value;
-            logDebug("write " + address + ": interrupt enable");
+            interruptEnable = value;
+            log.debug("write " + address + ": interrupt enable");
         }
     }
 
@@ -243,7 +252,7 @@ public class MemoryManager extends Logger {
     }
     private boolean isValidMemoryAddress(final int address) {
         if (address < 0 || address > memorySize) {
-            logError("Address " + address + " is not in memory range (" + memorySize + ").");
+            log.error("Address " + address + " is not in memory range (" + memorySize + ").");
             return false;
         }
         return true;
@@ -253,4 +262,114 @@ public class MemoryManager extends Logger {
     public int[] getRawRam() {
         return this.ram;
     }
+
+
+    /*public void dumpVram() {
+        for(int x=0, y=0, tile=0, tileRow=0; x < 8192; x++) {
+
+            if (y % 8 == 0) {
+                y = 0;
+            }
+
+            if (x != 0 && x % 2 == 0) {
+                y++;
+            }
+
+            if (x % 128 == 0 && x != 0) {
+                tileRow++;
+                tile = 0;
+                y = 0;
+            }
+            else if (x % 16 == 0 && x != 0) {
+                tile++;
+                y = 0;
+            }
+
+            int j = tileRow * 8 + y;
+            int i = tile * 8 + ( (x%2) * 4);
+
+            int color = 0;
+            for (int pixel = 3, pOffset = 0; pixel >= 0; pixel--, pOffset++) {
+                color = (vram[x] >> (pixel * 2)) & 0b11;
+                Gpu.Colors c = Gpu.Colors.ON;
+                switch (color) {
+                    case 0: c = Gpu.Colors.OFF; break;
+                    case 1: c = Gpu.Colors.DARK; break;
+                    case 2: c = Gpu.Colors.LIGHT; break;
+                    case 3: c = Gpu.Colors.ON; break;
+                }
+
+                gpu.canvas.setRGB(i+pOffset, j, c.getColor().getRGB());
+                gpu.frame.repaint();
+            }
+        }
+
+        List<Integer[][]> tileSet = new ArrayList<>();
+        List<Integer[]> tile = new ArrayList<>();
+        for (int i = 0; i < 8192; i++) {
+            int vramByte = vram[i];
+            int[] lowerHalfRow = new int[4];
+            int[] upperHalfRow = new int[4];
+
+            lowerHalfRow[0] = vramByte & 0b1100_0000;
+            lowerHalfRow[1] = vramByte & 0b0011_0000;
+            lowerHalfRow[2] = vramByte & 0b0000_1100;
+            lowerHalfRow[3] = vramByte & 0b0000_0011;
+
+            i++;
+            vramByte = vram[i];
+
+            upperHalfRow[0] = vramByte & 0b1100_0000;
+            upperHalfRow[1] = vramByte & 0b0011_0000;
+            upperHalfRow[2] = vramByte & 0b0000_1100;
+            upperHalfRow[3] = vramByte & 0b0000_0011;
+
+            Integer[] fullRow = new Integer[8];
+            for(int j = 0; j < fullRow.length; j++) {
+                if(j < 4) {
+                    fullRow[j] = lowerHalfRow[j];
+                }
+                else {
+                    fullRow[j] = upperHalfRow[j-4];
+                }
+            }
+            tile.add(fullRow);
+
+            Integer[][] fullTile = new Integer[8][8];
+            if(tile.size() == 8) {
+                tile.toArray(fullTile);
+                tileSet.add(fullTile);
+
+                tile = new ArrayList<>();
+            }
+        }
+
+        int xOffset = 0;
+        int yOffset = 0;
+        for(int tileCounter = 0; tileCounter < tileSet.size(); tileCounter++) {
+            Integer[][] theTile = tileSet.get(tileCounter);
+
+            for(int tileY = 0; tileY < 8; tileY++) {
+                for(int tileX = 0; tileX < 8; tileX++) {
+                    int colorInt = theTile[tileX][tileY];
+                    Gpu.Colors color = Gpu.Colors.ON;
+                    switch (colorInt) {
+                        case 0: color = Gpu.Colors.OFF; break;
+                        case 1: color = Gpu.Colors.DARK; break;
+                        case 2: color = Gpu.Colors.LIGHT; break;
+                        case 3: color = Gpu.Colors.ON; break;
+                    }
+
+                    gpu.canvas.setRGB(tileX + xOffset, tileY + yOffset, color.getColor().getRGB());
+                    gpu.frame.repaint();
+                }
+            }
+
+            xOffset += 8;
+            if(xOffset > 128) {
+                yOffset += 8;
+                xOffset = 0;
+            }
+        }
+    }*/
 }

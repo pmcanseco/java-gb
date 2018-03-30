@@ -1,7 +1,8 @@
 /**
  * Created by Pablo Canseco on 12/24/2017.
  */
-public class Register extends Logger {
+public class Register {
+    private Logger log = new Logger(this.getClass().getName());
 
     // members
     private final String name;
@@ -23,7 +24,7 @@ public class Register extends Logger {
           )
             this.value = value;
         else {
-            logError("Value " + value + " is out of range for " + this.size + "-bit register " + this.name);
+            log.error("Value " + value + " is out of range for " + this.size + "-bit register " + this.name);
         }
     }
     public void and(int value) {
@@ -41,7 +42,7 @@ public class Register extends Logger {
     }
     public boolean readBit(int index) {
         if (index > this.size - 1 || index < 0) {
-            logError("Bit index " + index + " is out of bounds for " + this.size + "-bit register " + this.name);
+            log.error("Bit index " + index + " is out of bounds for " + this.size + "-bit register " + this.name);
             return false;
         }
         int tmp = this.value;
@@ -51,7 +52,7 @@ public class Register extends Logger {
     }
     public void writeBit(int index, boolean value) {
         if (index > this.size - 1 || index < 0) {
-            logError("Bit index " + index + " is out of bounds for " + this.size + "-bit register " + this.name);
+            log.error("Bit index " + index + " is out of bounds for " + this.size + "-bit register " + this.name);
             return;
         }
 

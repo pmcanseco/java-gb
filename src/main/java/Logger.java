@@ -5,10 +5,10 @@ class Logger { // extend me for logging facilities.
 
    private enum Level {
         DEBUG("DEBUG"),
-        INFO("INFO"),
+        INFO("\u001B[36mINFO"),
         WARN("\u001B[33mWARNING"),
         ERROR("\u001B[31mERROR"),
-        FATAL("\u001B[31mFATAL");
+        FATAL("\u001B[31;1mFATAL");
 
         String levelString;
         Level(String s) {
@@ -16,25 +16,30 @@ class Logger { // extend me for logging facilities.
         }
     }
 
-    private String className = this.getClass().getName();
+    Logger(String name) {
+       this.className = name;
+    }
+
+    private String className;
 
     private void log(Level level, String msg) {
-        System.out.println(level.levelString + " - " + className + " :: " + msg);
+        String noColor = "\u001B[0m";
+        System.out.println(level.levelString + " - " + className + " :: " + msg + noColor);
     }
 
-    void logDebug(String msg) {
+    void debug(String msg) {
         log(Level.DEBUG, msg);
     }
-    void logInfo(String msg) {
+    void info(String msg) {
         log(Level.INFO, msg);
     }
-    void logWarning(String msg) {
+    void warning(String msg) {
         log(Level.WARN, msg);
     }
-    void logError(String msg) {
+    void error(String msg) {
         log(Level.ERROR, msg);
     }
-    void logFatal(String msg) {
+    void fatal(String msg) {
         log(Level.FATAL, msg);
     }
 }

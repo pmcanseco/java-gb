@@ -5,7 +5,8 @@ import java.util.Map;
  * Created by Pablo Canseco on 12/22/2017.
  * An Object-Oriented Approach to a Gameboy Z80 Processor Emulator
  */
-public class Cpu extends Logger {
+public class Cpu {
+    private Logger log = new Logger("CPU");
 
     // 8-bit registers
     private Register registerA;
@@ -42,14 +43,22 @@ public class Cpu extends Logger {
     private Map<String, Register> sixteenBitRegisters = new HashMap<>();
 
     private MemoryManager mmu;
+    private Gpu gpu;
 
-    private boolean interruptsEnabled = true;
     private boolean pendingInterruptDisable = false;
     private boolean pendingInterruptEnable = false;
+    public  boolean interruptMasterEnable = true;
+    enum Interrupts {
+        VBLANK,
+        LCDSTAT,
+        TIMER,
+        SERIAL,
+        JOYPAD
+    }
 
     private Map<Integer, Runnable> instructionMap = new HashMap<>();
 
-    Cpu(MemoryManager memMgr) {
+    Cpu(MemoryManager memMgr, Gpu gpu) {
         // initialize 8-bit registers
         registerA = new Register("A", 8, 0);
         registerB = new Register("B", 8, 0);
@@ -85,10 +94,11 @@ public class Cpu extends Logger {
         //sixteenBitRegisters.put("IME", registerIME);
 
         this.mmu = memMgr;
-        logDebug("initialized.");
+        this.gpu = gpu;
+        log.debug("initialized.");
 
         //<editor-fold desc="Normal Instruction Map Entries" defaultstate="collapsed">
-        logInfo("Populating normal instructions...");
+        log.info("Populating normal instructions...");
         instructionMap.put(0x00, () -> nopHaltStop(0x00));
         instructionMap.put(0x01, () -> load(0x01));
         instructionMap.put(0x02, () -> load(0x02));
@@ -292,7 +302,7 @@ public class Cpu extends Logger {
         instructionMap.put(0xc8, () -> retcc(0xc8));
         instructionMap.put(0xc9, () -> ret(0xc9));
         instructionMap.put(0xca, () -> jpcc(0xca));
-        instructionMap.put(0xcb, () -> logFatal("Opcode 0xCB shouldn't be executed as-is."));
+        instructionMap.put(0xcb, () -> log.fatal("Opcode 0xCB shouldn't be executed as-is."));
         instructionMap.put(0xcc, () -> callcc(0xcc));
         instructionMap.put(0xcd, () -> call(0xcd));
         instructionMap.put(0xce, () -> adc(0xce));
@@ -300,7 +310,7 @@ public class Cpu extends Logger {
         instructionMap.put(0xd0, () -> retcc(0xd0));
         instructionMap.put(0xd1, () -> pop(0xd1));
         instructionMap.put(0xd2, () -> jpcc(0xd2));
-        instructionMap.put(0xd3, () -> logFatal("Opcode 0xD3 is invalid."));
+        instructionMap.put(0xd3, () -> log.fatal("Opcode 0xD3 is invalid."));
         instructionMap.put(0xd4, () -> callcc(0xd4));
         instructionMap.put(0xd5, () -> push(0xd5));
         instructionMap.put(0xd6, () -> sub(0xd6));
@@ -308,32 +318,32 @@ public class Cpu extends Logger {
         instructionMap.put(0xd8, () -> retcc(0xd8));
         instructionMap.put(0xd9, () -> reti(0xd9));
         instructionMap.put(0xda, () -> jpcc(0xda));
-        instructionMap.put(0xdb, () -> logFatal("Opcode 0xDB is invalid."));
+        instructionMap.put(0xdb, () -> log.fatal("Opcode 0xDB is invalid."));
         instructionMap.put(0xdc, () -> callcc(0xdc));
-        instructionMap.put(0xdd, () -> logFatal("Opcode 0xDD is invalid."));
+        instructionMap.put(0xdd, () -> log.fatal("Opcode 0xDD is invalid."));
         instructionMap.put(0xde, () -> sbc(0xde));
         instructionMap.put(0xdf, () -> rst(0xdf));
         instructionMap.put(0xe0, () -> load(0xe0));
         instructionMap.put(0xe1, () -> pop(0xe1));
         instructionMap.put(0xe2, () -> load(0xe2));
-        instructionMap.put(0xe3, () -> logFatal("Opcode 0xE3 is invalid."));
-        instructionMap.put(0xe4, () -> logFatal("Opcode 0xE4 is invalid."));
+        instructionMap.put(0xe3, () -> log.fatal("Opcode 0xE3 is invalid."));
+        instructionMap.put(0xe4, () -> log.fatal("Opcode 0xE4 is invalid."));
         instructionMap.put(0xe5, () -> push(0xe5));
         instructionMap.put(0xe6, () -> and(0xe6));
         instructionMap.put(0xe7, () -> rst(0xe7));
         instructionMap.put(0xe8, () -> add16(0xe8));
         instructionMap.put(0xe9, () -> jphl(0xe9));
         instructionMap.put(0xea, () -> load(0xea));
-        instructionMap.put(0xeb, () -> logFatal("Opcode 0xEB is invalid."));
-        instructionMap.put(0xec, () -> logFatal("Opcode 0xEC is invalid."));
-        instructionMap.put(0xed, () -> logFatal("Opcode 0xED is invalid."));
+        instructionMap.put(0xeb, () -> log.fatal("Opcode 0xEB is invalid."));
+        instructionMap.put(0xec, () -> log.fatal("Opcode 0xEC is invalid."));
+        instructionMap.put(0xed, () -> log.fatal("Opcode 0xED is invalid."));
         instructionMap.put(0xee, () -> xor(0xee));
         instructionMap.put(0xef, () -> rst(0xef));
         instructionMap.put(0xf0, () -> load(0xf0));
         instructionMap.put(0xf1, () -> pop(0xf1));
         instructionMap.put(0xf2, () -> load(0xf2));
         instructionMap.put(0xf3, () -> diEi(0xf3));
-        instructionMap.put(0xf4, () -> logFatal("Opcode 0xF4 is invalid."));
+        instructionMap.put(0xf4, () -> log.fatal("Opcode 0xF4 is invalid."));
         instructionMap.put(0xf5, () -> push(0xf5));
         instructionMap.put(0xf6, () -> or(0xf6));
         instructionMap.put(0xf7, () -> rst(0xf7));
@@ -341,15 +351,15 @@ public class Cpu extends Logger {
         instructionMap.put(0xf9, () -> load(0xf9));
         instructionMap.put(0xfa, () -> load(0xfa));
         instructionMap.put(0xfb, () -> diEi(0xfb));
-        instructionMap.put(0xfc, () -> logFatal("Opcode 0xFC is invalid."));
-        instructionMap.put(0xfd, () -> logFatal("Opcode 0xFD is invalid."));
+        instructionMap.put(0xfc, () -> log.fatal("Opcode 0xFC is invalid."));
+        instructionMap.put(0xfd, () -> log.fatal("Opcode 0xFD is invalid."));
         instructionMap.put(0xfe, () -> cp(0xfe));
         instructionMap.put(0xff, () -> rst(0xff));
-        logInfo("Populated normal instructions.");
+        log.info("Populated normal instructions.");
         //</editor-fold>
 
         //<editor-fold desc="CB Instruction Map Entries" defaultstate="collapsed">
-        logInfo("Populating cb instructions...");
+        log.info("Populating cb instructions...");
         instructionMap.put(0xcb00, () -> rlc(0xcb00));
         instructionMap.put(0xcb01, () -> rlc(0xcb01));
         instructionMap.put(0xcb02, () -> rlc(0xcb02));
@@ -608,9 +618,12 @@ public class Cpu extends Logger {
         instructionMap.put(0xcbff, () -> set(0xcbff));
         //</editor-fold>
     }
+    Cpu(MemoryManager memMgr) {
+        this(memMgr, new Gpu());
+    }
 
     public int fetch() {
-        System.out.print(String.format("PC = 0x%04X", registerPC.read()) + " : ");
+        log.debug(String.format("PC = 0x%04X", registerPC.read()) + " : ");
         int opcode = mmu.readByte(registerPC.read());
         registerPC.inc();
 
@@ -632,6 +645,32 @@ public class Cpu extends Logger {
         while(true) {
             int opcode = fetch();
             execute(opcode);
+
+            if ((registerPC.read() >= 0x68) && (registerD.read() < 5)) {
+                log.fatal("NONE SHALL PASS!");
+            }
+
+
+            // step the GPU, check if vblank interrupt triggered.
+            boolean vblankInterruptFired = gpu.step(lastInstructionCycles);
+
+            // process EI/DI instruction effects (execute one more instruction prior
+            // to enabling / disabling interrupts)
+            if (pendingInterruptDisable && opcode != 0xF3) {
+                pendingInterruptDisable = false;
+                interruptMasterEnable = false;
+            }
+            if (pendingInterruptEnable && opcode != 0xFB) {
+                pendingInterruptEnable = false;
+                interruptMasterEnable = true;
+            }
+
+            /*if (vblankInterruptFired && interruptMasterEnable) {
+                mmu.writeByte(0xFF0F, 1);
+
+                pushHelper(registerPC.read());
+                registerPC.write(0x40);
+            }*/
         }
     }
 
@@ -645,7 +684,7 @@ public class Cpu extends Logger {
         }
         else {
             // unknown register?
-            logDebug("Unknown register");
+            log.debug("Unknown register");
             return null;
         }
     }
@@ -658,7 +697,7 @@ public class Cpu extends Logger {
         }
         else {
             // unknown register?
-            logError("Unknown register");
+            log.error("Unknown register");
             return -1;
         }
     }
@@ -671,7 +710,7 @@ public class Cpu extends Logger {
         }
         else {
             // unknown register?
-            logError("Unknown register");
+            log.error("Unknown register");
         }
     }
     public boolean getRegisterBit(final String name, int index) {
@@ -685,7 +724,7 @@ public class Cpu extends Logger {
             return readCombinedRegisters(u, l);
         }
         else {
-            logDebug("Did not find one of registers " + upper + ", " + lower);
+            log.debug("Did not find one of registers " + upper + ", " + lower);
             return -1;
         }
     }
@@ -696,13 +735,13 @@ public class Cpu extends Logger {
             writeCombinedRegisters(u, l, value);
         }
         else {
-            logDebug("Did not find one of registers " + upper + ", " + lower);
+            log.debug("Did not find one of registers " + upper + ", " + lower);
         }
     }
 
     private int readCombinedRegisters(Register upper, Register lower) {
         if (upper.getSize() != 8 || lower.getSize() != 8) {
-            logFatal("one of the registers to combine wasn't an 8-bit register");
+            log.fatal("one of the registers to combine wasn't an 8-bit register");
             return -1;
         }
         int result = upper.read();
@@ -712,7 +751,7 @@ public class Cpu extends Logger {
     }
     private void writeCombinedRegisters(Register upper, Register lower, final int value) {
         if (upper.getSize() != 8 || lower.getSize() != 8) {
-            logFatal("one of the registers to combine wasn't an 8-bit register");
+            log.fatal("one of the registers to combine wasn't an 8-bit register");
         }
         int upper8bits = value / 256; // shift right  by 8 bits;
         int lower8bits = value & 0b0000000011111111; // mask out the upper 8 bits.
@@ -1159,13 +1198,15 @@ public class Cpu extends Logger {
                 break;
             case 0xE0:
                 // Put A into memory address $FF00+n . 12 cycles
-                mmu.writeByte(0xFF00 + registerPC.read(), registerA.read());
+                temp = 0xFF00 + mmu.readByte(registerPC.read());
+                mmu.writeByte(temp, registerA.read());
                 registerPC.inc();
                 lastInstructionCycles = 12;
                 break;
             case 0xF0:
                 // Put memory address $FF00+n into A. 12 cycles
-                load(registerA, mmu.readByte(0xFF00 + registerPC.read()));
+                temp = 0xFF00 + mmu.readByte(registerPC.read());
+                load(registerA, mmu.readByte(temp));
                 registerPC.inc();
                 lastInstructionCycles = 12;
                 break;
@@ -1246,7 +1287,7 @@ public class Cpu extends Logger {
                 break;
             //</editor-fold>
             default:
-                logDebug(String.format("logError: Opcode %05X does not belong to load(int opcode) . ", opcode));
+                log.debug(String.format("log.error: Opcode %05X does not belong to load(int opcode) . ", opcode));
         }
     }
 
@@ -1289,7 +1330,7 @@ public class Cpu extends Logger {
                 temp = readCombinedRegisters(registerH, registerL);
                 break;
             default:
-                logDebug(String.format("logError: Opcode %05X does not belong to push(int opcode) . ", opcode));
+                log.debug(String.format("log.error: Opcode %05X does not belong to push(int opcode) . ", opcode));
                 return;
         }
 
@@ -1314,7 +1355,7 @@ public class Cpu extends Logger {
             case 0xE1:
                 upperRegister = registerH; lowerRegister = registerL; break;
             default:
-                logDebug(String.format("logError: Opcode %05X does not belong to pop(int opcode) . ", opcode));
+                log.debug(String.format("log.error: Opcode %05X does not belong to pop(int opcode) . ", opcode));
                 return;
         }
 
@@ -1328,8 +1369,8 @@ public class Cpu extends Logger {
             lastInstructionCycles = 12;
         }
         else {
-            // logError out
-            logDebug("logError: found call to pop() but either upper or lower register didn't get populated.");
+            // log.error out
+            log.debug("log.error: found call to pop() but either upper or lower register didn't get populated.");
         }
     }
 
@@ -1370,7 +1411,7 @@ public class Cpu extends Logger {
             case 0x86: second = mmu.readByte(readCombinedRegisters(registerH, registerL)); lastInstructionCycles = 8; break;
             case 0xC6: second = mmu.readByte(registerPC.read()); registerPC.inc(); lastInstructionCycles = 8; break;
             default:
-                logDebug(String.format("logError: Opcode %05X does not belong to add(int opcode) . ", opcode));
+                log.debug(String.format("log.error: Opcode %05X does not belong to add(int opcode) . ", opcode));
                 return;
         }
         // do the addition
@@ -1427,7 +1468,7 @@ public class Cpu extends Logger {
             case 0x8E: second = mmu.readByte(readCombinedRegisters(registerH, registerL)); lastInstructionCycles = 8; break;
             case 0xCE: second = mmu.readByte(registerPC.read()); registerPC.inc(); lastInstructionCycles = 8; break;
             default:
-                logDebug(String.format("logError: Opcode %05X does not belong to adc(int opcode) . ", opcode));
+                log.debug(String.format("log.error: Opcode %05X does not belong to adc(int opcode) . ", opcode));
                 return;
         }
 
@@ -1491,7 +1532,7 @@ public class Cpu extends Logger {
                 lastInstructionCycles = 16;
                 break;
             default:
-                logDebug(String.format("logError: Opcode %05X does not belong to add16(int opcode) . ", opcode));
+                log.debug(String.format("log.error: Opcode %05X does not belong to add16(int opcode) . ", opcode));
                 return;
 
         }
@@ -1567,7 +1608,7 @@ public class Cpu extends Logger {
             case 0x96: second = mmu.readByte(readCombinedRegisters(registerH, registerL)); lastInstructionCycles = 8; break;
             case 0xD6: second = mmu.readByte(registerPC.read()); registerPC.inc(); lastInstructionCycles = 8; break;
             default:
-                logDebug(String.format("logError: Opcode %05X does not belong to sub(int opcode) . ", opcode));
+                log.debug(String.format("log.error: Opcode %05X does not belong to sub(int opcode) . ", opcode));
                 return;
         }
 
@@ -1579,12 +1620,22 @@ public class Cpu extends Logger {
         if (result == 0) {
             registerFlags.setZ();
         }
+        else {
+            registerFlags.clearZ();
+        }
+
         if (result < 0) {
             registerFlags.setC();
             result &= 0b1111_1111;
         }
+        else {
+            registerFlags.clearC();
+        }
         if (result < 0b0000_1111) {
             registerFlags.setH();
+        }
+        else {
+            registerFlags.clearH();
         }
 
         // save result
@@ -1624,7 +1675,7 @@ public class Cpu extends Logger {
             case 0x9D: second = registerL.read(); lastInstructionCycles = 4; break;
             case 0x9E: second = mmu.readByte(readCombinedRegisters(registerH, registerL)); lastInstructionCycles = 8; break;
             default:
-                logDebug(String.format("logError: Opcode %05X does not belong to sbc(int opcode) . ", opcode));
+                log.debug(String.format("log.error: Opcode %05X does not belong to sbc(int opcode) . ", opcode));
                 return;
         }
 
@@ -1652,7 +1703,7 @@ public class Cpu extends Logger {
     public void and(int opcode)  {
         /* 3.3.3.5 AND n
             Description:
-               logDebugically AND n with A, result in A.
+               log.logDebugically AND n with A, result in A.
             Use with:
                n = A,B,C,D,E,H,L,(HL),#
             Flags affected:
@@ -1684,7 +1735,7 @@ public class Cpu extends Logger {
             case 0xA6: second = mmu.readByte(readCombinedRegisters(registerH, registerL)); lastInstructionCycles = 8; break;
             case 0xE6: second = mmu.readByte(registerPC.read()); registerPC.inc(); lastInstructionCycles = 8; break;
             default:
-                logDebug(String.format("logError: Opcode %05X does not belong to and(int opcode) . ", opcode));
+                log.debug(String.format("log.error: Opcode %05X does not belong to and(int opcode) . ", opcode));
                 return;
         }
 
@@ -1702,7 +1753,7 @@ public class Cpu extends Logger {
     public void or(int opcode)  {
         /* 3.3.3.6. OR n
             Description:
-               logDebugical OR n with register A, result in A.
+               log.logDebugical OR n with register A, result in A.
             Use with:
                n = A,B,C,D,E,H,L,(HL),#
             Flags affected:
@@ -1734,7 +1785,7 @@ public class Cpu extends Logger {
             case 0xB6: second = mmu.readByte(readCombinedRegisters(registerH, registerL)); lastInstructionCycles = 8; break;
             case 0xF6: second = mmu.readByte(registerPC.read()); registerPC.inc(); lastInstructionCycles = 8; break;
             default:
-                logDebug(String.format("logError: Opcode %05X does not belong to or(int opcode) . ", opcode));
+                log.debug(String.format("log.error: Opcode %05X does not belong to or(int opcode) . ", opcode));
                 return;
         }
 
@@ -1752,7 +1803,7 @@ public class Cpu extends Logger {
     public void xor(int opcode)  {
         /* 3.3.3.7 XOR n
             Description:
-               logDebugical exclusive OR n with register A, result in A.
+               log.logDebugical exclusive OR n with register A, result in A.
             Use with:
                n = A,B,C,D,E,H,L,(HL),#
             Flags affected:
@@ -1784,7 +1835,7 @@ public class Cpu extends Logger {
             case 0xAE: second = mmu.readByte(readCombinedRegisters(registerH, registerL)); lastInstructionCycles = 8; break;
             case 0xEE: second = mmu.readByte(registerPC.read()); registerPC.inc(); lastInstructionCycles = 8; break;
             default:
-                logDebug(String.format("logError: Opcode %05X does not belong to xor(int opcode) . ", opcode));
+                log.debug(String.format("log.error: Opcode %05X does not belong to xor(int opcode) . ", opcode));
                 return;
         }
 
@@ -1836,7 +1887,7 @@ public class Cpu extends Logger {
             case 0xBE: second = mmu.readByte(readCombinedRegisters(registerH, registerL)); lastInstructionCycles = 8; break;
             case 0xFE: second = mmu.readByte(registerPC.read()); registerPC.inc(); lastInstructionCycles = 8; break;
             default:
-                logDebug(String.format("logError: Opcode %05X does not belong to cp(int opcode) . ", opcode));
+                log.debug(String.format("log.error: Opcode %05X does not belong to cp(int opcode) . ", opcode));
                 return;
         }
 
@@ -1856,8 +1907,15 @@ public class Cpu extends Logger {
             registerFlags.setC();
             result &= 0b1111_1111;
         }
+        else {
+            registerFlags.clearC();
+        }
+
         if ((registerA.read() & 0b0000_1111) < (0b0000_1111 & second)) {
             registerFlags.setH();
+        }
+        else {
+            registerFlags.clearH();
         }
 
         // throw away result :-)
@@ -1902,7 +1960,7 @@ public class Cpu extends Logger {
                 lastInstructionCycles = 12;
                 break;
             default:
-                logDebug(String.format("logError: Opcode %05X does not belong to inc(int opcode) . ", opcode));
+                log.debug(String.format("log.error: Opcode %05X does not belong to inc(int opcode) . ", opcode));
                 return;
         }
 
@@ -1958,7 +2016,7 @@ public class Cpu extends Logger {
                 registerSP.inc();
                 return;
             default:
-                logDebug(String.format("logError: Opcode %05X does not belong to inc16(int opcode) . ", opcode));
+                log.debug(String.format("log.error: Opcode %05X does not belong to inc16(int opcode) . ", opcode));
                 return;
         }
         value = readCombinedRegisters(highReg, lowReg);
@@ -2007,7 +2065,7 @@ public class Cpu extends Logger {
                 lastInstructionCycles = 12;
                 break;
             default:
-                logDebug(String.format("logError: Opcode %05X does not belong to dec(int opcode) . ", opcode));
+                log.debug(String.format("log.error: Opcode %05X does not belong to dec(int opcode) . ", opcode));
                 return;
         }
 
@@ -2015,9 +2073,17 @@ public class Cpu extends Logger {
         if (value == 0) {
             registerFlags.setZ();
         }
+        else {
+            registerFlags.clearZ();
+        }
+
         registerFlags.setN();
+
         if ((oldValue & 0b0000_1111) < 1) {
             registerFlags.setH();
+        }
+        else {
+            registerFlags.clearH();
         }
     }
     public void dec16(int opcode)  {
@@ -2055,7 +2121,7 @@ public class Cpu extends Logger {
                 registerSP.dec();
                 return;
             default:
-                logDebug(String.format("logError: Opcode %05X does not belong to dec16(int opcode) . ", opcode));
+                log.debug(String.format("log.error: Opcode %05X does not belong to dec16(int opcode) . ", opcode));
                 return;
         }
         value = readCombinedRegisters(highReg, lowReg);
@@ -2112,7 +2178,7 @@ public class Cpu extends Logger {
                 lastInstructionCycles = 16;
                 break;
             default:
-                logDebug(String.format("logError: Opcode %05X does not belong to swap(int opcode) . ", opcode));
+                log.debug(String.format("log.error: Opcode %05X does not belong to swap(int opcode) . ", opcode));
                 return;
         }
 
@@ -2127,7 +2193,7 @@ public class Cpu extends Logger {
 
     public void daa(int opcode) {
         if (opcode != 0x27) {
-            logDebug("Why are we even in daa() if opcode " + opcode + " isn't 0x27?");
+            log.debug("Why are we even in daa() if opcode " + opcode + " isn't 0x27?");
             return;
         }
         /* 3.3.5.2. DAA
@@ -2194,7 +2260,7 @@ public class Cpu extends Logger {
              CPL           -/-      2F      4
          */
         if (opcode != 0x2F) {
-            logDebug("Why are we even in cpl() if opcode " + opcode + " isn't 0x2F?");
+            log.debug("Why are we even in cpl() if opcode " + opcode + " isn't 0x2F?");
             return;
         }
 
@@ -2224,7 +2290,7 @@ public class Cpu extends Logger {
              CCF -/- 3F 4
          */
         if (opcode != 0x3F) {
-            logDebug("Why are we even in ccf() if opcode " + opcode + " isn't 0x3F?");
+            log.debug("Why are we even in ccf() if opcode " + opcode + " isn't 0x3F?");
             return;
         }
 
@@ -2253,7 +2319,7 @@ public class Cpu extends Logger {
              SCF            -/-      37     4
          */
         if (opcode != 0x37) {
-            logDebug("Why are we even in scf() if opcode " + opcode + " isn't 0x37?");
+            log.debug("Why are we even in scf() if opcode " + opcode + " isn't 0x37?");
             return;
         }
 
@@ -2267,12 +2333,12 @@ public class Cpu extends Logger {
     public void nopHaltStop(int opcode) {
         if (opcode == 0x00) {
             // NOP - 4 cycles, 0x00 opcode
-            logDebug("NOP - No operation.");
+            log.debug("NOP - No operation.");
             lastInstructionCycles = 4;
         }
         else if (opcode == 0x76) {
             // HALT - power down CPU until interrupt occurs. Opcode 0x76. 4 cycles.
-            logDebug("HALT");
+            log.debug("HALT");
             /*while (true) {
                 // TODO - wait until an interrupt happens then break
             }*/
@@ -2280,14 +2346,14 @@ public class Cpu extends Logger {
         }
         else if (opcode == 0x1000) {
             // STOP - halt cpu and lcd display until button pressed. Opcode 0x1000. 4 cycles.
-            logDebug("STOP");
+            log.debug("STOP");
             /*while (true) {
                 // TODO - wait until button is pressed then break
             }*/
             lastInstructionCycles = 4;
         }
         else {
-            logDebug("We're in nopHaltStop() but opcode " + opcode + " isn't 0x00, 0x76, or 0x1000");
+            log.debug("We're in nopHaltStop() but opcode " + opcode + " isn't 0x00, 0x76, or 0x1000");
         }
     }
     public void diEi(int opcode) {
@@ -2324,7 +2390,7 @@ public class Cpu extends Logger {
             lastInstructionCycles = 4;
         }
         else {
-            logDebug("Why are we even in diEi() if opcode " + opcode + " isn't 0xF3 or 0xFB?");
+            log.debug("Why are we even in diEi() if opcode " + opcode + " isn't 0xF3 or 0xFB?");
         }
     }
 
@@ -2343,7 +2409,7 @@ public class Cpu extends Logger {
          RLCA -/- 07 4
          */
         if (opcode != 0x07) {
-            logDebug("Wrong opcode handler. " + opcode + " shouldn't be handled by rlca()");
+            log.debug("Wrong opcode handler. " + opcode + " shouldn't be handled by rlca()");
             return;
         }
 
@@ -2386,7 +2452,7 @@ public class Cpu extends Logger {
             the above is wrong and the below implementation is right.
         */
         if (opcode != 0x17) {
-            logError("opcode 0x17 doesn't belong in rla()");
+            log.error("opcode 0x17 doesn't belong in rla()");
             return;
         }
 
@@ -2425,7 +2491,7 @@ public class Cpu extends Logger {
         RRCA        -/-         0F      4
         */
         if (opcode != 0x0F) {
-            logError("opcode 0x0F doesn't belong in rrca()");
+            log.error("opcode 0x0F doesn't belong in rrca()");
             return;
         }
 
@@ -2458,7 +2524,7 @@ public class Cpu extends Logger {
         RRA -/- 1F 4
         */
         if (opcode != 0x17) {
-            logError("opcode 0x1F doesn't belong in rra()");
+            log.error("opcode 0x1F doesn't belong in rra()");
             return;
         }
 
@@ -2512,7 +2578,7 @@ public class Cpu extends Logger {
             case 0xCB05: value = registerL.read(); break;
             case 0xCB06: value = mmu.readByte(readCombinedRegisters(registerH, registerL)); break;
             default:
-                logError("opcode " + opcode + " doesn't belong in rlc()");
+                log.error("opcode " + opcode + " doesn't belong in rlc()");
                 return;
         }
 
@@ -2981,7 +3047,7 @@ public class Cpu extends Logger {
 
         // validate opcode actually belongs in this function:
         if (opcode < 0xCB40 || opcode > 0xCB7F) {
-            logError("Opcode " + opcode + " doesn't belong in bit()");
+            log.error("Opcode " + opcode + " doesn't belong in bit()");
             return;
         }
 
@@ -3007,7 +3073,7 @@ public class Cpu extends Logger {
 
         // validate opcode actually belongs in this function:
         if (opcode < 0xCB80 || opcode > 0xCBBF) {
-            logError("Opcode " + opcode + " doesn't belong in res()");
+            log.error("Opcode " + opcode + " doesn't belong in res()");
             return;
         }
 
@@ -3032,7 +3098,7 @@ public class Cpu extends Logger {
 
         // validate opcode actually belongs in this function:
         if (opcode < 0xCBC0 || opcode > 0xCBFF) {
-            logError("Opcode " + opcode + " doesn't belong in set()");
+            log.error("Opcode " + opcode + " doesn't belong in set()");
             return;
         }
 
@@ -3062,7 +3128,7 @@ public class Cpu extends Logger {
         JP nn C3 12
         */
         if (opcode != 0xC3) {
-            logError("Opcode " + opcode + " doesn't belong in jump()");
+            log.error("Opcode " + opcode + " doesn't belong in jump()");
             return;
         }
 
@@ -3097,7 +3163,7 @@ public class Cpu extends Logger {
             opcode != 0xCA &&
             opcode != 0xD2 &&
             opcode != 0xDA) {
-            logError("Opcode " + opcode + " doesn't belong in jpcc()");
+            log.error("Opcode " + opcode + " doesn't belong in jpcc()");
             return;
         }
 
@@ -3143,7 +3209,7 @@ public class Cpu extends Logger {
         JP (HL) E9 4
         */
         if (opcode != 0xE9) {
-            logError("Opcode " + opcode + " doesn't belong in jphl()");
+            log.error("Opcode " + opcode + " doesn't belong in jphl()");
             return;
         }
 
@@ -3162,7 +3228,7 @@ public class Cpu extends Logger {
         JR n 18 8
         */
         if (opcode != 0x18) {
-            logError("Opcode " + opcode + " doesn't belong in jr()");
+            log.error("Opcode " + opcode + " doesn't belong in jr()");
             return;
         }
 
@@ -3199,7 +3265,7 @@ public class Cpu extends Logger {
             opcode != 0x28 &&
             opcode != 0x30 &&
             opcode != 0x38) {
-            logError("Opcode " + opcode + " doesn't belong in jrcc()");
+            log.error("Opcode " + opcode + " doesn't belong in jrcc()");
             return;
         }
 
@@ -3249,7 +3315,7 @@ public class Cpu extends Logger {
         CALL nn CD 12
         */
         if (opcode != 0xCD) {
-            logError("Opcode " + opcode + " doesn't belong in call()");
+            log.error("Opcode " + opcode + " doesn't belong in call()");
             return;
         }
 
@@ -3289,7 +3355,7 @@ public class Cpu extends Logger {
             opcode != 0xCC &&
             opcode != 0xD4 &&
             opcode != 0xDC) {
-            logError("Opcode " + opcode + " doesn't belong in callcc()");
+            log.error("Opcode " + opcode + " doesn't belong in callcc()");
             return;
         }
 
@@ -3352,7 +3418,7 @@ public class Cpu extends Logger {
             opcode != 0xEF &&
             opcode != 0xF7 &&
             opcode != 0xFF) {
-            logError("Opcode " + opcode + " doesn't belong in rst()");
+            log.error("Opcode " + opcode + " doesn't belong in rst()");
             return;
         }
 
@@ -3390,7 +3456,7 @@ public class Cpu extends Logger {
         RET -/- C9 8
         */
         if (opcode != 0xC9) {
-            logError("Opcode " + opcode + " doesn't belong in ret()");
+            log.error("Opcode " + opcode + " doesn't belong in ret()");
             return;
         }
 
@@ -3417,7 +3483,7 @@ public class Cpu extends Logger {
             opcode != 0xC8 &&
             opcode != 0xD0 &&
             opcode != 0xD8) {
-            logError("Opcode " + opcode + " doesn't belong in retcc()");
+            log.error("Opcode " + opcode + " doesn't belong in retcc()");
             return;
         }
 
@@ -3455,11 +3521,11 @@ public class Cpu extends Logger {
         RETI -/- D9 8
         */
         if (opcode != 0xD9) {
-            logError("Opcode " + opcode + " doesn't belong in ret()");
+            log.error("Opcode " + opcode + " doesn't belong in ret()");
             return;
         }
 
         retHelper();
-        interruptsEnabled = true;
+        interruptMasterEnable = true;
     }
 }

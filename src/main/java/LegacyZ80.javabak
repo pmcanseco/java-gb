@@ -3763,7 +3763,7 @@ public class LegacyZ80 {
     }
 
     ///// DISPATCHER /////
-    public static void dispatcher(Gpu gpu) {
+    public static void dispatcher(LegacyGpu gpu) {
         populateInstructionMap();
         populateCBmap();
         while (true) {
