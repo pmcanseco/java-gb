@@ -39,6 +39,9 @@ class Gpu extends JPanel {
             Colors c = values()[random.nextInt(values().length)];
             return new Color(c.r, c.g, c.b);
         }
+        public static Colors get(int index) {
+            return Colors.values()[index];
+        }
         //</editor-fold>
     }
 
@@ -72,7 +75,7 @@ class Gpu extends JPanel {
         HBLANK,
         VBLANK,
         OAM_ACCESS,
-        VRAM_ACCESS;
+        VRAM_ACCESS
     }
     private Mode currentMode;
     private int modeClock;
@@ -82,14 +85,14 @@ class Gpu extends JPanel {
     public int scrollY;
     public int[] vram = new int[0x2000]; // 8192
     public int[][][] tileset = new int[384][8][8];
-    private Colors[] screen = new Colors[160*144*4];
+    private int[] screen = new int[160*144*4];
 
     Gpu() {
         canvas = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         frame = new JFrame("java-gb");
 
         modeClock = 0;
-        currentMode = Mode.HBLANK;
+        currentMode = Mode.VRAM_ACCESS;
 
         initAppWindow();
         canvasTestPattern();
@@ -127,11 +130,12 @@ class Gpu extends JPanel {
                     modeClock = 0;
                     line++;
 
-                    if (line == 144) {
+                    if (line == 143) {
                         currentMode = Mode.VBLANK;
                         retval = true;
-                        log.error("Triggered VBLANK interrupt.");
+                        log.debug("Triggered VBLANK interrupt.");
                         renderFrame();
+                        renderTileData();
                     }
                     else {
                         currentMode = Mode.OAM_ACCESS;
@@ -144,7 +148,7 @@ class Gpu extends JPanel {
                     modeClock = 0;
                     line++;
 
-                    if (line >= 153) {
+                    if (line > 153) {
                         currentMode = Mode.OAM_ACCESS;
                         line = 0;
                         log.debug("Entering OAM_ACCESS line" + line);
@@ -170,18 +174,21 @@ class Gpu extends JPanel {
             // find bit index for this pixel
             sx = 1 << (7-i);
 
+            int val = ((vram[address] & sx)  != 0  ? 1 : 0) +
+                      ((vram[address+1] & sx) != 0 ? 2 : 0);
+
+            log.debug("updating tile " + tile + " row " + y + " value " + val);
             //update tileset
-            tileset[tile][y][i] = ((vram[address] & sx)  == 1  ? 1 : 0) +
-                                  ((vram[address+1] & sx) == 1 ? 2 : 0);
+            tileset[tile][y][i] = val;
 
         }
     }
     public void renderScanLine() {
-        boolean bgmap =  ((lcdControl & 0b0000_1000) >> 3) == 1;
-        boolean bgtile = ((lcdControl & 0b0001_0000) >> 4) == 1;
+        boolean bgmap =  ((lcdControl & 0b0000_1000) >> 3) != 0;
+        boolean bgtile = ((lcdControl & 0b0001_0000) >> 4) != 0;
 
         int mapoffset = bgmap ? 0x1C00 : 0x1800;
-        mapoffset += (((line + scrollY) & 0b1111_1111) >> 3) << 5;
+        mapoffset += (((line + scrollY) & 0b1111_1111) >> 3) ;//<< 5;
         int lineoffset = scrollX >> 3;
         int y = line + scrollY & 7;
         int x = scrollX & 7;
@@ -190,21 +197,14 @@ class Gpu extends JPanel {
         int colorint;
         int tile = vram[mapoffset + lineoffset];
 
-        if (bgtile && tile < 128) {
+        if (bgtile && (tile < 128)) {
             tile += 256;
         }
 
         for (int i=0; i < 160; i++) {
             colorint = tileset[tile][y][x];
-            Colors color = Colors.ON;
-            switch (colorint) {
-                case 0: color = Gpu.Colors.OFF; break;
-                case 1: color = Gpu.Colors.DARK; break;
-                case 2: color = Gpu.Colors.LIGHT; break;
-                case 3: color = Gpu.Colors.ON; break;
-            }
 
-            screen[canvasoffset] = color;
+            screen[canvasoffset] = colorint;
             canvasoffset+=4;
 
             x++;
@@ -212,20 +212,35 @@ class Gpu extends JPanel {
                 x = 0;
                 lineoffset = (lineoffset + 1) & 31;
                 tile = vram[mapoffset + lineoffset];
-                if (bgtile && tile < 128) {
+                if (bgtile && (tile < 128)) {
                     tile += 256;
                 }
             }
         }
-
+        log.debug("Rendered scanline");
     }
     public void renderFrame() {
         for(int y=0; y<144; y++) {
             for(int x=0; x<160; x++) {
-                Colors c = screen[(160*y) + x];
+                Colors c = Colors.get(screen[((160*y) + x)]);
                 canvas.setRGB(x, y, c.getColor().getRGB());
             }
         }
         frame.repaint();
+        log.debug("Rendered frame.");
+    }
+
+    public void renderTileData() {
+        for(int tile = 0; tile < 0x20; tile++) {
+            for (int y = 0; y < 8; y++) {
+                for (int x = 0; x < 8; x++) {
+                    System.out.print(String.format("%02x ", tileset[tile][y][x]).replace("00", "  "));
+                }
+                System.out.println();
+            }
+            System.out.println();
+            System.out.println();
+            System.out.println();
+        }
     }
 }

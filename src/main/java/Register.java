@@ -35,8 +35,16 @@ public class Register {
     }
     public void inc() {
         this.value += 1;
+        if (this.value == 256) {
+            this.value = 0b0000_0000;
+        }
     }
-    public void dec() { this.value -= 1; }
+    public void dec() {
+        this.value -= 1;
+        if (this.value < 0) {
+            this.value = 0b1111_1111;
+        }
+    }
     public int read() {
         return this.value;
     }

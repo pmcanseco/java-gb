@@ -21,10 +21,13 @@ class Logger { // extend me for logging facilities.
     }
 
     private String className;
+    private int level = Level.DEBUG.ordinal();
 
     private void log(Level level, String msg) {
-        String noColor = "\u001B[0m";
-        System.out.println(level.levelString + " - " + className + " :: " + msg + noColor);
+        if (level.ordinal() >= this.level) {
+            String noColor = "\u001B[0m";
+            System.out.println(level.levelString + " - " + className + " :: " + msg + noColor);
+        }
     }
 
     void debug(String msg) {

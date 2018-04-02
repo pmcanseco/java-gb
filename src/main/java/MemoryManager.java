@@ -1,7 +1,3 @@
-import java.util.ArrayList;
-import java.util.BitSet;
-import java.util.List;
-
 /**
  * Created by Pablo Canseco on 12/24/2017.
  */
@@ -74,7 +70,7 @@ public class MemoryManager {
                     }
                     else if (address == 0x0100) { // pc is 256
                         inBootrom = false;
-                        log.warning("WE LEFT HE BIOS");
+                        log.fatal("WE LEFT HE BIOS");
                         System.exit(0);
                     }
                 }
@@ -104,7 +100,9 @@ public class MemoryManager {
                 return gpu.lcdControl;
             }
             else if (address == 0xff42) {
-                log.warning("SCROLLY = " + gpu.scrollY);
+                if(gpu.scrollY <= 5) {
+                    log.debug("SCROLLY = " + gpu.scrollY);
+                }
                 //dumpVram();
                 return gpu.scrollY;
             }
@@ -168,7 +166,7 @@ public class MemoryManager {
             gpu.vram[address - 0x8000] = value;
             if(address <= 0x97ff) {
                 gpu.updateTile(address, value);
-                log.debug("write " + address + " updateTile(address,value");
+                log.debug(String.format("write %02x updateTile(address,%02x)", address, value));
             }
         }
 

@@ -623,8 +623,8 @@ public class Cpu {
     }
 
     public int fetch() {
-        log.debug(String.format("PC = 0x%04X", registerPC.read()) + " : ");
         int opcode = mmu.readByte(registerPC.read());
+        log.debug(String.format("PC: 0x%04X    OP: 0x%04X", registerPC.read(), opcode));
         registerPC.inc();
 
         if (opcode == 0xcb) {
@@ -637,19 +637,60 @@ public class Cpu {
     }
     public void execute(int opcode) {
         instructionMap.get(opcode).run();
-        System.out.println(String.format("opcode = 0x%04X", opcode) + " ");
+    }
+    public void skipBios() {
+        registerA.write(0x11);
+        registerB.write(0x00);
+        registerC.write(0x00);
+        registerD.write(0xFF);
+        registerE.write(0x56);
+        registerH.write(0x00);
+        registerL.write(0x0D);
+        registerFlags.setZ();
+        registerFlags.clearN();
+        registerFlags.clearH();
+        registerFlags.clearC();
+        registerSP.write(0xFFFE);
+        registerPC.write(0x0100);
+        mmu.writeByte(0xFF05, 0x00); // TIMA
+        mmu.writeByte(0xFF06, 0x00); // TMA
+        mmu.writeByte(0xFF07, 0x00); // TAC
+        mmu.writeByte(0xFF10, 0x80); // NR10
+        mmu.writeByte(0xFF11, 0xBF); // NR11
+        mmu.writeByte(0xFF12, 0xF3); // NR12
+        mmu.writeByte(0xFF14, 0xBF); // NR14
+        mmu.writeByte(0xFF16, 0x3F); // NR21
+        mmu.writeByte(0xFF17, 0x00); // NR22
+        mmu.writeByte(0xFF19, 0xBF); // NR24
+        mmu.writeByte(0xFF1A, 0x7F); // NR30
+        mmu.writeByte(0xFF1B, 0xFF); // NR31
+        mmu.writeByte(0xFF1C, 0x9F); // NR32
+        mmu.writeByte(0xFF1E, 0xBF); // NR33
+        mmu.writeByte(0xFF20, 0xFF); // NR41
+        mmu.writeByte(0xFF21, 0x00); // NR42
+        mmu.writeByte(0xFF22, 0x00); // NR43
+        mmu.writeByte(0xFF23, 0xBF); // NR30
+        mmu.writeByte(0xFF24, 0x77); // NR50
+        mmu.writeByte(0xFF25, 0xF3); // NR51
+        mmu.writeByte(0xFF26, 0xF1); // NR52
+        mmu.writeByte(0xFF40, 0x91); // LCDC
+        mmu.writeByte(0xFF42, 0x00); // SCY
+        mmu.writeByte(0xFF43, 0x00); // SCX
+        mmu.writeByte(0xFF45, 0x00); // LYC
+        mmu.writeByte(0xFF47, 0xFC); // BGP
+        mmu.writeByte(0xFF48, 0xFF); // OBP0
+        mmu.writeByte(0xFF49, 0xFF); // OBP1
+        mmu.writeByte(0xFF4A, 0x00); // WY
+        mmu.writeByte(0xFF4B, 0x00); // WX
+        mmu.writeByte(0xFFFF, 0x00); // IE
     }
 
     // main loop
     public void main() {
+        //skipBios();
         while(true) {
             int opcode = fetch();
             execute(opcode);
-
-            if ((registerPC.read() >= 0x68) && (registerD.read() < 5)) {
-                log.fatal("NONE SHALL PASS!");
-            }
-
 
             // step the GPU, check if vblank interrupt triggered.
             boolean vblankInterruptFired = gpu.step(lastInstructionCycles);
@@ -1624,18 +1665,17 @@ public class Cpu {
             registerFlags.clearZ();
         }
 
-        if (result < 0) {
-            registerFlags.setC();
-            result &= 0b1111_1111;
-        }
-        else {
+        if (second > registerA.read()) {
             registerFlags.clearC();
         }
-        if (result < 0b0000_1111) {
-            registerFlags.setH();
+        else {
+            registerFlags.setC();
+        }
+        if ((registerA.read() & 0b0000_1111) < (0b0000_1111 & second)) {
+            registerFlags.clearH();
         }
         else {
-            registerFlags.clearH();
+            registerFlags.setH();
         }
 
         // save result
@@ -1746,6 +1786,9 @@ public class Cpu {
         if (registerA.read() == 0) {
             registerFlags.setZ();
         }
+        else {
+            registerFlags.clearZ();
+        }
         registerFlags.clearN();
         registerFlags.setH();
         registerFlags.clearC();
@@ -1796,6 +1839,9 @@ public class Cpu {
         if (registerA.read() == 0) {
             registerFlags.setZ();
         }
+        else {
+            registerFlags.clearZ();
+        }
         registerFlags.clearN();
         registerFlags.clearH();
         registerFlags.clearC();
@@ -1845,6 +1891,9 @@ public class Cpu {
         // flags affected
         if (registerA.read() == 0) {
             registerFlags.setZ();
+        }
+        else {
+            registerFlags.clearZ();
         }
         registerFlags.clearN();
         registerFlags.clearH();
@@ -1903,19 +1952,18 @@ public class Cpu {
             registerFlags.clearZ();
         }
 
-        if (result < 0) {
-            registerFlags.setC();
-            result &= 0b1111_1111;
+        if (second > registerA.read()) {
+            registerFlags.clearC();
         }
         else {
-            registerFlags.clearC();
+            registerFlags.setC();
         }
 
         if ((registerA.read() & 0b0000_1111) < (0b0000_1111 & second)) {
-            registerFlags.setH();
+            registerFlags.clearH();
         }
         else {
-            registerFlags.clearH();
+            registerFlags.setH();
         }
 
         // throw away result :-)
@@ -2059,7 +2107,7 @@ public class Cpu {
             case 0x35:
                 int address = readCombinedRegisters(registerH, registerL);
                 value = mmu.readByte(address);
-                oldValue = mmu.readByte(address);
+                oldValue = value;
                 value -= 1;
                 mmu.writeByte(address, value);
                 lastInstructionCycles = 12;
@@ -2080,10 +2128,10 @@ public class Cpu {
         registerFlags.setN();
 
         if ((oldValue & 0b0000_1111) < 1) {
-            registerFlags.setH();
+            registerFlags.clearH();
         }
         else {
-            registerFlags.clearH();
+            registerFlags.setH();
         }
     }
     public void dec16(int opcode)  {
@@ -2423,6 +2471,9 @@ public class Cpu {
         if (result == 0) {
             registerFlags.setZ();
         }
+        else {
+            registerFlags.clearZ();
+        }
         registerFlags.clearN();
         registerFlags.clearH();
         if (bit7) {
@@ -2523,7 +2574,7 @@ public class Cpu {
         Instruction Parameters Opcode Cycles
         RRA -/- 1F 4
         */
-        if (opcode != 0x17) {
+        if (opcode != 0x1F) {
             log.error("opcode 0x1F doesn't belong in rra()");
             return;
         }
@@ -3233,11 +3284,13 @@ public class Cpu {
         }
 
         int n = mmu.readByte(registerPC.read());
+        registerPC.inc();
         if (n > 127) {
             n = -((~n + 1) & 255); // 2's complement
         }
 
         int address = registerPC.read();
+        registerPC.inc();
         address += n;
         load(registerPC, address);
         lastInstructionCycles = 8;
