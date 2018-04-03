@@ -38,7 +38,7 @@ public class Cpu {
     //private Register registerT;  // t-time for last instruction
     //private Register registerIME;
 
-    private int lastInstructionCycles = 0;
+    public int lastInstructionCycles = 0;
 
     private Map<String, Register> eightBitRegisters = new HashMap<>();
     private Map<String, Register> sixteenBitRegisters = new HashMap<>();
@@ -693,15 +693,11 @@ public class Cpu {
     // main loop
     public void main() {
         //skipBios();
-        int maxOpcodeSeen = 0;
+
+        int cycles = 0;
         while(true) {
             int opcode = fetch();
             execute(opcode);
-
-            if(registerPC.read() > maxOpcodeSeen) {
-                log.fatal(String.format("New record: 0x%02x", registerPC.read()));
-                maxOpcodeSeen = registerPC.read();
-            }
 
             // step the GPU, check if vblank interrupt triggered.
             boolean vblankInterruptFired = gpu.step(lastInstructionCycles);
@@ -723,6 +719,9 @@ public class Cpu {
                 pushHelper(registerPC.read());
                 registerPC.write(0x40);
             }*/
+
+            cycles++;
+            if(registerPC.read() > 0xFE) log.info("cycles: " + cycles);
         }
     }
 

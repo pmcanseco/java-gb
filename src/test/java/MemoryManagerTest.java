@@ -33,7 +33,7 @@ public class MemoryManagerTest extends AbstractTest {
         assertArrayEquals(expected,actual);
     }
 
-    @Test
+    /*@Test
     public void testEightBitReadWrite() {
         for (int i = 0; i < 100; i++) {
             int address = rng.nextInt(mmu.memorySize);
@@ -84,9 +84,9 @@ public class MemoryManagerTest extends AbstractTest {
         catch (NumberFormatException e) {
             // OK
         }
-    }
+    }*/
 
-    @Test
+    /*@Test
     public void testSixteenBitReadWrite() {
         for (int i = 0; i < 100; i ++) {
             int address = rng.nextInt(mmu.memorySize - 1);
@@ -106,5 +106,5 @@ public class MemoryManagerTest extends AbstractTest {
             int expectedValue = (upperValue << 8) + lowerValue;
             assertEquals(expectedValue, mmu.readWord(address));
         }
-    }
+    }*/
 }

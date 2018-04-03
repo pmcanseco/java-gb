@@ -13,6 +13,7 @@ class Gpu extends JPanel {
     private int height = 144;
     public BufferedImage canvas;
     public JFrame frame;
+    private boolean isTestMode = true;
 
     public enum Colors {
 
@@ -90,14 +91,16 @@ class Gpu extends JPanel {
 
     Gpu() {
         canvas = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-        frame = new JFrame("java-gb");
 
         modeClock = 0;
         currentMode = Mode.VRAM_ACCESS;
 
-        initAppWindow();
-        canvasTestPattern();
-        frame.repaint();
+        if (!isTestMode) {
+            frame = new JFrame("java-gb");
+            initAppWindow();
+            canvasTestPattern();
+            frame.repaint();
+        }
     }
     Gpu(Logger.Level level) {
         this();
@@ -231,7 +234,9 @@ class Gpu extends JPanel {
                 canvas.setRGB(x, y, c.getColor().getRGB());
             }
         }
-        frame.repaint();
+        if (!isTestMode){
+            frame.repaint();
+        }
         log.debug("Rendered frame.");
     }
 

@@ -24,6 +24,7 @@ public class InstructionsTest extends AbstractTest {
     private JSONArray biosValues;
     private MemoryManager mmu;
     private Cpu cpu;
+    private Gpu gpu = new Gpu();
 
     private void readUutRegisterValues() {
         a = cpu.getRegisterValue("A");
@@ -40,6 +41,7 @@ public class InstructionsTest extends AbstractTest {
     private void stepUut() {
         int opcode = cpu.fetch();
         cpu.execute(opcode);
+        gpu.step(cpu.lastInstructionCycles);
     }
     private void readExpectedRegisterValues(int index) {
         expected_a  = biosValues.getJSONObject(index).getInt("a");
@@ -75,10 +77,6 @@ public class InstructionsTest extends AbstractTest {
             stepUut();
             readUutRegisterValues();
         }
-
-        log("========== WE ARE NOW AT 0x0C ==========");
-        log("========== WE ARE NOW AT 0x0C ==========");
-        log("========== WE ARE NOW AT 0x0C ==========");
 
         for (int i = 0; pc < 0x100; i++) {
             readUutRegisterValues();
@@ -149,27 +147,16 @@ public class InstructionsTest extends AbstractTest {
         log("End of JSON reached.");
     }
 
-    /*@Test
+    @Test
     public void testBiosCompletion() {
-        mmu = new MemoryManager(new Cartridge(getClass().getResource("cpu_instrs.gb").getPath()));
+        mmu = new MemoryManager(new Cartridge(getClass().getResource("cpu_instrs.gb").getPath()), gpu);
         cpu = new Cpu(mmu);
-        a = 0;
-        b = 0;
-        c = 0;
-        d = 0;
-        e = 0;
-        f = 0;
-        h = 0;
-        l = 0;
-        pc = 0;
-        sp = 0;
-        for (int i=0; pc < 0x100; i++) {
-            log("cycle " + i);
+        for (int i=0; cpu.getRegisterValue("PC") <  0x100; i++) {
             stepUut();
 
-            if (i > 250000) {
-                fail("cpu reached 1m cycles without breaking out of bios.");
+            if (i > 2100000) {
+                fail("cpu reached 2.1 million cycles without breaking out of bios.");
             }
         }
-    }*/
+    }
 }
