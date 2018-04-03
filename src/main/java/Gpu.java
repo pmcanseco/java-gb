@@ -20,7 +20,7 @@ class Gpu extends JPanel {
         OFF(255, 255, 255),
         LIGHT(192, 192, 192),
         DARK(96, 96, 96),
-        ON(0, 0, 0);
+        ON(40, 40, 40);
 
         //<editor-fold desc=" IMPLEMENTATION " defaultstate="collapsed">
         private final int r;
@@ -87,13 +87,21 @@ class Gpu extends JPanel {
     public int scrollY;
     public int[] vram = new int[0x2000]; // 8192
     public int[][][] tileset = new int[384][8][8];
-    private int[] screen = new int[160*144*4];
+    private int[] screen = new int[160*144];
 
     Gpu() {
         canvas = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
 
         modeClock = 0;
         currentMode = Mode.VRAM_ACCESS;
+    }
+    Gpu(Logger.Level level) {
+        this();
+        this.log = new Logger(name, level);
+    }
+    Gpu(boolean testMode) {
+        this();
+        this.isTestMode = testMode;
 
         if (!isTestMode) {
             frame = new JFrame("java-gb");
@@ -101,10 +109,6 @@ class Gpu extends JPanel {
             canvasTestPattern();
             frame.repaint();
         }
-    }
-    Gpu(Logger.Level level) {
-        this();
-        this.log = new Logger(name, level);
     }
 
     public boolean step(int cycles) {
@@ -121,14 +125,14 @@ class Gpu extends JPanel {
                 if (modeClock >= 80) {
                     currentMode = Mode.VRAM_ACCESS;
                     modeClock = 0;
-                    log.debug("Entering VRAM_ACCESS line" + line);
+                    //log.debug("Entering VRAM_ACCESS line" + line);
                 }
                 break;
             case VRAM_ACCESS:
                 if (modeClock >= 172) {
                     currentMode = Mode.HBLANK;
                     modeClock = 0;
-                    log.debug("Entering HBLANK line" + line);
+                    //log.debug("Entering HBLANK line" + line);
                     // write line to framebuffer (canvas)
                     renderScanLine();
                 }
@@ -141,13 +145,13 @@ class Gpu extends JPanel {
                     if (line == 143) {
                         currentMode = Mode.VBLANK;
                         retval = true;
-                        log.debug("Triggered VBLANK interrupt.");
+                        //log.debug("Triggered VBLANK interrupt.");
                         renderFrame();
-                        //renderTileData();
+                        renderTileData();
                     }
                     else {
                         currentMode = Mode.OAM_ACCESS;
-                        log.debug("Entering OAM_ACCESS line" + line);
+                        //log.debug("Entering OAM_ACCESS line" + line);
                     }
                 }
                 break;
@@ -159,7 +163,7 @@ class Gpu extends JPanel {
                     if (line > 153) {
                         currentMode = Mode.OAM_ACCESS;
                         line = 0;
-                        log.debug("Entering OAM_ACCESS line" + line);
+                        //log.debug("Entering OAM_ACCESS line" + line);
                     }
                 }
                 break;
@@ -182,50 +186,69 @@ class Gpu extends JPanel {
             // find bit index for this pixel
             sx = 1 << (7-i);
 
-            int val = ((vram[address] & sx)  != 0  ? 1 : 0) +
+            int val = ((vram[address] & sx)  != 0  ? 1 : 0) |
                       ((vram[address+1] & sx) != 0 ? 2 : 0);
 
             log.debug("updating tile " + tile + " row " + y + " value " + val);
+
             //update tileset
             tileset[tile][y][i] = val;
-
         }
     }
     public void renderScanLine() {
         boolean bgmap =  ((lcdControl & 0b0000_1000) >> 3) != 0;
         boolean bgtile = ((lcdControl & 0b0001_0000) >> 4) != 0;
 
-        int mapoffset = bgmap ? 0x1C00 : 0x1800;
-        mapoffset += (((line + scrollY) & 0b1111_1111) >> 3) ;//<< 5;
-        int lineoffset = scrollX >> 3;
-        int y = line + scrollY & 7;
-        int x = scrollX & 7;
-        int canvasoffset = line * 160 * 4;
+        if (line == 3 && scrollY == 0x4A) {
+            log.warning("WE ARE HERE");
+        }
+
+        int mapoffset = 0x1800; /*bgmap ? 0x1C00 : 0x1800;*/
+        mapoffset += (((line + scrollY) & 0b1111_1111) >> 3) << 5;
+
+        int lineoffset = (scrollX >> 3);
+
+        int y = (line /*+ scrollY*/) & 7;
+        int x = (scrollX & 7);
+
+        int canvasoffset = line * 160;
 
         int colorint;
         int tile = vram[mapoffset + lineoffset];
 
-        if (bgtile && (tile < 128)) {
+        /*if (bgtile && (tile < 128)) {
             tile += 256;
-        }
+        }*/
+
+        int[] scanlineRow = new int[160];
 
         for (int i=0; i < 160; i++) {
             colorint = tileset[tile][y][x];
 
+            //log.warning("color " + colorint);
+            if (tile != 0) {
+                log.fatal("NONZERO TILE");
+            }
+            if (colorint != 0) {
+                log.fatal("NONZERO COLOR");
+            }
+
             screen[canvasoffset] = colorint;
-            canvasoffset+=4;
+            canvasoffset++;
+
+            scanlineRow[i] = colorint;
 
             x++;
             if (x == 8) {
                 x = 0;
                 lineoffset = (lineoffset + 1) & 31;
                 tile = vram[mapoffset + lineoffset];
-                if (bgtile && (tile < 128)) {
+                /*if (bgtile && (tile < 128)) {
                     tile += 256;
-                }
+                }(*/
             }
         }
-        log.debug("Rendered scanline");
+        log.info("Rendered scanline " + this.line);
     }
     public void renderFrame() {
         for(int y=0; y<144; y++) {

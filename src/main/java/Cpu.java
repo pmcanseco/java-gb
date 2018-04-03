@@ -7,7 +7,7 @@ import java.util.Map;
  */
 public class Cpu {
     private final String name = "CPU";
-    private Logger log = new Logger(name);
+    private Logger log = new Logger(name, Logger.Level.WARN);
 
     // 8-bit registers
     private Register registerA;
@@ -694,10 +694,11 @@ public class Cpu {
     public void main() {
         //skipBios();
 
-        int cycles = 0;
         while(true) {
             int opcode = fetch();
             execute(opcode);
+
+            if (registerPC.read() == 0x100) log = new Logger(name, Logger.Level.DEBUG);
 
             // step the GPU, check if vblank interrupt triggered.
             boolean vblankInterruptFired = gpu.step(lastInstructionCycles);
@@ -719,9 +720,6 @@ public class Cpu {
                 pushHelper(registerPC.read());
                 registerPC.write(0x40);
             }*/
-
-            cycles++;
-            if(registerPC.read() > 0xFE) log.info("cycles: " + cycles);
         }
     }
 
