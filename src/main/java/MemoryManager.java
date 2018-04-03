@@ -48,7 +48,8 @@ public class MemoryManager {
         this.gpu = gpu;
     }
     MemoryManager(Cartridge cart) {
-        this(cart, new Gpu());
+        this(cart, new Gpu(Logger.Level.FATAL));
+        this.log = new Logger(this.getClass().getName(), Logger.Level.FATAL);
     }
 
     public void zeroize() {
@@ -70,7 +71,7 @@ public class MemoryManager {
                     }
                     else if (address == 0x0100) { // pc is 256
                         inBootrom = false;
-                        log.fatal("WE LEFT HE BIOS");
+                        log.fatal("WE LEFT THE BIOS");
                         System.exit(0);
                     }
                 }

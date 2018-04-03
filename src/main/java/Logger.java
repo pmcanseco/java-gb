@@ -3,7 +3,7 @@
  */
 class Logger { // extend me for logging facilities.
 
-   private enum Level {
+   public enum Level {
         DEBUG("DEBUG"),
         INFO("\u001B[36mINFO"),
         WARN("\u001B[33mWARNING"),
@@ -19,9 +19,13 @@ class Logger { // extend me for logging facilities.
     Logger(String name) {
        this.className = name;
     }
+    Logger(String name, Level level) {
+        this(name);
+        this.level = level.ordinal();
+    }
 
     private String className;
-    private int level = Level.DEBUG.ordinal();
+    private int level = Level.WARN.ordinal(); // global log level
 
     private void log(Level level, String msg) {
         if (level.ordinal() >= this.level) {

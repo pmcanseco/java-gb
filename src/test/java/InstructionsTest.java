@@ -57,7 +57,7 @@ public class InstructionsTest extends AbstractTest {
     @Test
     public void testInstructions() {
         mmu = new MemoryManager(new Cartridge(getClass().getResource("cpu_instrs.gb").getPath()));
-        cpu = new Cpu(mmu);
+        cpu = new Cpu(mmu, Logger.Level.FATAL);
         try {
             String biosJson = new String(
                     Files.readAllBytes(Paths.get(getClass().getResource("full-bios.txt").toURI())));
@@ -149,7 +149,7 @@ public class InstructionsTest extends AbstractTest {
         log("End of JSON reached.");
     }
 
-    @Test
+    /*@Test
     public void testBiosCompletion() {
         mmu = new MemoryManager(new Cartridge(getClass().getResource("cpu_instrs.gb").getPath()));
         cpu = new Cpu(mmu);
@@ -171,5 +171,5 @@ public class InstructionsTest extends AbstractTest {
                 fail("cpu reached 1m cycles without breaking out of bios.");
             }
         }
-    }
+    }*/
 }

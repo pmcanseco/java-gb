@@ -99,4 +99,26 @@ public class RegisterTest extends AbstractTest {
         assertEquals(value & 0b00000000_11111111, r.readLow());
         // TODO test writes
     }
+
+    @Test
+    public void testIncDec() {
+        Register r = new Register("R", 8, 0);
+
+        assertEquals(0, r.read());
+        r.inc();
+        assertEquals(1, r.read());
+
+        r.write(255);
+        assertEquals(255, r.read());
+
+        r.inc();
+        assertEquals(0, r.read());
+
+        r.dec();
+        assertEquals(255, r.read());
+
+        r.write(1);
+        r.dec();
+        assertEquals(0, r.read());
+    }
 }

@@ -7,7 +7,8 @@ import java.util.Random;
  * Created by Pablo Canseco on 3/28/2018.
  */
 class Gpu extends JPanel {
-    private Logger log =  new Logger("Gpu");
+    private final String name ="GPU";
+    private Logger log =  new Logger(name);
     private int width = 160;
     private int height = 144;
     public BufferedImage canvas;
@@ -98,6 +99,10 @@ class Gpu extends JPanel {
         canvasTestPattern();
         frame.repaint();
     }
+    Gpu(Logger.Level level) {
+        this();
+        this.log = new Logger(name, level);
+    }
 
     public boolean step(int cycles) {
         // this function returns true if VBLANK interrupt else false.
@@ -135,7 +140,7 @@ class Gpu extends JPanel {
                         retval = true;
                         log.debug("Triggered VBLANK interrupt.");
                         renderFrame();
-                        renderTileData();
+                        //renderTileData();
                     }
                     else {
                         currentMode = Mode.OAM_ACCESS;

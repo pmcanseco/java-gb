@@ -14,7 +14,7 @@ public class CpuTest extends AbstractTest{
 
     private Cartridge cart = new Cartridge(getClass().getResource("cpu_instrs.gb").getPath());
     private MemoryManager mmu = new MemoryManager(cart);
-    private Cpu cpuUut = new Cpu(mmu);
+    private Cpu cpuUut = new Cpu(mmu, Logger.Level.FATAL);
     private Random rng = new Random();
 
     // utility methods

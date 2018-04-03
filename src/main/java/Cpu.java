@@ -6,7 +6,8 @@ import java.util.Map;
  * An Object-Oriented Approach to a Gameboy Z80 Processor Emulator
  */
 public class Cpu {
-    private Logger log = new Logger("CPU");
+    private final String name = "CPU";
+    private Logger log = new Logger(name);
 
     // 8-bit registers
     private Register registerA;
@@ -619,7 +620,11 @@ public class Cpu {
         //</editor-fold>
     }
     Cpu(MemoryManager memMgr) {
-        this(memMgr, new Gpu());
+        this(memMgr, new Gpu(Logger.Level.FATAL));
+    }
+    Cpu(MemoryManager memMgr, Logger.Level level) {
+        this(memMgr);
+        this.log = new Logger(name, level);
     }
 
     public int fetch() {
@@ -688,9 +693,15 @@ public class Cpu {
     // main loop
     public void main() {
         //skipBios();
+        int maxOpcodeSeen = 0;
         while(true) {
             int opcode = fetch();
             execute(opcode);
+
+            if(registerPC.read() > maxOpcodeSeen) {
+                log.fatal(String.format("New record: 0x%02x", registerPC.read()));
+                maxOpcodeSeen = registerPC.read();
+            }
 
             // step the GPU, check if vblank interrupt triggered.
             boolean vblankInterruptFired = gpu.step(lastInstructionCycles);
@@ -1343,8 +1354,10 @@ public class Cpu {
     }
     private int popHelper() {
         int low = mmu.readByte(registerSP.read());
+        mmu.writeByte(registerSP.read(), 0);
         registerSP.inc();
         int high  = mmu.readByte(registerSP.read());
+        mmu.writeByte(registerSP.read(), 0);
         registerSP.inc();
         high <<= 8;
         return (high | low);
@@ -1638,6 +1651,7 @@ public class Cpu {
              SUB          #          D6     8
          */
         int second;
+        int oldValue = registerA.read();
         switch (opcode) {
             case 0x97: second = registerA.read(); lastInstructionCycles = 4; break;
             case 0x90: second = registerB.read(); lastInstructionCycles = 4; break;
@@ -1671,11 +1685,16 @@ public class Cpu {
         else {
             registerFlags.setC();
         }
-        if ((registerA.read() & 0b0000_1111) < (0b0000_1111 & second)) {
-            registerFlags.clearH();
+        if ((oldValue & 0b0000_1111) < (0b0000_1111 & second)) {
+            registerFlags.setH();
         }
         else {
-            registerFlags.setH();
+            registerFlags.clearH();
+        }
+
+        // account for overflow
+        if (result > 255 || result < 0) {
+            result &= 255;
         }
 
         // save result
@@ -1705,6 +1724,7 @@ public class Cpu {
              SBC          A,#        ??     ?
          */
         int second;
+        int oldValue = registerA.read();
         switch (opcode) {
             case 0x9F: second = registerA.read(); lastInstructionCycles = 4; break;
             case 0x98: second = registerB.read(); lastInstructionCycles = 4; break;
@@ -1728,12 +1748,26 @@ public class Cpu {
         if (result == 0) {
             registerFlags.setZ();
         }
+        else {
+            registerFlags.clearZ();
+        }
         if (result < 0) {
             registerFlags.setC();
             result &= 0b1111_1111;
         }
-        if (result < 0b0000_1111) {
+        else {
+            registerFlags.clearC();
+        }
+        if ((oldValue & 0b0000_1111) < (0b0000_1111 & second)) {
             registerFlags.setH();
+        }
+        else {
+            registerFlags.clearH();
+        }
+
+        // account for overflow
+        if (result > 255 || result < 0) {
+            result &= 255;
         }
 
         // save result
@@ -1953,17 +1987,17 @@ public class Cpu {
         }
 
         if (second > registerA.read()) {
-            registerFlags.clearC();
+            registerFlags.setC();
         }
         else {
-            registerFlags.setC();
+            registerFlags.clearC();
         }
 
         if ((registerA.read() & 0b0000_1111) < (0b0000_1111 & second)) {
-            registerFlags.clearH();
+            registerFlags.setH();
         }
         else {
-            registerFlags.setH();
+            registerFlags.clearH();
         }
 
         // throw away result :-)
@@ -2128,10 +2162,10 @@ public class Cpu {
         registerFlags.setN();
 
         if ((oldValue & 0b0000_1111) < 1) {
-            registerFlags.clearH();
+            registerFlags.setH();
         }
         else {
-            registerFlags.setH();
+            registerFlags.clearH();
         }
     }
     public void dec16(int opcode)  {
