@@ -88,6 +88,8 @@ class Gpu extends JPanel {
     public int[] vram = new int[0x2000]; // 8192
     public int[][][] tileset = new int[384][8][8];
     private int[] screen = new int[160*144];
+    public int[] backgroundPalette = { 0, 3, 3, 3};
+    public int[] palette = { 0, 1, 2, 3};
 
     Gpu() {
         canvas = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
@@ -208,7 +210,7 @@ class Gpu extends JPanel {
 
         int lineoffset = (scrollX >> 3);
 
-        int y = (line /*+ scrollY*/) & 7;
+        int y = (line + scrollY) & 7;
         int x = (scrollX & 7);
 
         int canvasoffset = line * 160;
@@ -225,15 +227,7 @@ class Gpu extends JPanel {
         for (int i=0; i < 160; i++) {
             colorint = tileset[tile][y][x];
 
-            //log.warning("color " + colorint);
-            if (tile != 0) {
-                log.fatal("NONZERO TILE");
-            }
-            if (colorint != 0) {
-                log.fatal("NONZERO COLOR");
-            }
-
-            screen[canvasoffset] = colorint;
+            screen[canvasoffset] = backgroundPalette[colorint];
             canvasoffset++;
 
             scanlineRow[i] = colorint;

@@ -204,7 +204,7 @@ public class MemoryManager {
             log.debug("write " + address + "copy(0xfe00, value << 8, 160); // OAM DMA");
         }
         else if(address == 0xff47) { // write only
-            //for(int i = 0; i < 4; i++) backgroundPalette[i] = palette[(value >> (i * 2)) & 3];
+            for(int i = 0; i < 4; i++) gpu.backgroundPalette[i] = gpu.palette[(value >> (i * 2)) & 3];
             log.debug("write " + address + " gpu update background palette");
         }
         else if(address == 0xff48) { // write only
@@ -226,6 +226,13 @@ public class MemoryManager {
             interruptEnable = value;
             log.debug("write " + address + ": interrupt enable");
         }
+
+
+        // hooks/intercepts
+        if (address == 0xFF02) {
+            System.out.print((char) value);
+        }
+
     }
 
     public int readWord(final int address) throws IndexOutOfBoundsException {
