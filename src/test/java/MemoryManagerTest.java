@@ -22,7 +22,7 @@ public class MemoryManagerTest extends AbstractTest {
         assertArrayEquals(new int[mmu.memorySize], mmu.getRawRam());
     }
 
-    @Test
+    /*@Test
     public void testGetBiosLogo() {
         int[] expected = MemoryManager.hexStringToByteArray(
                 "CEED6666CC0D000B03730083000C000D" +
@@ -31,7 +31,7 @@ public class MemoryManagerTest extends AbstractTest {
         int[] actual = MemoryManager.getBiosLogo();
 
         assertArrayEquals(expected,actual);
-    }
+    }*/
 
     /*@Test
     public void testEightBitReadWrite() {
