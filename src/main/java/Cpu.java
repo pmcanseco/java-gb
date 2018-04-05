@@ -108,7 +108,7 @@ public class Cpu {
         instructionMap.put(0x05, () -> dec(0x05));
         instructionMap.put(0x06, () -> load(0x06));
         instructionMap.put(0x07, () -> rlca(0x07));
-        instructionMap.put(0x08, () -> rst(0x08));
+        instructionMap.put(0x08, () -> load(0x08));
         instructionMap.put(0x09, () -> add16(0x09));
         instructionMap.put(0x0a, () -> load(0x0a));
         instructionMap.put(0x0b, () -> dec16(0x0b));
@@ -1308,8 +1308,8 @@ public class Cpu {
                 }
                 registerPC.inc();
                 result = temp + registerSP.read();
-                registerH.write((result >> 8) & 255);
-                registerL.write(result & 255); // this is fishy
+                registerL.write((result >> 8) & 255);
+                registerH.write(result & 255); // this is fishy
 
                 // flags affected
                 registerFlags.clearZ();
@@ -1333,7 +1333,7 @@ public class Cpu {
                 registerPC.inc();
                 address = ((upperValue << 8) + lowerValue);
                 mmu.writeByte(address, registerSP.readLow());
-                mmu.writeByte(address + 1, registerSP.readHigh());
+                mmu.writeByte(address + 1, (registerSP.readHigh() >> 8));
                 lastInstructionCycles = 20;
                 break;
             //</editor-fold>
@@ -2302,21 +2302,57 @@ public class Cpu {
            most significant bits are checked. If this more significant digit also happens to be greater than 9
            or the C flag is set, then $60 is added. ( $ = hex )
          */
-        int value = registerA.read();
 
-        int lower = value & 0b0000_1111;
+
+        /*int lower = value & 0b0000_1111;
         if (lower > 9 || registerFlags.readH()) {
             value += 0x06;
         }
         int upper = value & 0b1111_0000;
         if (upper > 9 || registerFlags.readC()) {
             value += 0x60;
+        }*/
+
+
+        /*int value = registerA.read();
+        int adjust = 0;
+
+        // adjust based on half and full carries
+        if (registerFlags.readH()) {
+            adjust |= 0x06;
+        }
+        if (registerFlags.readC()) {
+            adjust |= 0x60;
         }
 
+        // perform operation based on N flag
+        if (registerFlags.readN()) {
+            value -= adjust;
+        }
+        else {
+            if ((value & 0x0F) > 0x09) {
+                adjust |= 0x06;
+            }
+
+            if (value > 0x99) {
+                adjust |= 0x60;
+            }
+
+            value += adjust;
+        }
+
+
+        // save result
+        value &= 255; // mask to 8 bits before store
+        registerA.write(value);
+
+
         // flags affected
-        if (value > 255) {
+        if ((adjust & 0x60) != 0) {
             registerFlags.setC();
-            value &= 255;
+        }
+        else {
+            registerFlags.clearC();
         }
 
         if (value == 0) {
@@ -2325,10 +2361,58 @@ public class Cpu {
         else {
             registerFlags.clearZ();
         }
+
+        registerFlags.clearH();*/
+
+
+
+
+
+
+
+
+
+
+        int adjustedRegister = 0;
+        int adjustment = 0;
+
+        if (registerFlags.readH()) {
+            adjustment = adjustment | 0x06;
+        }
+        if (registerFlags.readC()) {
+            adjustment = adjustment | 0x60;
+        }
+
+        if (registerFlags.readN()) {
+            adjustedRegister = registerA.read() - adjustment;
+        }
+        else {
+            if ((registerA.read() & 0x0F) > 0x09) {
+                adjustment = adjustment | 0x06;
+            }
+            if (registerA.read() > 0x99) {
+                adjustment = adjustment | 0x60;
+            }
+            adjustedRegister = registerA.read() + adjustment;
+        }
+
+        // Now set our flags to the correct values
+        if(adjustedRegister == 0) {
+            registerFlags.setZ();
+        }
+        else {
+            registerFlags.clearZ();
+        }
+        if((adjustment & 0x60) != 0) {
+            registerFlags.setC();
+        } else {
+            registerFlags.clearC();
+        }
         registerFlags.clearH();
 
-        // save result
-        registerA.write(value);
+        adjustedRegister &= 255;
+        registerA.write(adjustedRegister);
+
         lastInstructionCycles = 4;
     }
 

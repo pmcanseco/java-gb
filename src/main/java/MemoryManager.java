@@ -76,11 +76,11 @@ public class MemoryManager {
                         inBootrom = false;
                         log.fatal("WE LEFT THE BIOS");
                         log.warning("WE LEFT THE BIOS");
-                        try {
+                        /*try {
                             Thread.sleep(2000);
                         } catch (InterruptedException e) {
                             e.printStackTrace();
-                        }
+                        }*/
                     }
                 }
                 return cartridge.readFromAddress(address);
