@@ -153,7 +153,7 @@ public class Cpu {
         instructionMap.put(0x32, () -> load(0x32));
         instructionMap.put(0x33, () -> inc16(0x33));
         instructionMap.put(0x34, () -> inc16(0x34));
-        instructionMap.put(0x35, () -> dec16(0x35));
+        instructionMap.put(0x35, () -> dec(0x35));
         instructionMap.put(0x36, () -> load(0x36));
         instructionMap.put(0x37, () -> scf(0x37));
         instructionMap.put(0x38, () -> jrcc(0x38));
@@ -698,7 +698,9 @@ public class Cpu {
             int opcode = fetch();
             execute(opcode);
 
-            if (registerPC.read() == 0x100) log = new Logger(name, Logger.Level.DEBUG);
+            /*if (registerPC.read() == 0xC2B9){
+                log = new Logger(name, Logger.Level.DEBUG);
+            }*/
 
             // step the GPU, check if vblank interrupt triggered.
             boolean vblankInterruptFired = gpu.step(lastInstructionCycles);
@@ -1188,15 +1190,15 @@ public class Cpu {
                 lastInstructionCycles = 4;
                 break; // LD L,A 6F 4
             case 0x02:
-                mmu.writeByte(mmu.readByte(readCombinedRegisters(registerB, registerC)), registerA.read());
+                mmu.writeByte(readCombinedRegisters(registerB, registerC), registerA.read());
                 lastInstructionCycles = 8;
                 break; // LD (BC),A 02 8
             case 0x12:
-                mmu.writeByte(mmu.readByte(readCombinedRegisters(registerD, registerE)), registerA.read());
+                mmu.writeByte(readCombinedRegisters(registerD, registerE), registerA.read());
                 lastInstructionCycles = 8;
                 break; // LD (DE),A 12 8
             case 0x77:
-                mmu.writeByte(mmu.readByte(readCombinedRegisters(registerH, registerL)), registerA.read());
+                mmu.writeByte(readCombinedRegisters(registerH, registerL), registerA.read());
                 lastInstructionCycles = 8;
                 break; // LD (HL),A 77 8
             case 0xEA: // 16 cycles
@@ -1344,18 +1346,18 @@ public class Cpu {
         // Description:
         //   Push register pair nn onto stack.
         //   Decrement Stack Pointer (SP) twice.
-        registerSP.dec();
         mmu.writeByte(registerSP.read(), (value & 0b11111111_00000000) >> 8);
         registerSP.dec();
         mmu.writeByte(registerSP.read(), value & 0b00000000_11111111);
+        registerSP.dec();
     }
     private int popHelper() {
+        registerSP.inc();
         int low = mmu.readByte(registerSP.read());
         mmu.writeByte(registerSP.read(), 0);
         registerSP.inc();
         int high  = mmu.readByte(registerSP.read());
         mmu.writeByte(registerSP.read(), 0);
-        registerSP.inc();
         high <<= 8;
         return (high | low);
 
@@ -2200,7 +2202,7 @@ public class Cpu {
                 registerSP.dec();
                 return;
             default:
-                log.debug(String.format("log.error: Opcode %05X does not belong to dec16(int opcode) . ", opcode));
+                log.debug(String.format("error: Opcode %04X does not belong to dec16(int opcode) . ", opcode));
                 return;
         }
         value = readCombinedRegisters(highReg, lowReg);
@@ -2301,6 +2303,7 @@ public class Cpu {
            or the C flag is set, then $60 is added. ( $ = hex )
          */
         int value = registerA.read();
+
         int lower = value & 0b0000_1111;
         if (lower > 9 || registerFlags.readH()) {
             value += 0x06;
@@ -2315,8 +2318,12 @@ public class Cpu {
             registerFlags.setC();
             value &= 255;
         }
+
         if (value == 0) {
             registerFlags.setZ();
+        }
+        else {
+            registerFlags.clearZ();
         }
         registerFlags.clearH();
 
@@ -2423,7 +2430,7 @@ public class Cpu {
             }*/
             lastInstructionCycles = 4;
         }
-        else if (opcode == 0x1000) {
+        else if (opcode == 0x10) {
             // STOP - halt cpu and lcd display until button pressed. Opcode 0x1000. 4 cycles.
             log.debug("STOP");
             /*while (true) {
@@ -2432,7 +2439,7 @@ public class Cpu {
             lastInstructionCycles = 4;
         }
         else {
-            log.debug("We're in nopHaltStop() but opcode " + opcode + " isn't 0x00, 0x76, or 0x1000");
+            log.debug("We're in nopHaltStop() but opcode " + opcode + " isn't 0x00, 0x76, or 0x10");
         }
     }
     public void diEi(int opcode) {
@@ -3267,6 +3274,8 @@ public class Cpu {
 
         int address = mmu.readByte(registerPC.read()); // least significant byte
         registerPC.inc();
+        int temp = mmu.readByte(registerPC.read()); // most significant byte
+        registerPC.inc();
 
         // if our condition for jumping is false, don't jump
         if (!condition) {
@@ -3274,8 +3283,6 @@ public class Cpu {
         }
 
         // else perform jump
-        int temp = mmu.readByte(registerPC.read()); // most significant byte
-        registerPC.inc();
         temp <<= 8;
         address |= temp;
         load(registerPC, address); // load it into PC so it will be executed next.
@@ -3295,7 +3302,7 @@ public class Cpu {
             return;
         }
 
-        load(registerPC, mmu.readByte(readCombinedRegisters(registerH, registerL)));
+        load(registerPC, readCombinedRegisters(registerH, registerL));
         lastInstructionCycles = 4;
     }
     public void jr(int opcode) {
@@ -3462,13 +3469,17 @@ public class Cpu {
         // jump to address nn two byte immediate value. (LS byte first)
         int address = mmu.readByte(registerPC.read()); // least significant byte
         registerPC.inc();
+        int temp = mmu.readByte(registerPC.read());    // most significant byte
+        registerPC.inc();
 
         // if our condition for jumping is false, don't jump
         if (!condition) {
             return;
         }
 
-        int temp = mmu.readByte(registerPC.read());    // most significant byte
+        // push address of next instruction onto stack.
+        pushHelper(registerPC.read());
+
         temp <<= 8;
         address |= temp;                              // combine
         load(registerPC, address);                    // jump to this address.

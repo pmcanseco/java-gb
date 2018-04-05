@@ -20,7 +20,7 @@ public class MemoryManager {
             0x05, 0x20, 0xF5, 0x22, 0x23, 0x22, 0x23, 0xC9, 0xCE, 0xED, 0x66, 0x66, 0xCC, 0x0D, 0x00, 0x0B,
             0x03, 0x73, 0x00, 0x83, 0x00, 0x0C, 0x00, 0x0D, 0x00, 0x08, 0x11, 0x1F, 0x88, 0x89, 0x00, 0x0E,
             0xDC, 0xCC, 0x6E, 0xE6, 0xDD, 0xDD, 0xD9, 0x99, 0xBB, 0xBB, 0x67, 0x63, 0x6E, 0x0E, 0xEC, 0xCC,
-            0xDD, 0xDC, 0x99, 0x9F, 0xBB, 0xB9, 0x33, 0x3E, 0x3c, 0x42, 0xB9, 0xA5, 0xB9, 0xA5, 0x42, 0x4C,
+            0xDD, 0xDC, 0x99, 0x9F, 0xBB, 0xB9, 0x33, 0x3E, 0x3c, 0x42, 0xB9, 0xA5, 0xB9, 0xA5, 0x42, 0x3C,
             0x21, 0x04, 0x01, 0x11, 0xA8, 0x00, 0x1A, 0x13, 0xBE, 0x20, 0xFE, 0x23, 0x7D, 0xFE, 0x34, 0x20,
             0xF5, 0x06, 0x19, 0x78, 0x86, 0x23, 0x05, 0x20, 0xFB, 0x86, 0x20, 0xFE, 0x3E, 0x01, 0xE0, 0x50 };
     public static int[] getBiosLogo() {
@@ -77,13 +77,12 @@ public class MemoryManager {
                         log.fatal("WE LEFT THE BIOS");
                         log.warning("WE LEFT THE BIOS");
                         try {
-                            Thread.sleep(8000);
+                            Thread.sleep(2000);
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
                     }
                 }
-
                 return cartridge.readFromAddress(address);
             }
             else if (address >= 0x8000 && address <= 0x9fff) {
@@ -191,36 +190,38 @@ public class MemoryManager {
         else if(address >= 0xff80 && address <= 0xfffe) {
             hram[address - 0xff80] = value;
         }
-        else if(address == 0xff40) {
-            gpu.lcdControl = value;
-        }
-        else if(address == 0xff42) {
-            gpu.scrollY = value;
-        }
-        else if(address == 0xff43) {
-            gpu.scrollX = value;
-        }
-        else if(address == 0xff46) {
-            log.debug("write " + address + "copy(0xfe00, value << 8, 160); // OAM DMA");
-        }
-        else if(address == 0xff47) { // write only
-            for(int i = 0; i < 4; i++) gpu.backgroundPalette[i] = gpu.palette[(value >> (i * 2)) & 3];
-            log.debug("write " + address + " gpu update background palette");
-        }
-        else if(address == 0xff48) { // write only
-            //for(int i = 0; i < 4; i++) spritePalette[0][i] = palette[(value >> (i * 2)) & 3];
-            log.debug("write " + address + " gpu update sprite palette 0");
-        }
-        else if(address == 0xff49) { // write only
-            //for(int i = 0; i < 4; i++) spritePalette[1][i] = palette[(value >> (i * 2)) & 3];
-            log.debug("write " + address + " gpu update sprite palette 1");
-        }
         else if(address >= 0xff00 && address <= 0xff7f) {
-            io[address - 0xff00] = value;
-        }
-        else if(address == 0xff0f) {
-            interruptFlags = value;
-            log.debug("write " + address + ": interrupt flags");
+            if(address == 0xff40) {
+                gpu.lcdControl = value;
+            }
+            else if(address == 0xff42) {
+                gpu.scrollY = value;
+            }
+            else if(address == 0xff43) {
+                gpu.scrollX = value;
+            }
+            else if(address == 0xff46) {
+                log.debug("write " + address + "copy(0xfe00, value << 8, 160); // OAM DMA");
+            }
+            else if(address == 0xff47) { // write only
+                for(int i = 0; i < 4; i++) gpu.backgroundPalette[i] = gpu.palette[(value >> (i * 2)) & 3];
+                log.debug("write " + address + " gpu update background palette");
+            }
+            else if(address == 0xff48) { // write only
+                //for(int i = 0; i < 4; i++) spritePalette[0][i] = palette[(value >> (i * 2)) & 3];
+                log.debug("write " + address + " gpu update sprite palette 0");
+            }
+            else if(address == 0xff49) { // write only
+                //for(int i = 0; i < 4; i++) spritePalette[1][i] = palette[(value >> (i * 2)) & 3];
+                log.debug("write " + address + " gpu update sprite palette 1");
+            }
+            else if(address == 0xff0f) {
+                interruptFlags = value;
+                log.debug("write " + address + ": interrupt flags");
+            }
+            else {
+                io[address - 0xff00] = value;
+            }
         }
         else if(address == 0xffff) {
             interruptEnable = value;
@@ -229,7 +230,7 @@ public class MemoryManager {
 
 
         // hooks/intercepts
-        if (address == 0xFF02) {
+        if (address == 0xFF01) { // SERIAL
             System.out.print((char) value);
         }
 

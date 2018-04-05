@@ -149,7 +149,7 @@ class Gpu extends JPanel {
                         retval = true;
                         //log.debug("Triggered VBLANK interrupt.");
                         renderFrame();
-                        renderTileData();
+                        //renderTileData();
                     }
                     else {
                         currentMode = Mode.OAM_ACCESS;
@@ -258,7 +258,7 @@ class Gpu extends JPanel {
     }
 
     public void renderTileData() {
-        for(int tile = 0; tile < 0x20; tile++) {
+        for(int tile = 0; tile < 0xFF; tile++) {
             for (int y = 0; y < 8; y++) {
                 for (int x = 0; x < 8; x++) {
                     System.out.print(String.format("%02x ", tileset[tile][y][x]).replace("00", "  "));
