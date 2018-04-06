@@ -111,6 +111,13 @@ public class CpuInstrsTest extends UnitTest {
     }
 
     @Test
+    public void ldrr06() {
+        initRomSubtest("06-ld r,r.gb");
+
+        runSubtest();
+    }
+
+    @Test
     public void bitops10() {
         initRomSubtest("10-bit ops.gb");
 
