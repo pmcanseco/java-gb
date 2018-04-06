@@ -12,7 +12,7 @@ import static org.junit.Assert.fail;
  */
 public class CpuTest extends UnitTest {
 
-    private Cartridge cart = new Cartridge("src/main/resources/gb-test-roms/cpu_instrs/cpu_instrs.gb");
+    private Cartridge cart = new Cartridge("src/test/resources/gb-test-roms/cpu_instrs/cpu_instrs.gb");
     private MemoryManager mmu = new MemoryManager(cart);
     private Cpu cpuUut = new Cpu(mmu, Logger.Level.FATAL);
     private Random rng = new Random();
