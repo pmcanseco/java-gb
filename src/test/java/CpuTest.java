@@ -10,9 +10,9 @@ import static org.junit.Assert.fail;
 /**
  * Created by Pablo Canseco on 12/23/2017.
  */
-public class CpuTest extends AbstractTest{
+public class CpuTest extends UnitTest {
 
-    private Cartridge cart = new Cartridge(getClass().getResource("cpu_instrs.gb").getPath());
+    private Cartridge cart = new Cartridge("src/main/resources/gb-test-roms/cpu_instrs/cpu_instrs.gb");
     private MemoryManager mmu = new MemoryManager(cart);
     private Cpu cpuUut = new Cpu(mmu, Logger.Level.FATAL);
     private Random rng = new Random();
@@ -134,6 +134,7 @@ public class CpuTest extends AbstractTest{
                 //fail("this test should not throw an exception"); //todo fix this, combined registers no longer throw exception
             }
         }
+        System.out.println();
     }
 
     @Test
@@ -170,5 +171,6 @@ public class CpuTest extends AbstractTest{
                 //fail("this test should not throw an exception"); //todo fix this, combined registers no longer throw exception
             }
         }
+        System.out.println();
     }
 }

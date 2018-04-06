@@ -11,7 +11,7 @@ import static junit.framework.TestCase.fail;
 /**
  * Created by Pablo Canseco on 3/27/2018.
  */
-public class InstructionsTest extends AbstractTest {
+public class InstructionsTest extends UnitTest {
 
     private int a, f, b, c;
     private int d, e, h, l;
@@ -58,7 +58,7 @@ public class InstructionsTest extends AbstractTest {
 
     @Test
     public void testInstructions() {
-        mmu = new MemoryManager(new Cartridge(getClass().getResource("cpu_instrs.gb").getPath()));
+        mmu = new MemoryManager(new Cartridge("src/test/resources/gb-test-roms/cpu_instrs/cpu_instrs.gb"));
         cpu = new Cpu(mmu, Logger.Level.FATAL);
         try {
             String biosJson = new String(
@@ -149,7 +149,7 @@ public class InstructionsTest extends AbstractTest {
 
     @Test
     public void testBiosCompletion() {
-        mmu = new MemoryManager(new Cartridge(getClass().getResource("cpu_instrs.gb").getPath()), gpu);
+        mmu = new MemoryManager(new Cartridge("src/test/resources/gb-test-roms/cpu_instrs/cpu_instrs.gb"), gpu);
         cpu = new Cpu(mmu);
         for (int i=0; cpu.getRegisterValue("PC") <  0x100; i++) {
             stepUut();

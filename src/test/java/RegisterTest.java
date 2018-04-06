@@ -8,7 +8,7 @@ import static org.junit.Assert.assertEquals;
 /**
  * Created by Pablo Canseco on 12/27/2017.
  */
-public class RegisterTest extends AbstractTest {
+public class RegisterTest extends UnitTest {
 
     private Random rng = new Random();
 

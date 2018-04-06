@@ -41,8 +41,11 @@ public class Register {
     }
     public void dec() {
         this.value -= 1;
-        if (this.value < 0) {
+        if ((this.value < 0) && (this.size == 8)) {
             this.value = 0b1111_1111;
+        }
+        if ((this.value < 0) && (this.size == 16)) {
+            this.value = 0b1111_1111_1111_1111;
         }
     }
     public int read() {

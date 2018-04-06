@@ -7,9 +7,9 @@ import static org.junit.Assert.*;
 /**
  * Created by Pablo Canseco on 12/24/2017.
  */
-public class MemoryManagerTest extends AbstractTest {
+public class MemoryManagerTest extends UnitTest {
 
-    private Cartridge cart = new Cartridge(getClass().getResource("cpu_instrs.gb").getPath());
+    private Cartridge cart = new Cartridge("src/test/resources/gb-test-roms/cpu_instrs/cpu_instrs.gb");
     private MemoryManager mmu = new MemoryManager(cart);
     private Random rng = new Random();
 
@@ -20,6 +20,7 @@ public class MemoryManagerTest extends AbstractTest {
         }
         mmu.zeroize();
         assertArrayEquals(new int[mmu.memorySize], mmu.getRawRam());
+        System.out.println();
     }
 
     /*@Test

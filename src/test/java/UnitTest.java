@@ -3,7 +3,7 @@ import org.junit.rules.MethodRule;
 import org.junit.rules.TestWatchman;
 import org.junit.runners.model.FrameworkMethod;
 
-public class AbstractTest {
+public class UnitTest {
     @Rule
     public MethodRule watchman = new TestWatchman() {
         public void starting(FrameworkMethod method) {
@@ -16,10 +16,10 @@ public class AbstractTest {
     void log(String s) {
         System.out.println("-- " + s);
     }
-    public void error(String s) {
-        System.out.println("-- \u001B[31mERROR: " + s + "\u001B[0m");
+    void error(String s) {
+        System.out.println("-- \u001B[31mERROR:   " + s + "\u001B[0m");
     }
-    public void warning(String s) {
+    void warning(String s) {
         System.out.println("-- \u001B[33mWARNING: " + s + "\u001B[0m");
     }
 }

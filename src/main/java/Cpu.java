@@ -798,10 +798,15 @@ public class Cpu {
         result |= lower.read();
         return result;
     }
-    private void writeCombinedRegisters(Register upper, Register lower, final int value) {
+    private void writeCombinedRegisters(Register upper, Register lower, int value) {
         if (upper.getSize() != 8 || lower.getSize() != 8) {
             log.fatal("one of the registers to combine wasn't an 8-bit register");
         }
+
+        if (value > 65535 || value < 0) {
+            value &= 0b1111_1111_1111_1111;
+        }
+
         int upper8bits = value / 256; // shift right  by 8 bits;
         int lower8bits = value & 0b0000000011111111; // mask out the upper 8 bits.
         upper.write(upper8bits);
@@ -1306,8 +1311,8 @@ public class Cpu {
                 }
                 registerPC.inc();
                 result = temp + registerSP.read();
-                registerL.write((result >> 8) & 255);
-                registerH.write(result & 255); // this is fishy
+                registerH.write((result >> 8) & 255);
+                registerL.write(result & 255);
 
                 // flags affected
                 registerFlags.clearZ();
@@ -1315,8 +1320,14 @@ public class Cpu {
                 if (((registerSP.read() ^ temp ^ result) & 0x100) == 0x100) {
                     registerFlags.setC();
                 }
+                else {
+                    registerFlags.clearC();
+                }
                 if (((registerSP.read() ^ temp ^ result) & 0x10) == 0x10) {
                     registerFlags.setH();
+                }
+                else {
+                    registerFlags.clearH();
                 }
 
                 lastInstructionCycles = 12;
@@ -1569,6 +1580,8 @@ public class Cpu {
              ADD         SP,#       E8      16
         */
         int value;
+        int result;
+        int hl;
         Register destReg = null;
         switch (opcode) {
             case 0x09: value = readCombinedRegisters(registerB, registerC); lastInstructionCycles = 8; break;
@@ -1589,38 +1602,55 @@ public class Cpu {
         }
 
         // do the add
+        hl = readCombinedRegisters(registerH, registerL);
+
         if (opcode == 0xE8) {
-            value += registerSP.read();
+            result = value + registerSP.read();
 
             // flags affected
             registerFlags.clearZ();
             registerFlags.clearN();
-            if (value > 0b00001111_11111111) {
+
+            int resultXor = registerSP.read() ^ value ^ result;
+
+            if ((resultXor & 0x10) != 0) {
                 registerFlags.setH();
             }
-            if (value > 65535) {
+            else {
+                registerFlags.clearH();
+            }
+            if ((resultXor & 0x100) != 0) {
                 registerFlags.setC();
-                value &= 0b11111111_11111111;
+            }
+            else {
+                registerFlags.clearC();
             }
 
             // save result
-            registerSP.write(value);
+            result &= 0xFFFF;
+            registerSP.write(result);
         }
         else {
-            value += readCombinedRegisters(registerH, registerL);
+            result = hl + value;
 
             // flags affected
             registerFlags.clearN();
-            if (value > 0b00001111_11111111) {
+            if ((( (hl & 0x0FFF) + (value & 0x0FFF) ) & 0x1000) != 0) {
                 registerFlags.setH();
             }
-            if (value > 65535) {
+            else {
+                registerFlags.clearH();
+            }
+            if (result > 0xFFFF) {
                 registerFlags.setC();
-                value &= 0b11111111_11111111;
+                result &= 0b11111111_11111111;
+            }
+            else {
+                registerFlags.clearC();
             }
 
             // save result
-            writeCombinedRegisters(registerH, registerL, value);
+            writeCombinedRegisters(registerH, registerL, result);
         }
     }
 
@@ -2140,6 +2170,7 @@ public class Cpu {
                 value = mmu.readByte(address);
                 oldValue = value;
                 value -= 1;
+                value &= 255;
                 mmu.writeByte(address, value);
                 lastInstructionCycles = 12;
                 break;
@@ -2756,6 +2787,7 @@ public class Cpu {
         // perform operation
         int result = (value << 1) | (value >> 7);
         boolean bit7 = ((registerA.read() & 0b10000000) >> 7) == 1;
+        result &= 255;
 
         // write result
         switch(opcode) {
@@ -3008,6 +3040,7 @@ public class Cpu {
         // perform operation
         boolean carry = (((value & 0b10000000) >> 8) == 1);
         int result = value << 1;
+        result &= 255;
 
         // store result
         switch(opcode) {

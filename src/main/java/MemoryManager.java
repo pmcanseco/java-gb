@@ -74,8 +74,8 @@ public class MemoryManager {
                     }
                     else if (address == 0x0100) { // pc is 256
                         inBootrom = false;
-                        log.fatal("WE LEFT THE BIOS");
-                        log.warning("WE LEFT THE BIOS");
+                        //log.fatal("WE LEFT THE BIOS");
+                        //log.warning("WE LEFT THE BIOS");
                         /*try {
                             Thread.sleep(2000);
                         } catch (InterruptedException e) {
