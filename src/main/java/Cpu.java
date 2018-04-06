@@ -34,8 +34,6 @@ public class Cpu {
     private Register registerSP; // stack pointer
     //private Register registerI;
     //private Register registerR;
-    //private Register registerM;  // m-time for last instruction
-    //private Register registerT;  // t-time for last instruction
     //private Register registerIME;
 
     public int lastInstructionCycles = 0;
