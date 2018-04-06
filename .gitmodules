@@ -1,6 +1,0 @@
-[submodule "src\\main\\resources\\gb-test-roms"]
-	path = src\\main\\resources\\gb-test-roms
-	url = https://github.com/retrio/gb-test-roms
-[submodule "src\\test\\resources\\gb-test-roms"]
-	path = src\\test\\resources\\gb-test-roms
-	url = https://github.com/retrio/gb-test-roms
