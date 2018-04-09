@@ -697,9 +697,9 @@ public class Cpu {
             int opcode = fetch();
             execute(opcode);
 
-            if (registerPC.read() >= 0xC000){
+            /*if (registerPC.read() >= 0xC000){
                 log = new Logger(name, Logger.Level.DEBUG);
-            }
+            }*/
 
             // step the GPU, check if vblank interrupt triggered.
             boolean vblankInterruptFired = gpu.step(lastInstructionCycles);
@@ -1910,6 +1910,11 @@ public class Cpu {
                 break;
             case 0x9E:
                 second = mmu.readByte(readCombinedRegisters(registerH, registerL));
+                lastInstructionCycles = 8;
+                break;
+            case 0xDE:
+                second = mmu.readByte(registerPC.read());
+                registerPC.inc();
                 lastInstructionCycles = 8;
                 break;
             default:

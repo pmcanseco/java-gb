@@ -113,8 +113,8 @@ public class CpuInstrsTest extends UnitTest {
     @Test
     public void oprimm04() {
         initRomSubtest("04-op r,imm.gb");
-        warning("This test is not yet expected to pass");
-        //runSubtest();
+
+        runSubtest();
     }
 
     @Test
