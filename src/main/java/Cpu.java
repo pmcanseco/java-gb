@@ -1912,7 +1912,6 @@ public class Cpu {
                 break;
             case 0x9E:
                 second = mmu.readByte(readCombinedRegisters(registerH, registerL));
-                log.warning("A = " + registerA.read() + "    HL = " + readCombinedRegisters(registerH, registerL) + "   second = " + second);
                 lastInstructionCycles = 8;
                 break;
             default:
@@ -2908,18 +2907,12 @@ public class Cpu {
         int result = (oldvalue << 1) | (oldvalue >> 7);
         result &= 255;
         registerA.write(result);
-        boolean bit7 = ((oldvalue & 0b10000000) >> 7) == 1;
 
         // flags affected
-        if (result == 0) {
-            registerFlags.setZ();
-        }
-        else {
-            registerFlags.clearZ();
-        }
+        registerFlags.clearZ();
         registerFlags.clearN();
         registerFlags.clearH();
-        if (bit7) {
+        if ((oldvalue & 0b1000_0000) != 0) {
             registerFlags.setC();
         }
         else {
