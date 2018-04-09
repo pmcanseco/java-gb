@@ -76,7 +76,7 @@ public class CpuInstrsTest extends UnitTest {
         }
 
         if(runningLog.toString().contains("Passed")) {
-            log(runningLog.toString());
+            log("\n" + runningLog.toString());
             return;
         }
         else {
@@ -92,6 +92,13 @@ public class CpuInstrsTest extends UnitTest {
     @Test
     public void special01() {
         initRomSubtest("01-special.gb");
+
+        runSubtest();
+    }
+
+    @Test
+    public void interrupts02() {
+        initRomSubtest("02-interrupts.gb");
         warning("This test is not yet expected to pass");
         //runSubtest();
     }
@@ -101,6 +108,13 @@ public class CpuInstrsTest extends UnitTest {
         initRomSubtest("03-op sp,hl.gb");
 
         runSubtest();
+    }
+
+    @Test
+    public void oprimm04() {
+        initRomSubtest("04-op r,imm.gb");
+        warning("This test is not yet expected to pass");
+        //runSubtest();
     }
 
     @Test
@@ -115,6 +129,27 @@ public class CpuInstrsTest extends UnitTest {
         initRomSubtest("06-ld r,r.gb");
 
         runSubtest();
+    }
+
+    @Test
+    public void jrjpcallretrst07() {
+        initRomSubtest("07-jr,jp,call,ret,rst.gb");
+        warning("This test is not yet expected to pass");
+        //runSubtest();
+    }
+
+    @Test
+    public void miscinstrs08() {
+        initRomSubtest("08-misc instrs.gb");
+        warning("This test is not yet expected to pass");
+        //runSubtest();
+    }
+
+    @Test
+    public void oprr09() {
+        initRomSubtest("09-op r,r.gb");
+        warning("This test is not yet expected to pass");
+        //runSubtest();
     }
 
     @Test

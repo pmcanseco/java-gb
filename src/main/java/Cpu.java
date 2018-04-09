@@ -1392,7 +1392,7 @@ public class Cpu {
                 temp = readCombinedRegisters(registerH, registerL);
                 break;
             default:
-                log.debug(String.format("log.error: Opcode %05X does not belong to push(int opcode) . ", opcode));
+                log.debug(String.format("Error: Opcode %05X does not belong to push(int opcode) . ", opcode));
                 return;
         }
 
@@ -1513,7 +1513,8 @@ public class Cpu {
                 return;
         }
         // do the addition
-        int result = registerA.read() + second;
+        int oldvalue = registerA.read();
+        int result = oldvalue + second;
 
         // flags affected
         registerFlags.clearN();
@@ -1521,11 +1522,22 @@ public class Cpu {
             registerFlags.setC();
             result &= 0b1111_1111;
         }
+        else {
+            registerFlags.clearC();
+        }
+
         if (result == 0) {
             registerFlags.setZ();
         }
-        if (result > 0b0000_1111) {
+        else {
+            registerFlags.clearZ();
+        }
+
+        if (((oldvalue & 0b0000_1111) + (0b0000_1111 & second)) > 0xF) {
             registerFlags.setH();
+        }
+        else {
+            registerFlags.clearH();
         }
 
         // save result
@@ -1594,13 +1606,14 @@ public class Cpu {
                 lastInstructionCycles = 8;
                 break;
             default:
-                log.debug(String.format("log.error: Opcode %05X does not belong to adc(int opcode) . ", opcode));
+                log.error(String.format("Opcode %05X does not belong to adc(int opcode) . ", opcode));
                 return;
         }
 
         // do the addition
-        int result = registerA.read() + second;
-        result += (registerFlags.readC()) ? 1 : 0;
+        int oldvalue = registerA.read();
+        int result = oldvalue + second;
+        result += registerFlags.readC() ? 1 : 0;
 
         // flags affected
         registerFlags.clearN();
@@ -1608,11 +1621,22 @@ public class Cpu {
             registerFlags.setC();
             result &= 0b1111_1111;
         }
+        else {
+            registerFlags.clearC();
+        }
+
         if (result == 0) {
             registerFlags.setZ();
         }
-        if (result > 0b0000_1111) {
+        else {
+            registerFlags.clearZ();
+        }
+
+        if (((registerA.read() ^ second ^ result) & 0x10) != 0) {
             registerFlags.setH();
+        }
+        else {
+            registerFlags.clearH();
         }
 
         // save result
@@ -1812,12 +1836,13 @@ public class Cpu {
         }
 
         if (second > registerA.read()) {
-            registerFlags.clearC();
-        }
-        else {
             registerFlags.setC();
         }
-        if ((oldValue & 0b0000_1111) < (0b0000_1111 & second)) {
+        else {
+            registerFlags.clearC();
+        }
+
+        if (((registerA.read() ^ second ^ result) & 0x10) != 0) {
             registerFlags.setH();
         }
         else {
@@ -1856,7 +1881,6 @@ public class Cpu {
              SBC          A,#        ??     ?
          */
         int second;
-        int oldValue = registerA.read();
         switch (opcode) {
             case 0x9F:
                 second = registerA.read();
@@ -1888,6 +1912,7 @@ public class Cpu {
                 break;
             case 0x9E:
                 second = mmu.readByte(readCombinedRegisters(registerH, registerL));
+                log.warning("A = " + registerA.read() + "    HL = " + readCombinedRegisters(registerH, registerL) + "   second = " + second);
                 lastInstructionCycles = 8;
                 break;
             default:
@@ -1896,8 +1921,8 @@ public class Cpu {
         }
 
         // do the subtraction
-        second += registerFlags.readC() ? 1 : 0;
         int result = registerA.read() - second;
+        result -= (registerFlags.readC() ? 1 : 0);
 
         // flags affected
         registerFlags.setN();
@@ -1907,14 +1932,15 @@ public class Cpu {
         else {
             registerFlags.clearZ();
         }
-        if (result < 0) {
+
+        if ((result & 0x100) != 0) {
             registerFlags.setC();
-            result &= 0b1111_1111;
         }
         else {
             registerFlags.clearC();
         }
-        if ((oldValue & 0b0000_1111) < (0b0000_1111 & second)) {
+
+        if (((registerA.read() ^ second ^ result) & 0x10) != 0) {
             registerFlags.setH();
         }
         else {
@@ -2095,7 +2121,7 @@ public class Cpu {
     public void xor(int opcode) {
         /* 3.3.3.7 XOR n
             Description:
-               log.logDebugical exclusive OR n with register A, result in A.
+               logical exclusive OR n with register A, result in A.
             Use with:
                n = A,B,C,D,E,H,L,(HL),#
             Flags affected:
@@ -2331,9 +2357,10 @@ public class Cpu {
                 lastInstructionCycles = 4;
                 break;
             case 0x34:
-                int address = readCombinedRegisters(registerH, registerL);
+                final int address = readCombinedRegisters(registerH, registerL);
                 value = mmu.readByte(address);
-                value += 1;
+                value++;
+                value &= 255;
                 mmu.writeByte(address, value);
                 lastInstructionCycles = 12;
                 break;
@@ -2350,13 +2377,12 @@ public class Cpu {
             registerFlags.clearZ();
         }
         registerFlags.clearN();
-        if ((value & 0b0000_1111) == 0b0000_1111) {
+        if ((((value - 1) & 0b0000_1111) + (0b0000_1111 & 1)) > 0xF) {
             registerFlags.setH();
         }
         else {
             registerFlags.clearH();
         }
-
 
     }
     public void inc16(int opcode) {
@@ -2628,6 +2654,9 @@ public class Cpu {
         if (value == 0) {
             registerFlags.setZ();
         }
+        else {
+            registerFlags.clearZ();
+        }
         registerFlags.clearN();
         registerFlags.clearH();
         registerFlags.clearC();
@@ -2700,53 +2729,8 @@ public class Cpu {
 
         a = op;
 
-        log.warning("A = " + registerA.read() + "\t\ta = " + a);
-
         registerA.write(a & 0xFF);
 
-
-
-
-        /*int adjustedRegister;
-        int adjustment = 0;
-
-        if (registerFlags.readH()) {
-            adjustment = adjustment | 0x06;
-        }
-        if (registerFlags.readH()) {
-            adjustment = adjustment | 0x60;
-        }
-
-        if (registerFlags.readN()) {
-            adjustedRegister = registerA.read() - adjustment;
-        }
-        else {
-            if ((registerA.read() & 0x0F) > 0x09) {
-                adjustment = adjustment | 0x06;
-            }
-            if (registerA.read() > 0x99) {
-                adjustment = adjustment | 0x60;
-            }
-            adjustedRegister = registerA.read() + adjustment;
-        }
-
-        // Now set our flags to the correct values
-        if (adjustedRegister == 0) {
-            registerFlags.setZ();
-        }
-        else {
-            registerFlags.clearZ();
-        }
-        if ((adjustment & 0x60) != 0) {
-            registerFlags.setC();
-        }
-        else {
-            registerFlags.clearC();
-        }
-        registerFlags.clearH();
-
-        registerA.write(adjustedRegister & 0xFF);
-        */
         lastInstructionCycles = 4;
     }
 
@@ -2764,12 +2748,12 @@ public class Cpu {
              CPL           -/-      2F      4
          */
         if (opcode != 0x2F) {
-            log.debug("Why are we even in cpl() if opcode " + opcode + " isn't 0x2F?");
+            log.error("Why are we even in cpl() if opcode " + opcode + " isn't 0x2F?");
             return;
         }
 
         // do the flip
-        registerA.write(~registerA.read());
+        registerA.write(~registerA.read() & 255);
 
         // flags affected
         registerFlags.setN();
@@ -2920,10 +2904,11 @@ public class Cpu {
         }
 
         // perform operation
-        int regA = registerA.read();
-        int result = (regA << 1) | (regA >> 7);
+        int oldvalue = registerA.read();
+        int result = (oldvalue << 1) | (oldvalue >> 7);
+        result &= 255;
         registerA.write(result);
-        boolean bit7 = ((registerA.read() & 0b10000000) >> 7) == 1;
+        boolean bit7 = ((oldvalue & 0b10000000) >> 7) == 1;
 
         // flags affected
         if (result == 0) {
@@ -3117,7 +3102,7 @@ public class Cpu {
 
         // perform operation
         int result = (value << 1) | (value >> 7);
-        boolean bit7 = ((registerA.read() & 0b10000000) >> 7) == 1;
+        boolean bit7 = ((value & 0b10000000) >> 7) == 1;
         result &= 255;
 
         // write result
@@ -3165,7 +3150,12 @@ public class Cpu {
         }
         registerFlags.clearH();
         registerFlags.clearN();
-        registerFlags.clearZ();
+        if (result == 0) {
+            registerFlags.setZ();
+        }
+        else {
+            registerFlags.clearZ();
+        }
     }
     public void rl(int opcode) {
         /*
@@ -3331,7 +3321,7 @@ public class Cpu {
         }
 
         // perform operation
-        int oldbit0 = value & 0b00000001;
+        int oldbit0 = value & 0b0000_0001;
         value >>= 1;
         int result = value | (oldbit0 << 7);
 
@@ -3375,8 +3365,17 @@ public class Cpu {
         if (result == 0) {
             registerFlags.setZ();
         }
+        else {
+            registerFlags.clearZ();
+        }
         registerFlags.clearN();
         registerFlags.clearH();
+        if (oldbit0 == 1) {
+            registerFlags.setC();
+        }
+        else {
+            registerFlags.clearC();
+        }
     }
     public void rr(int opcode) {
         /*
@@ -3541,7 +3540,7 @@ public class Cpu {
         }
 
         // perform operation
-        boolean carry = (((value & 0b10000000) >> 8) == 1);
+        boolean carry = (((value & 0b10000000) >> 7) == 1);
         int result = value << 1;
         result &= 255;
 
@@ -4118,15 +4117,17 @@ public class Cpu {
 
         int n = mmu.readByte(registerPC.read());
         registerPC.inc();
+
+        int address = registerPC.read();
+        registerPC.inc();
+
         if (n > 127) {
             n = -((~n + 1) & 255); // 2's complement
         }
 
-        int address = registerPC.read();
-        registerPC.inc();
         address += n;
         load(registerPC, address);
-        lastInstructionCycles = 8;
+        lastInstructionCycles = 12;
     }
     public void jrcc(int opcode) {
         /*
@@ -4185,7 +4186,7 @@ public class Cpu {
         int address = registerPC.read();
         address += n;
         load(registerPC, address);
-        lastInstructionCycles = 8;
+        lastInstructionCycles = 12;
     }
 
     public void call(int opcode) {

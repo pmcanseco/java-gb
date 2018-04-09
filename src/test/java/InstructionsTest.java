@@ -151,12 +151,14 @@ public class InstructionsTest extends UnitTest {
     public void testBiosCompletion() {
         mmu = new MemoryManager(new Cartridge("src/test/resources/gb-test-roms/cpu_instrs/cpu_instrs.gb"), gpu);
         cpu = new Cpu(mmu);
-        for (int i=0; cpu.getRegisterValue("PC") <  0x100; i++) {
+        int i;
+        for (i=0; cpu.getRegisterValue("PC") <  0x100; i++) {
             stepUut();
 
-            if (i > 2100000) {
-                fail("cpu reached 2.1 million cycles without breaking out of bios.");
+            if (i > 2400000) {
+                fail("cpu timed out before breaking out of bios.");
             }
         }
+        log("Bootrom completion took " + i + " cycles");
     }
 }

@@ -35,8 +35,11 @@ public class Register {
     }
     public void inc() {
         this.value += 1;
-        if ((this.value == 256 && this.size == 8) || (this.value == 65536 && this.size == 16)) {
-            this.value = 0;
+        if (this.size == 8) {
+            this.value &= 0b1111_1111;
+        }
+        if (this.size == 16) {
+            this.value &= 0b1111_1111_1111_1111;
         }
     }
     public void dec() {
