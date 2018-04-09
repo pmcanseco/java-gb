@@ -41,6 +41,14 @@ public class CpuInstrsTest extends UnitTest {
         StringBuilder runningLog = new StringBuilder();
         while (true) {
 
+            // send stuff to the console so travis doesn't error out.
+            if ((i % 10000 == 0) && (i != 0)) {
+                System.out.print(".");
+                if( i % 500000 == 0) {
+                    System.out.println();
+                }
+            }
+
             // capture stdout to get test results
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             System.setOut(new PrintStream(baos));
@@ -61,6 +69,7 @@ public class CpuInstrsTest extends UnitTest {
 
             // if test is done, break out of loop
             if(runningLog.toString().contains("Passed") || runningLog.toString().contains("Failed")) {
+                System.out.println();
                 break;
             }
 

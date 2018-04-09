@@ -2362,7 +2362,7 @@ public class Cpu {
             case 0x34:
                 final int address = readCombinedRegisters(registerH, registerL);
                 value = mmu.readByte(address) + 1;
-                mmu.writeByte(address, value);
+                mmu.writeByte(address, (value & 255));
                 lastInstructionCycles = 12;
                 break;
             default:
