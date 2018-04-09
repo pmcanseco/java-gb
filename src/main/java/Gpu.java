@@ -8,7 +8,7 @@ import java.util.Random;
  */
 class Gpu extends JPanel {
     private final String name ="GPU";
-    private Logger log =  new Logger(name);
+    private Logger log =  new Logger(name, Logger.Level.FATAL);
     private int width = 160;
     private int height = 144;
     public BufferedImage canvas;

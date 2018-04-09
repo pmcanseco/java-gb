@@ -134,22 +134,22 @@ public class CpuInstrsTest extends UnitTest {
     @Test
     public void jrjpcallretrst07() {
         initRomSubtest("07-jr,jp,call,ret,rst.gb");
-        warning("This test is not yet expected to pass");
-        //runSubtest();
+
+        runSubtest();
     }
 
     @Test
     public void miscinstrs08() {
         initRomSubtest("08-misc instrs.gb");
-        warning("This test is not yet expected to pass");
-        //runSubtest();
+
+        runSubtest();
     }
 
     @Test
     public void oprr09() {
         initRomSubtest("09-op r,r.gb");
-        warning("This test is not yet expected to pass");
-        //runSubtest();
+
+        runSubtest();
     }
 
     @Test

@@ -697,9 +697,9 @@ public class Cpu {
             int opcode = fetch();
             execute(opcode);
 
-            /*if (registerPC.read() == 0xC2B9){
+            if (registerPC.read() >= 0xC000){
                 log = new Logger(name, Logger.Level.DEBUG);
-            }*/
+            }
 
             // step the GPU, check if vblank interrupt triggered.
             boolean vblankInterruptFired = gpu.step(lastInstructionCycles);
@@ -1355,18 +1355,16 @@ public class Cpu {
         // Description:
         //   Push register pair nn onto stack.
         //   Decrement Stack Pointer (SP) twice.
+        registerSP.dec();
         mmu.writeByte(registerSP.read(), (value & 0b11111111_00000000) >> 8);
         registerSP.dec();
         mmu.writeByte(registerSP.read(), value & 0b00000000_11111111);
-        registerSP.dec();
     }
     private int popHelper() {
-        registerSP.inc();
         int low = mmu.readByte(registerSP.read());
-        mmu.writeByte(registerSP.read(), 0);
         registerSP.inc();
         int high = mmu.readByte(registerSP.read());
-        mmu.writeByte(registerSP.read(), 0);
+        registerSP.inc();
         high <<= 8;
         return (high | low);
 
@@ -1439,8 +1437,8 @@ public class Cpu {
             lastInstructionCycles = 12;
         }
         else {
-            // log.error out
-            log.debug("log.error: found call to pop() but either upper or lower register didn't get populated.");
+            // error out
+            log.error("Found call to pop() but either upper or lower register didn't get populated.");
         }
     }
 
@@ -1828,7 +1826,7 @@ public class Cpu {
 
         // flags affected
         registerFlags.setN();
-        if (result == 0) {
+        if ((result & 255) == 0) {
             registerFlags.setZ();
         }
         else {
@@ -1880,7 +1878,7 @@ public class Cpu {
              SBC          A,(HL)     9E     8
              SBC          A,#        ??     ?
          */
-        int second;
+        final int second;
         switch (opcode) {
             case 0x9F:
                 second = registerA.read();
@@ -1925,7 +1923,8 @@ public class Cpu {
 
         // flags affected
         registerFlags.setN();
-        if (result == 0) {
+
+        if ((result & 255) == 0) {
             registerFlags.setZ();
         }
         else {
@@ -2318,7 +2317,7 @@ public class Cpu {
              INC            L       2C      4
              INC            (HL)    34      12
         */
-        int value;
+        final int value;
         switch (opcode) {
             case 0x3C:
                 registerA.inc();
@@ -2357,9 +2356,7 @@ public class Cpu {
                 break;
             case 0x34:
                 final int address = readCombinedRegisters(registerH, registerL);
-                value = mmu.readByte(address);
-                value++;
-                value &= 255;
+                value = mmu.readByte(address) + 1;
                 mmu.writeByte(address, value);
                 lastInstructionCycles = 12;
                 break;
@@ -2369,13 +2366,15 @@ public class Cpu {
         }
 
         // flags affected
-        if (value == 0) {
+        if ((value & 255) == 0) {
             registerFlags.setZ();
         }
         else {
             registerFlags.clearZ();
         }
+
         registerFlags.clearN();
+
         if ((((value - 1) & 0b0000_1111) + (0b0000_1111 & 1)) > 0xF) {
             registerFlags.setH();
         }

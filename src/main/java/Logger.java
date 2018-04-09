@@ -25,7 +25,7 @@ class Logger { // extend me for logging facilities.
     }
 
     private String className;
-    private int level = Level.FATAL.ordinal(); // global log level
+    private int level = Level.DEBUG.ordinal(); // global log level
 
     private void log(Level level, String msg) {
         if (level.ordinal() >= this.level) {
