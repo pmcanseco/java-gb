@@ -151,7 +151,7 @@ public class Cpu {
         instructionMap.put(0x31, () -> load(0x31));
         instructionMap.put(0x32, () -> load(0x32));
         instructionMap.put(0x33, () -> inc16(0x33));
-        instructionMap.put(0x34, () -> inc16(0x34));
+        instructionMap.put(0x34, () -> inc(0x34));
         instructionMap.put(0x35, () -> dec(0x35));
         instructionMap.put(0x36, () -> load(0x36));
         instructionMap.put(0x37, () -> scf(0x37));

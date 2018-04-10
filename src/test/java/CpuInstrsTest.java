@@ -4,8 +4,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileDescriptor;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
 
 import static org.junit.Assert.fail;
 
@@ -171,7 +169,7 @@ public class CpuInstrsTest extends UnitTest {
     @Test
     public void opahl11() {
         initRomSubtest("11-op a,(hl).gb");
-        warning("This test is not yet expected to pass");
-        //runSubtest();
+
+        runSubtest();
     }
 }
