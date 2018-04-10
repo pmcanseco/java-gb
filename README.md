@@ -8,6 +8,6 @@
 
 
 ## Progress:
-Currently fails the DAA test in the 01-special.gb test rom from Blargg's tests and hangs on the Tetris Copyright Screen:
+Currently passes every Blargg CPU_INSTRS test except the interrupts test and test 11 opcode 0x34.
 
 ![01-special test rom](https://i.imgur.com/Z812jvX.png)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;![Tetris](https://i.imgur.com/IZtzEQS.png)
