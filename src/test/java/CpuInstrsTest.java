@@ -37,6 +37,8 @@ public class CpuInstrsTest extends UnitTest {
     private void runSubtest() {
         int i = 0;
         StringBuilder runningLog = new StringBuilder();
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        PrintStream stdout = new PrintStream(new FileOutputStream(FileDescriptor.out));
         while (true) {
 
             // send stuff to the console so travis doesn't error out.
@@ -48,17 +50,17 @@ public class CpuInstrsTest extends UnitTest {
             }
 
             // capture stdout to get test results
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            baos.reset();
             System.setOut(new PrintStream(baos));
 
             // cycle the cpu
             stepUut();
 
             // collect output
-            String output = baos.toString(); //.toLowerCase().replaceAll("\\p{Z}","");
+            String output = baos.toString();
 
             // revert stdout to default
-            System.setOut(new PrintStream(new FileOutputStream(FileDescriptor.out)));
+            System.setOut(stdout);
 
             // process runningLog
             if(output.length() > 0) {
@@ -74,7 +76,7 @@ public class CpuInstrsTest extends UnitTest {
             // timeout to catch infinite loops
             if(i >= timeoutCycles) {
                 // revert stdout
-                System.setOut(new PrintStream(new FileOutputStream(FileDescriptor.out)));
+                System.setOut(stdout);
                 fail("test timed out at " + i + " cycles: \n" + runningLog.toString());
                 break;
             }
@@ -82,18 +84,15 @@ public class CpuInstrsTest extends UnitTest {
             i++;
         }
 
+        // revert stdout
+        System.setOut(stdout);
+
         if(runningLog.toString().contains("Passed")) {
             log("\n" + runningLog.toString());
-            return;
         }
         else {
-            // revert stdout
-            System.setOut(new PrintStream(new FileOutputStream(FileDescriptor.out)));
             fail(runningLog.toString());
         }
-
-        // revert stdout
-        System.setOut(new PrintStream(new FileOutputStream(FileDescriptor.out)));
     }
 
     @Test
