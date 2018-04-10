@@ -5,7 +5,7 @@ import java.util.Arrays;
  */
 public class MemoryManager {
     private final String name = "MMU";
-    private Logger log = new Logger(name, Logger.Level.WARN);
+    private Logger log = new Logger(name, Logger.Level.INFO);
     private final static int[] bootrom = {
             0x31, 0xFE, 0xFF, 0xAF, 0x21, 0xFF, 0x9F, 0x32, 0xCB, 0x7C, 0x20, 0xFB, 0x21, 0x26, 0xFF, 0x0E,
             0x11, 0x3E, 0x80, 0x32, 0xE2, 0x0C, 0x3E, 0xF3, 0xE2, 0x32, 0x3E, 0x77, 0x77, 0x3E, 0xFC, 0xE0,
@@ -41,8 +41,6 @@ public class MemoryManager {
     private int[] oam  = new int[0x100];  // 256
     private int[] wram = new int[0x2000]; // 8192
     private int[] hram = new int[0x80];   // 128
-    private int interruptFlags;
-    private int interruptEnable;
 
     private boolean inBootrom = true;
 
@@ -74,13 +72,6 @@ public class MemoryManager {
                     }
                     else if (address == 0x0100) { // pc is 256
                         inBootrom = false;
-                        //log.fatal("WE LEFT THE BIOS");
-                        //log.warning("WE LEFT THE BIOS");
-                        /*try {
-                            Thread.sleep(2000);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }*/
                     }
                 }
                 return cartridge.readFromAddress(address);
@@ -102,7 +93,9 @@ public class MemoryManager {
             }
             // TODO Should return a div timer, but a random number works just as well for Tetris
             else if (address == 0xff04) {
-                return new java.util.Random().nextInt(256);
+                int randomNumber = new java.util.Random().nextInt(256);
+                log.info("returning random number from timer address: " + randomNumber);
+                return randomNumber;
             }
             else if (address == 0xff40) {
                 return gpu.lcdControl;
@@ -139,11 +132,15 @@ public class MemoryManager {
                     return 0;
                 }
             }
-            else if (address == 0xff0f) {
-                return interruptFlags;
+            else if (address == 0xff0f) { // interrupt flags
+                int iflags = InterruptManager.getInstance().getInterruptsRaised();
+                log.info("read the interrupt flags address, value = " + iflags);
+                return iflags;
             }
-            else if (address == 0xffff) {
-                return interruptEnable;
+            else if (address == 0xffff) { // interrupt enable
+                int ie =  InterruptManager.getInstance().getInterruptsEnabled();
+                log.info("read the interrupt enable address, value = " + ie);
+                return ie;
             }
             else if (address >= 0xff80 && address <= 0xfffe) {
                 return hram[address - 0xff80];
@@ -215,23 +212,24 @@ public class MemoryManager {
                 //for(int i = 0; i < 4; i++) spritePalette[1][i] = palette[(value >> (i * 2)) & 3];
                 log.debug("write " + address + " gpu update sprite palette 1");
             }
-            else if(address == 0xff0f) {
-                interruptFlags = value;
-                log.debug("write " + address + ": interrupt flags");
+            else if(address == 0xff0f) { // interrupt flags register
+                InterruptManager.getInstance().raiseInterrupt(value);
+                log.info("write " + address + "=" + value + ": interrupt flags");
             }
             else {
                 io[address - 0xff00] = value;
             }
         }
-        else if(address == 0xffff) {
-            interruptEnable = value;
-            log.debug("write " + address + ": interrupt enable");
+        else if(address == 0xffff) { // interrupt enable register
+            InterruptManager.getInstance().enableInterrupt(value);
+            log.info("write " + address + "=" + value + " : interrupt enable");
         }
 
 
         // hooks/intercepts
         if (address == 0xFF01) { // SERIAL
             System.out.print((char) value);
+            if((char) value == '#') System.exit(1);
         }
 
     }
@@ -277,114 +275,4 @@ public class MemoryManager {
     public int[] getRawRam() {
         return this.ram;
     }
-
-
-    /*public void dumpVram() {
-        for(int x=0, y=0, tile=0, tileRow=0; x < 8192; x++) {
-
-            if (y % 8 == 0) {
-                y = 0;
-            }
-
-            if (x != 0 && x % 2 == 0) {
-                y++;
-            }
-
-            if (x % 128 == 0 && x != 0) {
-                tileRow++;
-                tile = 0;
-                y = 0;
-            }
-            else if (x % 16 == 0 && x != 0) {
-                tile++;
-                y = 0;
-            }
-
-            int j = tileRow * 8 + y;
-            int i = tile * 8 + ( (x%2) * 4);
-
-            int color = 0;
-            for (int pixel = 3, pOffset = 0; pixel >= 0; pixel--, pOffset++) {
-                color = (vram[x] >> (pixel * 2)) & 0b11;
-                Gpu.Colors c = Gpu.Colors.ON;
-                switch (color) {
-                    case 0: c = Gpu.Colors.OFF; break;
-                    case 1: c = Gpu.Colors.DARK; break;
-                    case 2: c = Gpu.Colors.LIGHT; break;
-                    case 3: c = Gpu.Colors.ON; break;
-                }
-
-                gpu.canvas.setRGB(i+pOffset, j, c.getColor().getRGB());
-                gpu.frame.repaint();
-            }
-        }
-
-        List<Integer[][]> tileSet = new ArrayList<>();
-        List<Integer[]> tile = new ArrayList<>();
-        for (int i = 0; i < 8192; i++) {
-            int vramByte = vram[i];
-            int[] lowerHalfRow = new int[4];
-            int[] upperHalfRow = new int[4];
-
-            lowerHalfRow[0] = vramByte & 0b1100_0000;
-            lowerHalfRow[1] = vramByte & 0b0011_0000;
-            lowerHalfRow[2] = vramByte & 0b0000_1100;
-            lowerHalfRow[3] = vramByte & 0b0000_0011;
-
-            i++;
-            vramByte = vram[i];
-
-            upperHalfRow[0] = vramByte & 0b1100_0000;
-            upperHalfRow[1] = vramByte & 0b0011_0000;
-            upperHalfRow[2] = vramByte & 0b0000_1100;
-            upperHalfRow[3] = vramByte & 0b0000_0011;
-
-            Integer[] fullRow = new Integer[8];
-            for(int j = 0; j < fullRow.length; j++) {
-                if(j < 4) {
-                    fullRow[j] = lowerHalfRow[j];
-                }
-                else {
-                    fullRow[j] = upperHalfRow[j-4];
-                }
-            }
-            tile.add(fullRow);
-
-            Integer[][] fullTile = new Integer[8][8];
-            if(tile.size() == 8) {
-                tile.toArray(fullTile);
-                tileSet.add(fullTile);
-
-                tile = new ArrayList<>();
-            }
-        }
-
-        int xOffset = 0;
-        int yOffset = 0;
-        for(int tileCounter = 0; tileCounter < tileSet.size(); tileCounter++) {
-            Integer[][] theTile = tileSet.get(tileCounter);
-
-            for(int tileY = 0; tileY < 8; tileY++) {
-                for(int tileX = 0; tileX < 8; tileX++) {
-                    int colorInt = theTile[tileX][tileY];
-                    Gpu.Colors color = Gpu.Colors.ON;
-                    switch (colorInt) {
-                        case 0: color = Gpu.Colors.OFF; break;
-                        case 1: color = Gpu.Colors.DARK; break;
-                        case 2: color = Gpu.Colors.LIGHT; break;
-                        case 3: color = Gpu.Colors.ON; break;
-                    }
-
-                    gpu.canvas.setRGB(tileX + xOffset, tileY + yOffset, color.getColor().getRGB());
-                    gpu.frame.repaint();
-                }
-            }
-
-            xOffset += 8;
-            if(xOffset > 128) {
-                yOffset += 8;
-                xOffset = 0;
-            }
-        }
-    }*/
 }

@@ -113,10 +113,7 @@ class Gpu extends JPanel {
         }
     }
 
-    public boolean step(int cycles) {
-        // this function returns true if VBLANK interrupt else false.
-        boolean retval = false;
-
+    public void step(int cycles) {
         modeClock += cycles;
 
         // GPU Mode Manager
@@ -146,8 +143,9 @@ class Gpu extends JPanel {
 
                     if (line == 143) {
                         currentMode = Mode.VBLANK;
-                        retval = true;
                         //log.debug("Triggered VBLANK interrupt.");
+                        InterruptManager.getInstance()
+                                .raiseInterrupt(InterruptManager.InterruptTypes.VBLANK);
                         renderFrame();
                         //renderTileData();
                     }
@@ -170,7 +168,6 @@ class Gpu extends JPanel {
                 }
                 break;
         }
-        return retval;
     }
 
     public void updateTile(int address, int value) {

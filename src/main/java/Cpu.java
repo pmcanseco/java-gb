@@ -7,7 +7,7 @@ import java.util.Map;
  */
 public class Cpu {
     private final String name = "CPU";
-    private Logger log = new Logger(name, Logger.Level.WARN);
+    private Logger log = new Logger(name, Logger.Level.INFO);
 
     // 8-bit registers
     private Register registerA;
@@ -17,6 +17,10 @@ public class Cpu {
     private Register registerE;
     private Register registerH;
     private Register registerL;
+
+    // 16-bit registers
+    private Register registerPC; // program counter
+    private Register registerSP; // stack pointer
 
     // _________________________________
     // | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 |
@@ -29,13 +33,6 @@ public class Cpu {
     // * NOTE * The lower 4 bits always read zero even if 1 is written to them.
     private FlagsRegister registerFlags;
 
-    // 16-bit registers
-    private Register registerPC; // program counter
-    private Register registerSP; // stack pointer
-    //private Register registerI;
-    //private Register registerR;
-    //private Register registerIME;
-
     public int lastInstructionCycles = 0;
 
     private Map<String, Register> eightBitRegisters = new HashMap<>();
@@ -46,15 +43,6 @@ public class Cpu {
 
     private boolean pendingInterruptDisable = false;
     private boolean pendingInterruptEnable = false;
-    public boolean interruptMasterEnable = true;
-
-    enum Interrupts {
-        VBLANK,
-        LCDSTAT,
-        TIMER,
-        SERIAL,
-        JOYPAD
-    }
 
     private Map<Integer, Runnable> instructionMap = new HashMap<>();
 
@@ -642,6 +630,9 @@ public class Cpu {
     public void execute(int opcode) {
         instructionMap.get(opcode).run();
     }
+    public void execute(Runnable operation) {
+        operation.run();
+    }
     public void skipBios() {
         registerA.write(0x11);
         registerB.write(0x00);
@@ -697,30 +688,45 @@ public class Cpu {
             int opcode = fetch();
             execute(opcode);
 
-            /*if (registerPC.read() >= 0xC000){
-                log = new Logger(name, Logger.Level.DEBUG);
-            }*/
+            // step the GPU
+            gpu.step(lastInstructionCycles);
 
-            // step the GPU, check if vblank interrupt triggered.
-            boolean vblankInterruptFired = gpu.step(lastInstructionCycles);
-
-            // process EI/DI instruction effects (execute one more instruction prior
-            // to enabling / disabling interrupts)
+            // process EI/DI instruction effects
             if (pendingInterruptDisable && opcode != 0xF3) {
                 pendingInterruptDisable = false;
-                interruptMasterEnable = false;
+                InterruptManager.getInstance().masterDisable();
+                log.info("Disabled interrupts");
             }
             if (pendingInterruptEnable && opcode != 0xFB) {
                 pendingInterruptEnable = false;
-                interruptMasterEnable = true;
+                InterruptManager.getInstance().masterEnable();
+                log.info("Enabled interrupts");
             }
 
-            /*if (vblankInterruptFired && interruptMasterEnable) {
-                mmu.writeByte(0xFF0F, 1);
+            // see which interrupts have been raised
+            if (InterruptManager.getInstance().isMasterEnabled()) {
 
-                pushHelper(registerPC.read());
-                registerPC.write(0x40);
-            }*/
+                Map<InterruptManager.InterruptTypes, InterruptManager.Interrupt> raisedInterrupts =
+                        InterruptManager.getInstance().getRaisedInterrupts();
+                for (Map.Entry<InterruptManager.InterruptTypes, InterruptManager.Interrupt> e : raisedInterrupts.entrySet()) {
+                    if (e.getValue().isEnabled()) {
+                         log.info("handling " + e.getValue().name + " interrupt");
+
+                         // disable ime
+                         InterruptManager.getInstance().masterDisable();
+
+                         // save current address
+                         pushHelper(registerPC.read());
+
+                         // jump to interrupt handler
+                         registerPC.write(e.getKey().handler);
+
+                         e.getValue().clear();
+                     }
+                }
+            }
+
+
         }
     }
 
@@ -2181,6 +2187,9 @@ public class Cpu {
             case 0xEE:
                 second = mmu.readByte(registerPC.read());
                 registerPC.inc();
+
+                //log.fatal(String.format("PC: 0x%04X    A: 0x%02X    OPERAND: " + second + " d    RESULT: 0x%02X    F: 0x%02X", registerPC.read(), registerA.read(), registerA.read() ^ second, registerFlags.read()));
+
                 lastInstructionCycles = 8;
                 break;
             default:
@@ -2423,7 +2432,7 @@ public class Cpu {
                 registerSP.inc();
                 return;
             default:
-                log.debug(String.format("log.error: Opcode %05X does not belong to inc16(int opcode) . ", opcode));
+                log.error(String.format("Opcode %05X does not belong to inc16(int opcode) . ", opcode));
                 return;
         }
         value = readCombinedRegisters(highReg, lowReg);
@@ -2883,7 +2892,7 @@ public class Cpu {
             lastInstructionCycles = 4;
         }
         else {
-            log.debug("Why are we even in diEi() if opcode " + opcode + " isn't 0xF3 or 0xFB?");
+            log.error("Why are we even in diEi() if opcode " + opcode + " isn't 0xF3 or 0xFB?");
         }
     }
 
@@ -3989,8 +3998,8 @@ public class Cpu {
         int bitIndex = (opcode - 0xCBC0) / 8;
         int mask = 1 << bitIndex; // shift 1 to it's spot based on the index
 
-        // now let's set it to 0.
-        value = (value | mask); // AND the value with the mask in order to clear the specified bit.
+        // now let's set it.
+        value = (value | mask); // AND the value with the mask in order to set the specified bit.
 
         // store result
         cbHelperWrite(opcode, value);
@@ -4430,6 +4439,6 @@ public class Cpu {
         }
 
         retHelper();
-        interruptMasterEnable = true;
+        InterruptManager.getInstance().masterEnable();
     }
 }
