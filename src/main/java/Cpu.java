@@ -43,6 +43,7 @@ public class Cpu {
 
     private boolean pendingInterruptDisable = false;
     private boolean pendingInterruptEnable = false;
+    private boolean isHalted = false;
 
     private Map<Integer, Runnable> instructionMap = new HashMap<>();
 
@@ -343,11 +344,11 @@ public class Cpu {
         instructionMap.put(0xfd, () -> log.fatal("Opcode 0xFD is invalid."));
         instructionMap.put(0xfe, () -> cp(0xfe));
         instructionMap.put(0xff, () -> rst(0xff));
-        log.info("Populated normal instructions.");
+        log.debug("Populated normal instructions.");
         //</editor-fold>
 
         //<editor-fold desc="CB Instruction Map Entries" defaultstate="collapsed">
-        log.info("Populating cb instructions...");
+        log.debug("Populating cb instructions...");
         instructionMap.put(0xcb00, () -> rlc(0xcb00));
         instructionMap.put(0xcb01, () -> rlc(0xcb01));
         instructionMap.put(0xcb02, () -> rlc(0xcb02));
@@ -633,6 +634,51 @@ public class Cpu {
     public void execute(Runnable operation) {
         operation.run();
     }
+    private void processEiDi(int opcode) {
+        // process EI/DI instruction effects
+        if (pendingInterruptDisable && opcode != 0xF3) {
+            pendingInterruptDisable = false;
+            InterruptManager.getInstance().masterDisable();
+            log.info("Disabled interrupts");
+        }
+        if (pendingInterruptEnable && opcode != 0xFB) {
+            pendingInterruptEnable = false;
+            InterruptManager.getInstance().masterEnable();
+            log.info("Enabled interrupts");
+        }
+    }
+    private void processInterrupts() {
+        // see which interrupts have been raised
+        Map<InterruptManager.InterruptTypes, InterruptManager.Interrupt> raisedInterrupts =
+                InterruptManager.getInstance().getRaisedInterrupts();
+
+        // process each, depending on IME and if the interrupt is enabled.
+        for (Map.Entry<InterruptManager.InterruptTypes, InterruptManager.Interrupt> e : raisedInterrupts.entrySet()) {
+
+            // come out of halt mode
+            log.debug("Exiting HALT mode because " + e.getKey().name() + " was raised.");
+            isHalted = false;
+
+
+            if (InterruptManager.getInstance().isMasterEnabled()) {
+
+                if (e.getValue().isEnabled()) {
+                    log.info("handling " + e.getValue().name + " interrupt");
+
+                    // disable ime
+                    InterruptManager.getInstance().masterDisable();
+
+                    // save current address
+                    pushHelper(registerPC.read());
+
+                    // jump to interrupt handler
+                    registerPC.write(e.getKey().handler);
+
+                    e.getValue().clear();
+                }
+            }
+        }
+    }
     public void skipBios() {
         registerA.write(0x11);
         registerB.write(0x00);
@@ -682,52 +728,28 @@ public class Cpu {
 
     // main loop
     public void main() {
-        //skipBios();
+        skipBios();
 
         while (true) {
+            cpuStep();
+        }
+    }
+    public void cpuStep() {
+        if (!isHalted) {
             int opcode = fetch();
             execute(opcode);
 
-            // step the GPU
             gpu.step(lastInstructionCycles);
 
-            // process EI/DI instruction effects
-            if (pendingInterruptDisable && opcode != 0xF3) {
-                pendingInterruptDisable = false;
-                InterruptManager.getInstance().masterDisable();
-                log.info("Disabled interrupts");
-            }
-            if (pendingInterruptEnable && opcode != 0xFB) {
-                pendingInterruptEnable = false;
-                InterruptManager.getInstance().masterEnable();
-                log.info("Enabled interrupts");
-            }
-
-            // see which interrupts have been raised
-            if (InterruptManager.getInstance().isMasterEnabled()) {
-
-                Map<InterruptManager.InterruptTypes, InterruptManager.Interrupt> raisedInterrupts =
-                        InterruptManager.getInstance().getRaisedInterrupts();
-                for (Map.Entry<InterruptManager.InterruptTypes, InterruptManager.Interrupt> e : raisedInterrupts.entrySet()) {
-                    if (e.getValue().isEnabled()) {
-                         log.info("handling " + e.getValue().name + " interrupt");
-
-                         // disable ime
-                         InterruptManager.getInstance().masterDisable();
-
-                         // save current address
-                         pushHelper(registerPC.read());
-
-                         // jump to interrupt handler
-                         registerPC.write(e.getKey().handler);
-
-                         e.getValue().clear();
-                     }
-                }
-            }
-
-
+            processEiDi(opcode);
         }
+        else {
+            lastInstructionCycles = 1;
+        }
+
+        TimerService.getInstance().step(lastInstructionCycles);
+
+        processInterrupts();
     }
 
     // utility functions
@@ -2840,10 +2862,8 @@ public class Cpu {
         }
         else if (opcode == 0x76) {
             // HALT - power down CPU until interrupt occurs. Opcode 0x76. 4 cycles.
-            log.debug("HALT");
-            /*while (true) {
-                // TODO - wait until an interrupt happens then break
-            }*/
+            log.fatal("HALT");
+            isHalted = true;
             lastInstructionCycles = 4;
         }
         else if (opcode == 0x10) {

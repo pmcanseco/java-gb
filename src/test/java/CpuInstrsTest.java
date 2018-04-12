@@ -28,11 +28,11 @@ public class CpuInstrsTest extends UnitTest {
         mmu = new MemoryManager(cart, gpu);
         cpuUut = new Cpu(mmu, Logger.Level.FATAL);
         cpuUut.skipBios();
+        TimerService.reset();
+        InterruptManager.reset();
     }
     private void stepUut() {
-        int opcode = cpuUut.fetch();
-        cpuUut.execute(opcode);
-        gpu.step(cpuUut.lastInstructionCycles);
+        cpuUut.cpuStep();
     }
     private void runSubtest() {
         int i = 0;
@@ -105,8 +105,8 @@ public class CpuInstrsTest extends UnitTest {
     @Test
     public void interrupts02() {
         initRomSubtest("02-interrupts.gb");
-        warning("This test is not yet expected to pass");
-        //runSubtest();
+
+        runSubtest();
     }
 
     @Test

@@ -1,4 +1,5 @@
 import java.util.Arrays;
+import java.util.Timer;
 
 /**
  * Created by Pablo Canseco on 12/24/2017.
@@ -91,14 +92,11 @@ public class MemoryManager {
             else if (address >= 0xfe00 && address <= 0xfeff) {
                 return oam[address - 0xfe00];
             }
-            // TODO Should return a div timer, but a random number works just as well for Tetris
-            else if (address == 0xff04) {
-                int randomNumber = new java.util.Random().nextInt(256);
-                log.info("returning random number from timer address: " + randomNumber);
-                return randomNumber;
-            }
             else if (address == 0xff40) {
                 return gpu.lcdControl;
+            }
+            else if(address == 0xff41) {
+                return gpu.lcdStatus;
             }
             else if (address == 0xff42) {
                 if(gpu.scrollY <= 5) {
@@ -132,6 +130,22 @@ public class MemoryManager {
                     return 0;
                 }
             }
+
+            // TIMER ADDRESSES
+            else if (address == 0xff04) {
+                return TimerService.getInstance().getDivider();
+            }
+            else if (address == 0xff05) {
+                return TimerService.getInstance().getCounter();
+            }
+            else if (address == 0xff06) {
+                return TimerService.getInstance().getModulo();
+            }
+            else if(address == 0xff07) { // timer control register
+                return TimerService.getInstance().getControl();
+            }
+            // END TIMER ADDRESSES
+
             else if (address == 0xff0f) { // interrupt flags
                 int iflags = InterruptManager.getInstance().getInterruptsRaised();
                 log.info("read the interrupt flags address, value = " + iflags);
@@ -191,6 +205,9 @@ public class MemoryManager {
             if(address == 0xff40) {
                 gpu.lcdControl = value;
             }
+            else if(address == 0xff41) {
+                // write to gpu status
+            }
             else if(address == 0xff42) {
                 gpu.scrollY = value;
             }
@@ -214,22 +231,38 @@ public class MemoryManager {
             }
             else if(address == 0xff0f) { // interrupt flags register
                 InterruptManager.getInstance().raiseInterrupt(value);
-                log.info("write " + address + "=" + value + ": interrupt flags");
+                //log.info("write " + address + "=" + value + ": interrupt flags");
             }
+
+            // TIMER ADDRESSES
+            else if(address == 0xff04) { // timer divider register
+                TimerService.getInstance().clearDivider();
+            }
+            else if (address == 0xff05) { // timer counter register
+                TimerService.getInstance().setCounter(value);
+            }
+            else if (address == 0xff06) { // timer modulo register
+                TimerService.getInstance().setModulo(value);
+            }
+            else if(address == 0xff07) { // timer control register
+                TimerService.getInstance().setControl(value);
+            }
+            // END TIMER ADDRESSES
+
             else {
                 io[address - 0xff00] = value;
             }
         }
         else if(address == 0xffff) { // interrupt enable register
             InterruptManager.getInstance().enableInterrupt(value);
-            log.info("write " + address + "=" + value + " : interrupt enable");
+            //log.info("write " + address + "=" + value + " : interrupt enable");
         }
 
 
         // hooks/intercepts
         if (address == 0xFF01) { // SERIAL
             System.out.print((char) value);
-            if((char) value == '#') System.exit(1);
+            //if((char) value == '#') System.exit(1);
         }
 
     }

@@ -58,6 +58,7 @@ public class InterruptManager {
     private Map<InterruptTypes, Interrupt> ints = new HashMap<>();
     private boolean masterEnable = false;
 
+    // Singleton
     private static InterruptManager instance;
     public static InterruptManager getInstance() {
         if(instance == null) {
@@ -65,6 +66,9 @@ public class InterruptManager {
             return instance;
         }
         return instance;
+    }
+    public static void reset() {
+        instance = null;
     }
 
     private InterruptManager() {
@@ -121,6 +125,9 @@ public class InterruptManager {
             if ((registerValue / i.bit) == 1) {
                 log.info("Raising " + i.name());
                 ints.get(i).raise();
+            }
+            else {
+                ints.get(i).clear();
             }
             registerValue %= i.bit;
         }

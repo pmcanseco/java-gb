@@ -83,6 +83,7 @@ class Gpu extends JPanel {
     private int modeClock;
     public int line;
     public int lcdControl = 0x91;
+    public int lcdStatus = 0;
     public int scrollX;
     public int scrollY;
     public int[] vram = new int[0x2000]; // 8192
@@ -123,6 +124,8 @@ class Gpu extends JPanel {
             case OAM_ACCESS:
                 if (modeClock >= 80) {
                     currentMode = Mode.VRAM_ACCESS;
+                    lcdStatus &= 0b0000_0011;
+                    lcdStatus |= Mode.VRAM_ACCESS.ordinal();
                     modeClock = 0;
                     //log.debug("Entering VRAM_ACCESS line" + line);
                 }
@@ -130,6 +133,8 @@ class Gpu extends JPanel {
             case VRAM_ACCESS:
                 if (modeClock >= 172) {
                     currentMode = Mode.HBLANK;
+                    lcdStatus &= 0b0000_0011;
+                    lcdStatus |= Mode.HBLANK.ordinal();
                     modeClock = 0;
                     //log.debug("Entering HBLANK line" + line);
                     // write line to framebuffer (canvas)
@@ -143,6 +148,8 @@ class Gpu extends JPanel {
 
                     if (line == 143) {
                         currentMode = Mode.VBLANK;
+                        lcdStatus &= 0b0000_0011;
+                        lcdStatus |= Mode.VBLANK.ordinal();
                         //log.debug("Triggered VBLANK interrupt.");
                         InterruptManager.getInstance()
                                 .raiseInterrupt(InterruptManager.InterruptTypes.VBLANK);
@@ -151,6 +158,8 @@ class Gpu extends JPanel {
                     }
                     else {
                         currentMode = Mode.OAM_ACCESS;
+                        lcdStatus &= 0b0000_0011;
+                        lcdStatus |= Mode.OAM_ACCESS.ordinal();
                         //log.debug("Entering OAM_ACCESS line" + line);
                     }
                 }
@@ -162,6 +171,8 @@ class Gpu extends JPanel {
 
                     if (line > 153) {
                         currentMode = Mode.OAM_ACCESS;
+                        lcdStatus &= 0b0000_0011;
+                        lcdStatus |= Mode.OAM_ACCESS.ordinal();
                         line = 0;
                         //log.debug("Entering OAM_ACCESS line" + line);
                     }
