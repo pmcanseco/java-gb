@@ -87,7 +87,7 @@ public class Cpu {
         log.debug("initialized.");
 
         //<editor-fold desc="Normal Instruction Map Entries" defaultstate="collapsed">
-        log.info("Populating normal instructions...");
+        log.debug("Populating normal instructions...");
         instructionMap.put(0x00, () -> nopHaltStop(0x00));
         instructionMap.put(0x01, () -> load(0x01));
         instructionMap.put(0x02, () -> load(0x02));
@@ -634,13 +634,8 @@ public class Cpu {
     public void execute(Runnable operation) {
         operation.run();
     }
-    private void processEiDi(int opcode) {
-        // process EI/DI instruction effects
-        if (pendingInterruptDisable && opcode != 0xF3) {
-            pendingInterruptDisable = false;
-            InterruptManager.getInstance().masterDisable();
-            log.info("Disabled interrupts");
-        }
+    private void processEi(int opcode) {
+        // process EI instruction effects
         if (pendingInterruptEnable && opcode != 0xFB) {
             pendingInterruptEnable = false;
             InterruptManager.getInstance().masterEnable();
@@ -656,7 +651,7 @@ public class Cpu {
         for (Map.Entry<InterruptManager.InterruptTypes, InterruptManager.Interrupt> e : raisedInterrupts.entrySet()) {
 
             // come out of halt mode
-            log.debug("Exiting HALT mode because " + e.getKey().name() + " was raised.");
+            //log.debug("Exiting HALT mode because " + e.getKey().name() + " was raised.");
             isHalted = false;
 
 
@@ -678,19 +673,21 @@ public class Cpu {
                 }
             }
         }
+
+        // gpu interrupts are processed in gpu.step()
     }
     public void skipBios() {
-        registerA.write(0x11);
+        registerA.write(0x01);
         registerB.write(0x00);
-        registerC.write(0x00);
-        registerD.write(0xFF);
-        registerE.write(0x56);
-        registerH.write(0x00);
-        registerL.write(0x0D);
+        registerC.write(0x13);
+        registerD.write(0x00);
+        registerE.write(0xD8);
+        registerH.write(0x01);
+        registerL.write(0x4D);
         registerFlags.setZ();
         registerFlags.clearN();
-        registerFlags.clearH();
-        registerFlags.clearC();
+        registerFlags.setH();
+        registerFlags.setC();
         registerSP.write(0xFFFE);
         registerPC.write(0x0100);
         mmu.writeByte(0xFF05, 0x00); // TIMA
@@ -741,10 +738,10 @@ public class Cpu {
 
             gpu.step(lastInstructionCycles);
 
-            processEiDi(opcode);
+            processEi(opcode);
         }
         else {
-            lastInstructionCycles = 1;
+            lastInstructionCycles = 4;
         }
 
         TimerService.getInstance().step(lastInstructionCycles);
@@ -2904,7 +2901,8 @@ public class Cpu {
             EI -/- FB 4
          */
         if (opcode == 0xF3) {
-            pendingInterruptDisable = true;
+            InterruptManager.getInstance().masterDisable();
+            log.info("Disabled interrupts.");
             lastInstructionCycles = 4;
         }
         else if (opcode == 0xFB) {
@@ -4296,6 +4294,7 @@ public class Cpu {
 
         // if our condition for jumping is false, don't jump
         if (!condition) {
+            lastInstructionCycles = 12;
             return;
         }
 
@@ -4305,7 +4304,7 @@ public class Cpu {
         temp <<= 8;
         address |= temp;                              // combine
         load(registerPC, address);                    // jump to this address.
-        lastInstructionCycles = 12;
+        lastInstructionCycles = 20;
     }
 
     public void rst(int opcode) {

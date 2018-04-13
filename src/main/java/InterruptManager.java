@@ -57,6 +57,8 @@ public class InterruptManager {
 
     private Map<InterruptTypes, Interrupt> ints = new HashMap<>();
     private boolean masterEnable = false;
+    private int upper3bitsForEnableReg = 0;
+    private int upper3bitsForFlagReg = 0;
 
     // Singleton
     private static InterruptManager instance;
@@ -117,7 +119,8 @@ public class InterruptManager {
 
     public void raiseInterrupt(int registerValue) {
         if (registerValue > 0b0001_1111) {
-            log.fatal(registerValue + " is out of range of possible interrupt flag register values");
+            log.error(registerValue + " is out of range of possible interrupt flag register values");
+            upper3bitsForFlagReg = registerValue & 0b1110_0000;
             registerValue &= 0b0001_1111;
         }
 
@@ -135,7 +138,8 @@ public class InterruptManager {
 
     public void enableInterrupt(int registerValue) {
         if (registerValue > 0b0001_1111) {
-            log.fatal(registerValue + " is out of range of possible interrupt enable register values");
+            log.error(registerValue + " is out of range of possible interrupt enable register values");
+            upper3bitsForEnableReg = registerValue & 0b1110_0000;
             registerValue &= 0b0001_1111;
         }
 
@@ -159,7 +163,7 @@ public class InterruptManager {
                 i |= interrupt.bit;
             }
         }
-        return i;
+        return i | upper3bitsForEnableReg;
     }
 
     public int getInterruptsRaised() {
@@ -169,7 +173,7 @@ public class InterruptManager {
                 i |= interrupt.bit;
             }
         }
-        return i;
+        return i | upper3bitsForFlagReg;
     }
 
 }

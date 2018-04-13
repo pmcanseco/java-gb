@@ -82,6 +82,7 @@ class Gpu extends JPanel {
     private Mode currentMode;
     private int modeClock;
     public int line;
+    public int lyc;
     public int lcdControl = 0x91;
     public int lcdStatus = 0;
     public int scrollX;
@@ -124,8 +125,6 @@ class Gpu extends JPanel {
             case OAM_ACCESS:
                 if (modeClock >= 80) {
                     currentMode = Mode.VRAM_ACCESS;
-                    lcdStatus &= 0b0000_0011;
-                    lcdStatus |= Mode.VRAM_ACCESS.ordinal();
                     modeClock = 0;
                     //log.debug("Entering VRAM_ACCESS line" + line);
                 }
@@ -133,8 +132,6 @@ class Gpu extends JPanel {
             case VRAM_ACCESS:
                 if (modeClock >= 172) {
                     currentMode = Mode.HBLANK;
-                    lcdStatus &= 0b0000_0011;
-                    lcdStatus |= Mode.HBLANK.ordinal();
                     modeClock = 0;
                     //log.debug("Entering HBLANK line" + line);
                     // write line to framebuffer (canvas)
@@ -148,8 +145,6 @@ class Gpu extends JPanel {
 
                     if (line == 143) {
                         currentMode = Mode.VBLANK;
-                        lcdStatus &= 0b0000_0011;
-                        lcdStatus |= Mode.VBLANK.ordinal();
                         //log.debug("Triggered VBLANK interrupt.");
                         InterruptManager.getInstance()
                                 .raiseInterrupt(InterruptManager.InterruptTypes.VBLANK);
@@ -158,8 +153,6 @@ class Gpu extends JPanel {
                     }
                     else {
                         currentMode = Mode.OAM_ACCESS;
-                        lcdStatus &= 0b0000_0011;
-                        lcdStatus |= Mode.OAM_ACCESS.ordinal();
                         //log.debug("Entering OAM_ACCESS line" + line);
                     }
                 }
@@ -171,14 +164,15 @@ class Gpu extends JPanel {
 
                     if (line > 153) {
                         currentMode = Mode.OAM_ACCESS;
-                        lcdStatus &= 0b0000_0011;
-                        lcdStatus |= Mode.OAM_ACCESS.ordinal();
                         line = 0;
                         //log.debug("Entering OAM_ACCESS line" + line);
                     }
                 }
                 break;
         }
+
+        processLcdStatusInterrupts();
+        lcdStatus = getLcdStatus();
     }
 
     public void updateTile(int address, int value) {
@@ -276,6 +270,41 @@ class Gpu extends JPanel {
             System.out.println();
             System.out.println();
             System.out.println();
+        }
+    }
+
+    public int getLcdStatus() {
+        int value = lcdStatus;
+
+        if (line == lyc) {
+            value |= 0b0000_0100;
+        }
+
+        value |= currentMode.ordinal();
+
+        return value;
+        // other bits will be as written by the rom.
+    }
+    public void processLcdStatusInterrupts() {
+
+        boolean lycIntEnable = false;
+        boolean oamCheckInt = false;
+        boolean vblankCheckInt = false;
+        boolean hblankCheckInt = false;
+        boolean lycCheckInt = false;
+
+        if ((lcdStatus & 0b0100_0000) != 0) lycIntEnable = true;
+        if ((lcdStatus & 0b0010_0000) != 0) oamCheckInt = true;
+        if ((lcdStatus & 0b0001_0000) != 0) vblankCheckInt = true;
+        if ((lcdStatus & 0b0000_1000) != 0) hblankCheckInt = true;
+        if ((lcdStatus & 0b0000_0100) != 0) lycCheckInt = true;
+
+        if (  (lycIntEnable && lycCheckInt) ||
+              oamCheckInt                   ||
+              vblankCheckInt                ||
+              hblankCheckInt  ) {
+
+            InterruptManager.getInstance().raiseInterrupt(InterruptManager.InterruptTypes.LCDC_STATUS);
         }
     }
 }

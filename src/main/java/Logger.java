@@ -5,8 +5,8 @@ class Logger { // extend me for logging facilities.
 
    public enum Level {
         DEBUG("DEBUG"),
-        INFO("\u001B[36mINFO"),
-        WARN("\u001B[33mWARNING"),
+        INFO ("\u001B[36mINFO "),
+        WARN ("\u001B[33mWARN "),
         ERROR("\u001B[31mERROR"),
         FATAL("\u001B[31;1mFATAL");
 
@@ -30,7 +30,11 @@ class Logger { // extend me for logging facilities.
     private void log(Level level, String msg) {
         if (level.ordinal() >= this.level) {
             String noColor = "\u001B[0m";
-            System.out.println(level.levelString + " - " + className + " :: " + msg + noColor);
+            String brightBlack = "\u001B[90m";
+            System.out.println(level.levelString
+                    + " - " + className + ": " + msg + " "
+                    + brightBlack + "(line " + Thread.currentThread().getStackTrace()[2].getLineNumber()
+                    + ")" + noColor);
         }
     }
 

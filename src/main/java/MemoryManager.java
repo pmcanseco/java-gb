@@ -96,7 +96,7 @@ public class MemoryManager {
                 return gpu.lcdControl;
             }
             else if(address == 0xff41) {
-                return gpu.lcdStatus;
+                return processUnusedBits(address, gpu.getLcdStatus());
             }
             else if (address == 0xff42) {
                 if(gpu.scrollY <= 5) {
@@ -112,52 +112,67 @@ public class MemoryManager {
                 log.debug("mmu read gpu.line = " + gpu.line);
                 return gpu.line; // read only
             }
-            else if (address == 0xff00) {
-                if((io[0x00] & 0x20) == 0) {
+            else if (address == 0xff45) {
+                return gpu.lyc;
+            }
+            else if (address == 0xff00) { // 0b--XX_XXXX
+                if ((io[0x00] & 0x20) == 0) {
                     //return (unsigned char)(0xc0 | keys.keys1 | 0x10);
                     log.debug("Unimplemented RAM address " + address + ". Deals with input.");
+                    return processUnusedBits(address, 1);
                 }
 
-                else if((io[0x00] & 0x10) == 0) {
+                else if ((io[0x00] & 0x10) == 0) {
                     //return (unsigned char)(0xc0 | keys.keys2 | 0x20);
                     log.debug("Unimplemented RAM address " + address + ". Deals with input.");
+                    return processUnusedBits(address, 1);
                 }
 
-                else if((io[0x00] & 0x30) == 0) {
+                else if ((io[0x00] & 0x30) == 0) {
                     return 0xff;
                 }
                 else {
-                    return 0;
+                    return processUnusedBits(address, 0);
                 }
             }
+            else if (address >= 0xff01 && address <= 0xffff) {
 
-            // TIMER ADDRESSES
-            else if (address == 0xff04) {
-                return TimerService.getInstance().getDivider();
-            }
-            else if (address == 0xff05) {
-                return TimerService.getInstance().getCounter();
-            }
-            else if (address == 0xff06) {
-                return TimerService.getInstance().getModulo();
-            }
-            else if(address == 0xff07) { // timer control register
-                return TimerService.getInstance().getControl();
-            }
-            // END TIMER ADDRESSES
+                // TIMER ADDRESSES
+                if (address == 0xff04) {
+                    return TimerService.getInstance().getDivider();
+                }
+                else if (address == 0xff05) {
+                    return TimerService.getInstance().getCounter();
+                }
+                else if (address == 0xff06) {
+                    return TimerService.getInstance().getModulo();
+                }
+                else if (address == 0xff07) { // timer control register
+                    return processUnusedBits(address, TimerService.getInstance().getControl());
+                }
+                // END TIMER ADDRESSES
 
-            else if (address == 0xff0f) { // interrupt flags
-                int iflags = InterruptManager.getInstance().getInterruptsRaised();
-                log.info("read the interrupt flags address, value = " + iflags);
-                return iflags;
-            }
-            else if (address == 0xffff) { // interrupt enable
-                int ie =  InterruptManager.getInstance().getInterruptsEnabled();
-                log.info("read the interrupt enable address, value = " + ie);
-                return ie;
-            }
-            else if (address >= 0xff80 && address <= 0xfffe) {
-                return hram[address - 0xff80];
+                else if (address == 0xff0f) { // interrupt flags
+                    int iflags = InterruptManager.getInstance().getInterruptsRaised();
+                    log.info("read the interrupt flags address, value = " + iflags);
+                    return processUnusedBits(address, iflags);
+                }
+                else if (address == 0xffff) { // interrupt enable
+                    int ie = InterruptManager.getInstance().getInterruptsEnabled();
+                    log.info("read the interrupt enable address, value = " + ie);
+                    return processUnusedBits(address, ie);
+                }
+                else if (address >= 0xff80 && address <= 0xfffe) {
+                    return processUnusedBits(address, hram[address - 0xff80]);
+                }
+
+                else if (address >= 0xff10 && address <= 0xff3f) { // sound hardware
+                    return processUnusedBits(address, io[address - 0xff10]);
+                }
+
+                else {
+                    return processUnusedBits(address, 0);
+                }
             }
         }
         else {
@@ -206,13 +221,16 @@ public class MemoryManager {
                 gpu.lcdControl = value;
             }
             else if(address == 0xff41) {
-                // write to gpu status
+                gpu.lcdStatus = value;
             }
             else if(address == 0xff42) {
                 gpu.scrollY = value;
             }
             else if(address == 0xff43) {
                 gpu.scrollX = value;
+            }
+            else if (address == 0xff45) {
+                gpu.lyc = value;
             }
             else if(address == 0xff46) {
                 log.debug("write " + address + "copy(0xfe00, value << 8, 160); // OAM DMA");
@@ -302,6 +320,52 @@ public class MemoryManager {
             return false;
         }
         return true;
+    }
+
+    private int processUnusedBits(int address, int value) {
+        if (address == 0xff00) {
+            return value |= 0b1100_0000;
+        }
+        else if (address == 0xff02) {
+            return value |= 0b0111_1110;
+        }
+        else if (address == 0xff07) {
+            return value |= 0b1111_1000;
+        }
+        else if (address == 0xff0f) {
+            return value |= 0b1110_0000;
+        }
+        else if (address == 0xff41 || address == 0xff10) {
+            return value |= 0b1000_0000;
+        }
+        else if (address == 0xff1a) {
+            return value |= 0b0111_1111;
+        }
+        else if (address == 0xff1c) {
+            return value |= 0b1001_1111;
+        }
+        else if (address == 0xff20) {
+            return value |= 0b1100_0000;
+        }
+        else if (address == 0xff23) {
+            return value |= 0b0011_1111;
+        }
+        else if (address == 0xff26) {
+            return value |= 0b0111_0000;
+        }
+        else if (address == 0xff03 || address == 0xff08 ||
+                address == 0xff09 || address == 0xff0a ||
+                address == 0xff0b || address == 0xff0c ||
+                address == 0xff0d || address == 0xff0e ||
+                address == 0xff15 || address == 0xff1f ||
+                address == 0xff27 || address == 0xff28 ||
+                address == 0xff29 ||
+                (address >= 0xff4c && address <= 0xff7f)) {
+            return value |= 0b1111_1111;
+        }
+        else {
+            return value;
+        }
     }
 
     // DO NOT USE EXCEPT BY TEST

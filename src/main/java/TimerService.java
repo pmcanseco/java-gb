@@ -20,7 +20,6 @@ public class TimerService {
 
     // members
     private static final int gameboyCpuSpeed = 4194304;
-    private final int numCyclesToIncrementDiv = (gameboyCpuSpeed / TimerSpeed.HZ_16384.speedInHertz);
 
     private int divider = 0;
     private int counter = 0;
@@ -28,10 +27,10 @@ public class TimerService {
     private boolean isRunning = false;
     private TimerSpeed speed = TimerSpeed.HZ_4096;
     public enum TimerSpeed {
-        HZ_4096(0, 4096),
+        HZ_4096  (0, 4096  ),
         HZ_262144(1, 262144),
-        HZ_65536(2, 65536),
-        HZ_16384(3, 16384);
+        HZ_65536 (2, 65536 ),
+        HZ_16384 (3, 16384 );
 
         //<editor-fold desc=" IMPLEMENTATION " default-state="collapsed">
         private int controlValue;
@@ -56,7 +55,7 @@ public class TimerService {
     // functions
     public void step(int clocksElapsed) {
         divClock += clocksElapsed;
-        if (divClock >= numCyclesToIncrementDiv) {
+        if (divClock >= 255) {
             divider++;
             divider &= 0b1111_1111;
             divClock %= 256;
@@ -65,7 +64,7 @@ public class TimerService {
 
         if (isRunning) {
             timerClock += clocksElapsed;
-            int numCyclesToIncrement = (gameboyCpuSpeed / speed.speedInHertz);
+            int numCyclesToIncrement = getnumCyclesToIncrement();
 
             if (timerClock >= numCyclesToIncrement) {
                 counter++;
@@ -80,26 +79,50 @@ public class TimerService {
     }
     public void clearDivider() {
         this.divider = 0;
-        //log.warning("cleared divider");
+        this.counter = 0;
+
+        // obscure hardware behavior
+        if (timerClock >= (getnumCyclesToIncrement() / 2)) {
+            counter++;
+        }
+
+        log.warning("cleared divider");
     }
     public int getDivider() {
         return this.divider;
     }
     public void setCounter(int value) {
         this.counter = value;
-        //log.warning("setting counter to " + value);
+        log.warning("setting counter to " + value);
     }
     public int getCounter() {
+        log.warning("read counter = " + this.counter);
         return this.counter;
     }
     public void setControl(int value) {
         int speedValue   = value & 0b0000_0011;
         int runningValue = value & 0b0000_0100;
 
+        // obscure behavior in the hardware
+        if (this.speed.controlValue == 0 && speedValue == 1 && runningValue != 0) {
+            counter++;
+        }
+
         this.speed = TimerSpeed.findByControlValue(speedValue);
         this.isRunning = runningValue != 0;
 
-        //log.warning("Configured timer for speed=" + this.speed.name() + "   running=" + isRunning);
+        // obscure behavior in the hardware:
+        if (!this.isRunning) {
+            if (timerClock >= (getnumCyclesToIncrement() / 2)) {
+                log.warning("OBSCURE BEHAVIOR 1");
+                this.counter++;
+            }
+        }
+
+        log.warning("Configured timer for:" +
+                "\n\tspeed=" + this.speed.name() +
+                "\n\trunning=" + isRunning +
+                "\n\tclocksToIncrementCounter=" + getnumCyclesToIncrement());
     }
     public int getControl() {
         int retval = 0;
@@ -108,10 +131,13 @@ public class TimerService {
         return retval;
     }
     public void setModulo(int value) {
-        //log.warning("setting modulo to " + value);
+        log.warning("setting modulo to " + value);
         this.modulo = value;
     }
     public int getModulo() {
         return this.modulo;
+    }
+    private int getnumCyclesToIncrement() {
+        return (gameboyCpuSpeed / speed.speedInHertz);
     }
 }
