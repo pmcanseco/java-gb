@@ -8,7 +8,9 @@
 
 
 ## Progress:
-**Blargg CPU_INSTRS:**
+![Tetris Main Screen](https://i.imgur.com/JBRPeL2.gifv)
+
+**Blargg CPU_INSTRS: ✅**
 - [X] 01-special
 - [X] 02-interrupts
 - [X] 03-op sp,hl
@@ -22,8 +24,4 @@
 - [X] 11-op a,(hl)
 
 **Blargg INSTR_TIMING:**
-- Fails with error "FAILED #255" , issue with timer not working right. https://github.com/afishberg/feo-boy/commit/3b2973154671a0cd00b47a81071a5fb85aa4629e has some potentially relevant info
-
-
-
-![01-special test rom](https://i.imgur.com/Z812jvX.png)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;![Tetris](https://i.imgur.com/IZtzEQS.png)
+- Fails with error "FAILED #255" , issue with timer not working right. https://github.com/afishberg/feo-boy/commit/3b2973154671a0cd00b47a81071a5fb85aa4629e has some potentially relevant info.
