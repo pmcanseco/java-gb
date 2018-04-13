@@ -1,3 +1,6 @@
 [submodule "src/test/resources/gb-test-roms"]
 	path = src/test/resources/gb-test-roms
 	url = https://github.com/retrio/gb-test-roms
+[submodule "src\\test\\resources\\mooneye-gb-test-roms"]
+	path = src\\test\\resources\\mooneye-gb-test-roms
+	url = https://github.com/Gekkio/mooneye-gb
