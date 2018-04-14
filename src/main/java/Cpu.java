@@ -45,8 +45,6 @@ public class Cpu {
     private boolean pendingInterruptEnable = false;
     private boolean isHalted = false;
 
-    private Map<Integer, Runnable> instructionMap = new HashMap<>();
-
     Cpu(MemoryManager memMgr, Gpu gpu) {
         // initialize 8-bit registers
         registerA = new Register("A", 8, 0);
@@ -73,539 +71,16 @@ public class Cpu {
         //registerR   = new Register("R",   16, 0);
         //registerM   = new Register("M",   16, 0);
         //registerT   = new Register("T",   16, 0);
-        //registerIME = new Register("IME", 16, 0);
         sixteenBitRegisters.put("PC", registerPC);
         sixteenBitRegisters.put("SP", registerSP);
         //sixteenBitRegisters.put("I",  registerI);
         //sixteenBitRegisters.put("R",  registerR);
         //sixteenBitRegisters.put("M",  registerM);
         //sixteenBitRegisters.put("T",  registerT);
-        //sixteenBitRegisters.put("IME", registerIME);
 
         this.mmu = memMgr;
         this.gpu = gpu;
         log.debug("initialized.");
-
-        //<editor-fold desc="Normal Instruction Map Entries" defaultstate="collapsed">
-        log.debug("Populating normal instructions...");
-        instructionMap.put(0x00, () -> nopHaltStop(0x00));
-        instructionMap.put(0x01, () -> load(0x01));
-        instructionMap.put(0x02, () -> load(0x02));
-        instructionMap.put(0x03, () -> inc16(0x03));
-        instructionMap.put(0x04, () -> inc(0x04));
-        instructionMap.put(0x05, () -> dec(0x05));
-        instructionMap.put(0x06, () -> load(0x06));
-        instructionMap.put(0x07, () -> rlca(0x07));
-        instructionMap.put(0x08, () -> load(0x08));
-        instructionMap.put(0x09, () -> add16(0x09));
-        instructionMap.put(0x0a, () -> load(0x0a));
-        instructionMap.put(0x0b, () -> dec16(0x0b));
-        instructionMap.put(0x0c, () -> inc(0x0c));
-        instructionMap.put(0x0d, () -> dec(0x0d));
-        instructionMap.put(0x0e, () -> load(0x0e));
-        instructionMap.put(0x0f, () -> rrca(0x0f));
-        instructionMap.put(0x10, () -> nopHaltStop(0x10));
-        instructionMap.put(0x11, () -> load(0x11));
-        instructionMap.put(0x12, () -> load(0x12));
-        instructionMap.put(0x13, () -> inc16(0x13));
-        instructionMap.put(0x14, () -> inc(0x14));
-        instructionMap.put(0x15, () -> dec(0x15));
-        instructionMap.put(0x16, () -> load(0x16));
-        instructionMap.put(0x17, () -> rla(0x17));
-        instructionMap.put(0x18, () -> jr(0x18));
-        instructionMap.put(0x19, () -> add16(0x19));
-        instructionMap.put(0x1a, () -> load(0x1a));
-        instructionMap.put(0x1b, () -> dec16(0x1b));
-        instructionMap.put(0x1c, () -> inc(0x1c));
-        instructionMap.put(0x1d, () -> dec(0x1d));
-        instructionMap.put(0x1e, () -> load(0x1e));
-        instructionMap.put(0x1f, () -> rra(0x1f));
-        instructionMap.put(0x20, () -> jrcc(0x20));
-        instructionMap.put(0x21, () -> load(0x21));
-        instructionMap.put(0x22, () -> load(0x22));
-        instructionMap.put(0x23, () -> inc16(0x23));
-        instructionMap.put(0x24, () -> inc(0x24));
-        instructionMap.put(0x25, () -> dec(0x25));
-        instructionMap.put(0x26, () -> load(0x26));
-        instructionMap.put(0x27, () -> daa(0x27));
-        instructionMap.put(0x28, () -> jrcc(0x28));
-        instructionMap.put(0x29, () -> add16(0x29));
-        instructionMap.put(0x2a, () -> load(0x2a));
-        instructionMap.put(0x2b, () -> dec16(0x2b));
-        instructionMap.put(0x2c, () -> inc(0x2c));
-        instructionMap.put(0x2d, () -> dec(0x2d));
-        instructionMap.put(0x2e, () -> load(0x2e));
-        instructionMap.put(0x2f, () -> cpl(0x2f));
-        instructionMap.put(0x30, () -> jrcc(0x30));
-        instructionMap.put(0x31, () -> load(0x31));
-        instructionMap.put(0x32, () -> load(0x32));
-        instructionMap.put(0x33, () -> inc16(0x33));
-        instructionMap.put(0x34, () -> inc(0x34));
-        instructionMap.put(0x35, () -> dec(0x35));
-        instructionMap.put(0x36, () -> load(0x36));
-        instructionMap.put(0x37, () -> scf(0x37));
-        instructionMap.put(0x38, () -> jrcc(0x38));
-        instructionMap.put(0x39, () -> add16(0x39));
-        instructionMap.put(0x3a, () -> load(0x3a));
-        instructionMap.put(0x3b, () -> dec16(0x3b));
-        instructionMap.put(0x3c, () -> inc(0x3c));
-        instructionMap.put(0x3d, () -> dec(0x3d));
-        instructionMap.put(0x3e, () -> load(0x3e));
-        instructionMap.put(0x3f, () -> ccf(0x3f));
-        instructionMap.put(0x40, () -> load(0x40));
-        instructionMap.put(0x41, () -> load(0x41));
-        instructionMap.put(0x42, () -> load(0x42));
-        instructionMap.put(0x43, () -> load(0x43));
-        instructionMap.put(0x44, () -> load(0x44));
-        instructionMap.put(0x45, () -> load(0x45));
-        instructionMap.put(0x46, () -> load(0x46));
-        instructionMap.put(0x47, () -> load(0x47));
-        instructionMap.put(0x48, () -> load(0x48));
-        instructionMap.put(0x49, () -> load(0x49));
-        instructionMap.put(0x4a, () -> load(0x4a));
-        instructionMap.put(0x4b, () -> load(0x4b));
-        instructionMap.put(0x4c, () -> load(0x4c));
-        instructionMap.put(0x4d, () -> load(0x4d));
-        instructionMap.put(0x4e, () -> load(0x4e));
-        instructionMap.put(0x4f, () -> load(0x4f));
-        instructionMap.put(0x50, () -> load(0x50));
-        instructionMap.put(0x51, () -> load(0x51));
-        instructionMap.put(0x52, () -> load(0x52));
-        instructionMap.put(0x53, () -> load(0x53));
-        instructionMap.put(0x54, () -> load(0x54));
-        instructionMap.put(0x55, () -> load(0x55));
-        instructionMap.put(0x56, () -> load(0x56));
-        instructionMap.put(0x57, () -> load(0x57));
-        instructionMap.put(0x58, () -> load(0x58));
-        instructionMap.put(0x59, () -> load(0x59));
-        instructionMap.put(0x5a, () -> load(0x5a));
-        instructionMap.put(0x5b, () -> load(0x5b));
-        instructionMap.put(0x5c, () -> load(0x5c));
-        instructionMap.put(0x5d, () -> load(0x5d));
-        instructionMap.put(0x5e, () -> load(0x5e));
-        instructionMap.put(0x5f, () -> load(0x5f));
-        instructionMap.put(0x60, () -> load(0x60));
-        instructionMap.put(0x61, () -> load(0x61));
-        instructionMap.put(0x62, () -> load(0x62));
-        instructionMap.put(0x63, () -> load(0x63));
-        instructionMap.put(0x64, () -> load(0x64));
-        instructionMap.put(0x65, () -> load(0x65));
-        instructionMap.put(0x66, () -> load(0x66));
-        instructionMap.put(0x67, () -> load(0x67));
-        instructionMap.put(0x68, () -> load(0x68));
-        instructionMap.put(0x69, () -> load(0x69));
-        instructionMap.put(0x6a, () -> load(0x6a));
-        instructionMap.put(0x6b, () -> load(0x6b));
-        instructionMap.put(0x6c, () -> load(0x6c));
-        instructionMap.put(0x6d, () -> load(0x6d));
-        instructionMap.put(0x6e, () -> load(0x6e));
-        instructionMap.put(0x6f, () -> load(0x6f));
-        instructionMap.put(0x70, () -> load(0x70));
-        instructionMap.put(0x71, () -> load(0x71));
-        instructionMap.put(0x72, () -> load(0x72));
-        instructionMap.put(0x73, () -> load(0x73));
-        instructionMap.put(0x74, () -> load(0x74));
-        instructionMap.put(0x75, () -> load(0x75));
-        instructionMap.put(0x76, () -> nopHaltStop(0x76));
-        instructionMap.put(0x77, () -> load(0x77));
-        instructionMap.put(0x78, () -> load(0x78));
-        instructionMap.put(0x79, () -> load(0x79));
-        instructionMap.put(0x7a, () -> load(0x7a));
-        instructionMap.put(0x7b, () -> load(0x7b));
-        instructionMap.put(0x7c, () -> load(0x7c));
-        instructionMap.put(0x7d, () -> load(0x7d));
-        instructionMap.put(0x7e, () -> load(0x7e));
-        instructionMap.put(0x7f, () -> load(0x7f));
-        instructionMap.put(0x80, () -> add(0x80));
-        instructionMap.put(0x81, () -> add(0x81));
-        instructionMap.put(0x82, () -> add(0x82));
-        instructionMap.put(0x83, () -> add(0x83));
-        instructionMap.put(0x84, () -> add(0x84));
-        instructionMap.put(0x85, () -> add(0x85));
-        instructionMap.put(0x86, () -> add(0x86));
-        instructionMap.put(0x87, () -> add(0x87));
-        instructionMap.put(0x88, () -> adc(0x88));
-        instructionMap.put(0x89, () -> adc(0x89));
-        instructionMap.put(0x8a, () -> adc(0x8a));
-        instructionMap.put(0x8b, () -> adc(0x8b));
-        instructionMap.put(0x8c, () -> adc(0x8c));
-        instructionMap.put(0x8d, () -> adc(0x8d));
-        instructionMap.put(0x8e, () -> adc(0x8e));
-        instructionMap.put(0x8f, () -> adc(0x8f));
-        instructionMap.put(0x90, () -> sub(0x90));
-        instructionMap.put(0x91, () -> sub(0x91));
-        instructionMap.put(0x92, () -> sub(0x92));
-        instructionMap.put(0x93, () -> sub(0x93));
-        instructionMap.put(0x94, () -> sub(0x94));
-        instructionMap.put(0x95, () -> sub(0x95));
-        instructionMap.put(0x96, () -> sub(0x96));
-        instructionMap.put(0x97, () -> sub(0x97));
-        instructionMap.put(0x98, () -> sbc(0x98));
-        instructionMap.put(0x99, () -> sbc(0x99));
-        instructionMap.put(0x9a, () -> sbc(0x9a));
-        instructionMap.put(0x9b, () -> sbc(0x9b));
-        instructionMap.put(0x9c, () -> sbc(0x9c));
-        instructionMap.put(0x9d, () -> sbc(0x9d));
-        instructionMap.put(0x9e, () -> sbc(0x9e));
-        instructionMap.put(0x9f, () -> sbc(0x9f));
-        instructionMap.put(0xa0, () -> and(0xa0));
-        instructionMap.put(0xa1, () -> and(0xa1));
-        instructionMap.put(0xa2, () -> and(0xa2));
-        instructionMap.put(0xa3, () -> and(0xa3));
-        instructionMap.put(0xa4, () -> and(0xa4));
-        instructionMap.put(0xa5, () -> and(0xa5));
-        instructionMap.put(0xa6, () -> and(0xa6));
-        instructionMap.put(0xa7, () -> and(0xa7));
-        instructionMap.put(0xa8, () -> xor(0xa8));
-        instructionMap.put(0xa9, () -> xor(0xa9));
-        instructionMap.put(0xaa, () -> xor(0xaa));
-        instructionMap.put(0xab, () -> xor(0xab));
-        instructionMap.put(0xac, () -> xor(0xac));
-        instructionMap.put(0xad, () -> xor(0xad));
-        instructionMap.put(0xae, () -> xor(0xae));
-        instructionMap.put(0xaf, () -> xor(0xaf));
-        instructionMap.put(0xb0, () -> or(0xb0));
-        instructionMap.put(0xb1, () -> or(0xb1));
-        instructionMap.put(0xb2, () -> or(0xb2));
-        instructionMap.put(0xb3, () -> or(0xb3));
-        instructionMap.put(0xb4, () -> or(0xb4));
-        instructionMap.put(0xb5, () -> or(0xb5));
-        instructionMap.put(0xb6, () -> or(0xb6));
-        instructionMap.put(0xb7, () -> or(0xb7));
-        instructionMap.put(0xb8, () -> cp(0xb8));
-        instructionMap.put(0xb9, () -> cp(0xb9));
-        instructionMap.put(0xba, () -> cp(0xba));
-        instructionMap.put(0xbb, () -> cp(0xbb));
-        instructionMap.put(0xbc, () -> cp(0xbc));
-        instructionMap.put(0xbd, () -> cp(0xbd));
-        instructionMap.put(0xbe, () -> cp(0xbe));
-        instructionMap.put(0xbf, () -> cp(0xbf));
-        instructionMap.put(0xc0, () -> retcc(0xc0));
-        instructionMap.put(0xc1, () -> pop(0xc1));
-        instructionMap.put(0xc2, () -> jpcc(0xc2));
-        instructionMap.put(0xc3, () -> jump(0xc3));
-        instructionMap.put(0xc4, () -> callcc(0xc4));
-        instructionMap.put(0xc5, () -> push(0xc5));
-        instructionMap.put(0xc6, () -> add(0xc6));
-        instructionMap.put(0xc7, () -> rst(0xc7));
-        instructionMap.put(0xc8, () -> retcc(0xc8));
-        instructionMap.put(0xc9, () -> ret(0xc9));
-        instructionMap.put(0xca, () -> jpcc(0xca));
-        instructionMap.put(0xcb, () -> log.fatal("Opcode 0xCB shouldn't be executed as-is."));
-        instructionMap.put(0xcc, () -> callcc(0xcc));
-        instructionMap.put(0xcd, () -> call(0xcd));
-        instructionMap.put(0xce, () -> adc(0xce));
-        instructionMap.put(0xcf, () -> rst(0xcf));
-        instructionMap.put(0xd0, () -> retcc(0xd0));
-        instructionMap.put(0xd1, () -> pop(0xd1));
-        instructionMap.put(0xd2, () -> jpcc(0xd2));
-        instructionMap.put(0xd3, () -> log.fatal("Opcode 0xD3 is invalid."));
-        instructionMap.put(0xd4, () -> callcc(0xd4));
-        instructionMap.put(0xd5, () -> push(0xd5));
-        instructionMap.put(0xd6, () -> sub(0xd6));
-        instructionMap.put(0xd7, () -> rst(0xd7));
-        instructionMap.put(0xd8, () -> retcc(0xd8));
-        instructionMap.put(0xd9, () -> reti(0xd9));
-        instructionMap.put(0xda, () -> jpcc(0xda));
-        instructionMap.put(0xdb, () -> log.fatal("Opcode 0xDB is invalid."));
-        instructionMap.put(0xdc, () -> callcc(0xdc));
-        instructionMap.put(0xdd, () -> log.fatal("Opcode 0xDD is invalid."));
-        instructionMap.put(0xde, () -> sbc(0xde));
-        instructionMap.put(0xdf, () -> rst(0xdf));
-        instructionMap.put(0xe0, () -> load(0xe0));
-        instructionMap.put(0xe1, () -> pop(0xe1));
-        instructionMap.put(0xe2, () -> load(0xe2));
-        instructionMap.put(0xe3, () -> log.fatal("Opcode 0xE3 is invalid."));
-        instructionMap.put(0xe4, () -> log.fatal("Opcode 0xE4 is invalid."));
-        instructionMap.put(0xe5, () -> push(0xe5));
-        instructionMap.put(0xe6, () -> and(0xe6));
-        instructionMap.put(0xe7, () -> rst(0xe7));
-        instructionMap.put(0xe8, () -> add16(0xe8));
-        instructionMap.put(0xe9, () -> jphl(0xe9));
-        instructionMap.put(0xea, () -> load(0xea));
-        instructionMap.put(0xeb, () -> log.fatal("Opcode 0xEB is invalid."));
-        instructionMap.put(0xec, () -> log.fatal("Opcode 0xEC is invalid."));
-        instructionMap.put(0xed, () -> log.fatal("Opcode 0xED is invalid."));
-        instructionMap.put(0xee, () -> xor(0xee));
-        instructionMap.put(0xef, () -> rst(0xef));
-        instructionMap.put(0xf0, () -> load(0xf0));
-        instructionMap.put(0xf1, () -> pop(0xf1));
-        instructionMap.put(0xf2, () -> load(0xf2));
-        instructionMap.put(0xf3, () -> diEi(0xf3));
-        instructionMap.put(0xf4, () -> log.fatal("Opcode 0xF4 is invalid."));
-        instructionMap.put(0xf5, () -> push(0xf5));
-        instructionMap.put(0xf6, () -> or(0xf6));
-        instructionMap.put(0xf7, () -> rst(0xf7));
-        instructionMap.put(0xf8, () -> load(0xf8));
-        instructionMap.put(0xf9, () -> load(0xf9));
-        instructionMap.put(0xfa, () -> load(0xfa));
-        instructionMap.put(0xfb, () -> diEi(0xfb));
-        instructionMap.put(0xfc, () -> log.fatal("Opcode 0xFC is invalid."));
-        instructionMap.put(0xfd, () -> log.fatal("Opcode 0xFD is invalid."));
-        instructionMap.put(0xfe, () -> cp(0xfe));
-        instructionMap.put(0xff, () -> rst(0xff));
-        log.debug("Populated normal instructions.");
-        //</editor-fold>
-
-        //<editor-fold desc="CB Instruction Map Entries" defaultstate="collapsed">
-        log.debug("Populating cb instructions...");
-        instructionMap.put(0xcb00, () -> rlc(0xcb00));
-        instructionMap.put(0xcb01, () -> rlc(0xcb01));
-        instructionMap.put(0xcb02, () -> rlc(0xcb02));
-        instructionMap.put(0xcb03, () -> rlc(0xcb03));
-        instructionMap.put(0xcb04, () -> rlc(0xcb04));
-        instructionMap.put(0xcb05, () -> rlc(0xcb05));
-        instructionMap.put(0xcb06, () -> rlc(0xcb06));
-        instructionMap.put(0xcb07, () -> rlc(0xcb07));
-        instructionMap.put(0xcb08, () -> rrc(0xcb08));
-        instructionMap.put(0xcb09, () -> rrc(0xcb09));
-        instructionMap.put(0xcb0a, () -> rrc(0xcb0a));
-        instructionMap.put(0xcb0b, () -> rrc(0xcb0b));
-        instructionMap.put(0xcb0c, () -> rrc(0xcb0c));
-        instructionMap.put(0xcb0d, () -> rrc(0xcb0d));
-        instructionMap.put(0xcb0e, () -> rrc(0xcb0e));
-        instructionMap.put(0xcb0f, () -> rrc(0xcb0f));
-        instructionMap.put(0xcb10, () -> rl(0xcb10));
-        instructionMap.put(0xcb11, () -> rl(0xcb11));
-        instructionMap.put(0xcb12, () -> rl(0xcb12));
-        instructionMap.put(0xcb13, () -> rl(0xcb13));
-        instructionMap.put(0xcb14, () -> rl(0xcb14));
-        instructionMap.put(0xcb15, () -> rl(0xcb15));
-        instructionMap.put(0xcb16, () -> rl(0xcb16));
-        instructionMap.put(0xcb17, () -> rl(0xcb17));
-        instructionMap.put(0xcb18, () -> rr(0xcb18));
-        instructionMap.put(0xcb19, () -> rr(0xcb19));
-        instructionMap.put(0xcb1a, () -> rr(0xcb1a));
-        instructionMap.put(0xcb1b, () -> rr(0xcb1b));
-        instructionMap.put(0xcb1c, () -> rr(0xcb1c));
-        instructionMap.put(0xcb1d, () -> rr(0xcb1d));
-        instructionMap.put(0xcb1e, () -> rr(0xcb1e));
-        instructionMap.put(0xcb1f, () -> rr(0xcb1f));
-        instructionMap.put(0xcb20, () -> sla(0xcb20));
-        instructionMap.put(0xcb21, () -> sla(0xcb21));
-        instructionMap.put(0xcb22, () -> sla(0xcb22));
-        instructionMap.put(0xcb23, () -> sla(0xcb23));
-        instructionMap.put(0xcb24, () -> sla(0xcb24));
-        instructionMap.put(0xcb25, () -> sla(0xcb25));
-        instructionMap.put(0xcb26, () -> sla(0xcb26));
-        instructionMap.put(0xcb27, () -> sla(0xcb27));
-        instructionMap.put(0xcb28, () -> sra(0xcb28));
-        instructionMap.put(0xcb29, () -> sra(0xcb29));
-        instructionMap.put(0xcb2a, () -> sra(0xcb2a));
-        instructionMap.put(0xcb2b, () -> sra(0xcb2b));
-        instructionMap.put(0xcb2c, () -> sra(0xcb2c));
-        instructionMap.put(0xcb2d, () -> sra(0xcb2d));
-        instructionMap.put(0xcb2e, () -> sra(0xcb2e));
-        instructionMap.put(0xcb2f, () -> sra(0xcb2f));
-        instructionMap.put(0xcb30, () -> swap(0xcb30));
-        instructionMap.put(0xcb31, () -> swap(0xcb31));
-        instructionMap.put(0xcb32, () -> swap(0xcb32));
-        instructionMap.put(0xcb33, () -> swap(0xcb33));
-        instructionMap.put(0xcb34, () -> swap(0xcb34));
-        instructionMap.put(0xcb35, () -> swap(0xcb35));
-        instructionMap.put(0xcb36, () -> swap(0xcb36));
-        instructionMap.put(0xcb37, () -> swap(0xcb37));
-        instructionMap.put(0xcb38, () -> srl(0xcb38));
-        instructionMap.put(0xcb39, () -> srl(0xcb39));
-        instructionMap.put(0xcb3a, () -> srl(0xcb3a));
-        instructionMap.put(0xcb3b, () -> srl(0xcb3b));
-        instructionMap.put(0xcb3c, () -> srl(0xcb3c));
-        instructionMap.put(0xcb3d, () -> srl(0xcb3d));
-        instructionMap.put(0xcb3e, () -> srl(0xcb3e));
-        instructionMap.put(0xcb3f, () -> srl(0xcb3f));
-        instructionMap.put(0xcb40, () -> bit(0xcb40));
-        instructionMap.put(0xcb41, () -> bit(0xcb41));
-        instructionMap.put(0xcb42, () -> bit(0xcb42));
-        instructionMap.put(0xcb43, () -> bit(0xcb43));
-        instructionMap.put(0xcb44, () -> bit(0xcb44));
-        instructionMap.put(0xcb45, () -> bit(0xcb45));
-        instructionMap.put(0xcb46, () -> bit(0xcb46));
-        instructionMap.put(0xcb47, () -> bit(0xcb47));
-        instructionMap.put(0xcb48, () -> bit(0xcb48));
-        instructionMap.put(0xcb49, () -> bit(0xcb49));
-        instructionMap.put(0xcb4a, () -> bit(0xcb4a));
-        instructionMap.put(0xcb4b, () -> bit(0xcb4b));
-        instructionMap.put(0xcb4c, () -> bit(0xcb4c));
-        instructionMap.put(0xcb4d, () -> bit(0xcb4d));
-        instructionMap.put(0xcb4e, () -> bit(0xcb4e));
-        instructionMap.put(0xcb4f, () -> bit(0xcb4f));
-        instructionMap.put(0xcb50, () -> bit(0xcb50));
-        instructionMap.put(0xcb51, () -> bit(0xcb51));
-        instructionMap.put(0xcb52, () -> bit(0xcb52));
-        instructionMap.put(0xcb53, () -> bit(0xcb53));
-        instructionMap.put(0xcb54, () -> bit(0xcb54));
-        instructionMap.put(0xcb55, () -> bit(0xcb55));
-        instructionMap.put(0xcb56, () -> bit(0xcb56));
-        instructionMap.put(0xcb57, () -> bit(0xcb57));
-        instructionMap.put(0xcb58, () -> bit(0xcb58));
-        instructionMap.put(0xcb59, () -> bit(0xcb59));
-        instructionMap.put(0xcb5a, () -> bit(0xcb5a));
-        instructionMap.put(0xcb5b, () -> bit(0xcb5b));
-        instructionMap.put(0xcb5c, () -> bit(0xcb5c));
-        instructionMap.put(0xcb5d, () -> bit(0xcb5d));
-        instructionMap.put(0xcb5e, () -> bit(0xcb5e));
-        instructionMap.put(0xcb5f, () -> bit(0xcb5f));
-        instructionMap.put(0xcb60, () -> bit(0xcb60));
-        instructionMap.put(0xcb61, () -> bit(0xcb61));
-        instructionMap.put(0xcb62, () -> bit(0xcb62));
-        instructionMap.put(0xcb63, () -> bit(0xcb63));
-        instructionMap.put(0xcb64, () -> bit(0xcb64));
-        instructionMap.put(0xcb65, () -> bit(0xcb65));
-        instructionMap.put(0xcb66, () -> bit(0xcb66));
-        instructionMap.put(0xcb67, () -> bit(0xcb67));
-        instructionMap.put(0xcb68, () -> bit(0xcb68));
-        instructionMap.put(0xcb69, () -> bit(0xcb69));
-        instructionMap.put(0xcb6a, () -> bit(0xcb6a));
-        instructionMap.put(0xcb6b, () -> bit(0xcb6b));
-        instructionMap.put(0xcb6c, () -> bit(0xcb6c));
-        instructionMap.put(0xcb6d, () -> bit(0xcb6d));
-        instructionMap.put(0xcb6e, () -> bit(0xcb6e));
-        instructionMap.put(0xcb6f, () -> bit(0xcb6f));
-        instructionMap.put(0xcb70, () -> bit(0xcb70));
-        instructionMap.put(0xcb71, () -> bit(0xcb71));
-        instructionMap.put(0xcb72, () -> bit(0xcb72));
-        instructionMap.put(0xcb73, () -> bit(0xcb73));
-        instructionMap.put(0xcb74, () -> bit(0xcb74));
-        instructionMap.put(0xcb75, () -> bit(0xcb75));
-        instructionMap.put(0xcb76, () -> bit(0xcb76));
-        instructionMap.put(0xcb77, () -> bit(0xcb77));
-        instructionMap.put(0xcb78, () -> bit(0xcb78));
-        instructionMap.put(0xcb79, () -> bit(0xcb79));
-        instructionMap.put(0xcb7a, () -> bit(0xcb7a));
-        instructionMap.put(0xcb7b, () -> bit(0xcb7b));
-        instructionMap.put(0xcb7c, () -> bit(0xcb7c));
-        instructionMap.put(0xcb7d, () -> bit(0xcb7d));
-        instructionMap.put(0xcb7e, () -> bit(0xcb7e));
-        instructionMap.put(0xcb7f, () -> bit(0xcb7f));
-        instructionMap.put(0xcb80, () -> res(0xcb80));
-        instructionMap.put(0xcb81, () -> res(0xcb81));
-        instructionMap.put(0xcb82, () -> res(0xcb82));
-        instructionMap.put(0xcb83, () -> res(0xcb83));
-        instructionMap.put(0xcb84, () -> res(0xcb84));
-        instructionMap.put(0xcb85, () -> res(0xcb85));
-        instructionMap.put(0xcb86, () -> res(0xcb86));
-        instructionMap.put(0xcb87, () -> res(0xcb87));
-        instructionMap.put(0xcb88, () -> res(0xcb88));
-        instructionMap.put(0xcb89, () -> res(0xcb89));
-        instructionMap.put(0xcb8a, () -> res(0xcb8a));
-        instructionMap.put(0xcb8b, () -> res(0xcb8b));
-        instructionMap.put(0xcb8c, () -> res(0xcb8c));
-        instructionMap.put(0xcb8d, () -> res(0xcb8d));
-        instructionMap.put(0xcb8e, () -> res(0xcb8e));
-        instructionMap.put(0xcb8f, () -> res(0xcb8f));
-        instructionMap.put(0xcb90, () -> res(0xcb90));
-        instructionMap.put(0xcb91, () -> res(0xcb91));
-        instructionMap.put(0xcb92, () -> res(0xcb92));
-        instructionMap.put(0xcb93, () -> res(0xcb93));
-        instructionMap.put(0xcb94, () -> res(0xcb94));
-        instructionMap.put(0xcb95, () -> res(0xcb95));
-        instructionMap.put(0xcb96, () -> res(0xcb96));
-        instructionMap.put(0xcb97, () -> res(0xcb97));
-        instructionMap.put(0xcb98, () -> res(0xcb98));
-        instructionMap.put(0xcb99, () -> res(0xcb99));
-        instructionMap.put(0xcb9a, () -> res(0xcb9a));
-        instructionMap.put(0xcb9b, () -> res(0xcb9b));
-        instructionMap.put(0xcb9c, () -> res(0xcb9c));
-        instructionMap.put(0xcb9d, () -> res(0xcb9d));
-        instructionMap.put(0xcb9e, () -> res(0xcb9e));
-        instructionMap.put(0xcb9f, () -> res(0xcb9f));
-        instructionMap.put(0xcba0, () -> res(0xcba0));
-        instructionMap.put(0xcba1, () -> res(0xcba1));
-        instructionMap.put(0xcba2, () -> res(0xcba2));
-        instructionMap.put(0xcba3, () -> res(0xcba3));
-        instructionMap.put(0xcba4, () -> res(0xcba4));
-        instructionMap.put(0xcba5, () -> res(0xcba5));
-        instructionMap.put(0xcba6, () -> res(0xcba6));
-        instructionMap.put(0xcba7, () -> res(0xcba7));
-        instructionMap.put(0xcba8, () -> res(0xcba8));
-        instructionMap.put(0xcba9, () -> res(0xcba9));
-        instructionMap.put(0xcbaa, () -> res(0xcbaa));
-        instructionMap.put(0xcbab, () -> res(0xcbab));
-        instructionMap.put(0xcbac, () -> res(0xcbac));
-        instructionMap.put(0xcbad, () -> res(0xcbad));
-        instructionMap.put(0xcbae, () -> res(0xcbae));
-        instructionMap.put(0xcbaf, () -> res(0xcbaf));
-        instructionMap.put(0xcbb0, () -> res(0xcbb0));
-        instructionMap.put(0xcbb1, () -> res(0xcbb1));
-        instructionMap.put(0xcbb2, () -> res(0xcbb2));
-        instructionMap.put(0xcbb3, () -> res(0xcbb3));
-        instructionMap.put(0xcbb4, () -> res(0xcbb4));
-        instructionMap.put(0xcbb5, () -> res(0xcbb5));
-        instructionMap.put(0xcbb6, () -> res(0xcbb6));
-        instructionMap.put(0xcbb7, () -> res(0xcbb7));
-        instructionMap.put(0xcbb8, () -> res(0xcbb8));
-        instructionMap.put(0xcbb9, () -> res(0xcbb9));
-        instructionMap.put(0xcbba, () -> res(0xcbba));
-        instructionMap.put(0xcbbb, () -> res(0xcbbb));
-        instructionMap.put(0xcbbc, () -> res(0xcbbc));
-        instructionMap.put(0xcbbd, () -> res(0xcbbd));
-        instructionMap.put(0xcbbe, () -> res(0xcbbe));
-        instructionMap.put(0xcbbf, () -> res(0xcbbf));
-        instructionMap.put(0xcbc0, () -> set(0xcbc0));
-        instructionMap.put(0xcbc1, () -> set(0xcbc1));
-        instructionMap.put(0xcbc2, () -> set(0xcbc2));
-        instructionMap.put(0xcbc3, () -> set(0xcbc3));
-        instructionMap.put(0xcbc4, () -> set(0xcbc4));
-        instructionMap.put(0xcbc5, () -> set(0xcbc5));
-        instructionMap.put(0xcbc6, () -> set(0xcbc6));
-        instructionMap.put(0xcbc7, () -> set(0xcbc7));
-        instructionMap.put(0xcbc8, () -> set(0xcbc8));
-        instructionMap.put(0xcbc9, () -> set(0xcbc9));
-        instructionMap.put(0xcbca, () -> set(0xcbca));
-        instructionMap.put(0xcbcb, () -> set(0xcbcb));
-        instructionMap.put(0xcbcc, () -> set(0xcbcc));
-        instructionMap.put(0xcbcd, () -> set(0xcbcd));
-        instructionMap.put(0xcbce, () -> set(0xcbce));
-        instructionMap.put(0xcbcf, () -> set(0xcbcf));
-        instructionMap.put(0xcbd0, () -> set(0xcbd0));
-        instructionMap.put(0xcbd1, () -> set(0xcbd1));
-        instructionMap.put(0xcbd2, () -> set(0xcbd2));
-        instructionMap.put(0xcbd3, () -> set(0xcbd3));
-        instructionMap.put(0xcbd4, () -> set(0xcbd4));
-        instructionMap.put(0xcbd5, () -> set(0xcbd5));
-        instructionMap.put(0xcbd6, () -> set(0xcbd6));
-        instructionMap.put(0xcbd7, () -> set(0xcbd7));
-        instructionMap.put(0xcbd8, () -> set(0xcbd8));
-        instructionMap.put(0xcbd9, () -> set(0xcbd9));
-        instructionMap.put(0xcbda, () -> set(0xcbda));
-        instructionMap.put(0xcbdb, () -> set(0xcbdb));
-        instructionMap.put(0xcbdc, () -> set(0xcbdc));
-        instructionMap.put(0xcbdd, () -> set(0xcbdd));
-        instructionMap.put(0xcbde, () -> set(0xcbde));
-        instructionMap.put(0xcbdf, () -> set(0xcbdf));
-        instructionMap.put(0xcbe0, () -> set(0xcbe0));
-        instructionMap.put(0xcbe1, () -> set(0xcbe1));
-        instructionMap.put(0xcbe2, () -> set(0xcbe2));
-        instructionMap.put(0xcbe3, () -> set(0xcbe3));
-        instructionMap.put(0xcbe4, () -> set(0xcbe4));
-        instructionMap.put(0xcbe5, () -> set(0xcbe5));
-        instructionMap.put(0xcbe6, () -> set(0xcbe6));
-        instructionMap.put(0xcbe7, () -> set(0xcbe7));
-        instructionMap.put(0xcbe8, () -> set(0xcbe8));
-        instructionMap.put(0xcbe9, () -> set(0xcbe9));
-        instructionMap.put(0xcbea, () -> set(0xcbea));
-        instructionMap.put(0xcbeb, () -> set(0xcbeb));
-        instructionMap.put(0xcbec, () -> set(0xcbec));
-        instructionMap.put(0xcbed, () -> set(0xcbed));
-        instructionMap.put(0xcbee, () -> set(0xcbee));
-        instructionMap.put(0xcbef, () -> set(0xcbef));
-        instructionMap.put(0xcbf0, () -> set(0xcbf0));
-        instructionMap.put(0xcbf1, () -> set(0xcbf1));
-        instructionMap.put(0xcbf2, () -> set(0xcbf2));
-        instructionMap.put(0xcbf3, () -> set(0xcbf3));
-        instructionMap.put(0xcbf4, () -> set(0xcbf4));
-        instructionMap.put(0xcbf5, () -> set(0xcbf5));
-        instructionMap.put(0xcbf6, () -> set(0xcbf6));
-        instructionMap.put(0xcbf7, () -> set(0xcbf7));
-        instructionMap.put(0xcbf8, () -> set(0xcbf8));
-        instructionMap.put(0xcbf9, () -> set(0xcbf9));
-        instructionMap.put(0xcbfa, () -> set(0xcbfa));
-        instructionMap.put(0xcbfb, () -> set(0xcbfb));
-        instructionMap.put(0xcbfc, () -> set(0xcbfc));
-        instructionMap.put(0xcbfd, () -> set(0xcbfd));
-        instructionMap.put(0xcbfe, () -> set(0xcbfe));
-        instructionMap.put(0xcbff, () -> set(0xcbff));
-        //</editor-fold>
     }
     Cpu(MemoryManager memMgr) {
         this(memMgr, new Gpu(Logger.Level.FATAL));
@@ -628,8 +103,238 @@ public class Cpu {
 
         return opcode;
     }
-    public void execute(int opcode) {
-        instructionMap.get(opcode).run();
+    public Runnable decode(int opcode) {
+        switch (opcode) {
+            case 0x00: case 0x76: case 0x10:
+                return () -> nopHaltStop(opcode);
+
+            case 0xf3: case 0xfb:
+                return () -> diEi(opcode);
+
+            case 0x03: case 0x23: case 0x33: case 0x13:
+                return () -> inc16(opcode);
+
+            case 0x0b: case 0x1b: case 0x2b: case 0x3b:
+                return () -> dec16(opcode);
+
+            case 0x04: case 0x0c: case 0x14: case 0x1c:
+            case 0x24: case 0x2c: case 0x34: case 0x3c:
+                return () -> inc(opcode);
+
+            case 0x05: case 0x0d: case 0x15: case 0x1d:
+            case 0x25: case 0x2d: case 0x35: case 0x3d:
+                return () -> dec(opcode);
+
+            case 0x07: return () -> rlca(0x07);
+            case 0x0f: return () -> rrca(0x0f);
+            case 0x17: return () -> rla(0x17);
+            case 0x1f: return () -> rra(0x1f);
+
+            case 0x18: return () -> jr(0x18);
+            case 0xe9: return () -> jphl(0xe9);
+
+            case 0x20: case 0x28: case 0x30: case 0x38:
+                return () -> jrcc(opcode);
+
+            case 0x27: return () -> daa(0x27);
+
+            case 0x2f: return () -> cpl(0x2f);
+
+            case 0x37: return () -> scf(0x37);
+            case 0x3f: return () -> ccf(0x3f);
+
+            case 0xc9: return () -> ret(0xc9);
+            case 0xcd: return () -> call(0xcd);
+            case 0xd9: return () -> reti(0xd9);
+
+            case 0x39: case 0x29: case 0x19: case 0x09:
+            case 0xe8:
+                return () -> add16(opcode);
+
+            case 0xc1: case 0xd1: case 0xe1: case 0xf1:
+                return () -> pop(opcode);
+
+            case 0xc5: case 0xd5: case 0xe5: case 0xf5:
+                return () -> push(opcode);
+
+            case 0x01: case 0x02: case 0x06: case 0x08:
+            case 0x0a: case 0x0e: case 0x16: case 0x1a:
+            case 0x1e: case 0x21: case 0x22: case 0x26:
+            case 0x2a: case 0x2e: case 0x31: case 0x32:
+            case 0x36: case 0x3a: case 0x40: case 0x41:
+            case 0x42: case 0x43: case 0x44: case 0x45:
+            case 0x46: case 0x47: case 0x48: case 0x49:
+            case 0x4a: case 0x4b: case 0x4c: case 0x4d:
+            case 0x4e: case 0x4f: case 0x50: case 0x51:
+            case 0x52: case 0x53: case 0x54: case 0x55:
+            case 0x56: case 0x57: case 0x58: case 0x59:
+            case 0x5a: case 0x5b: case 0x5c: case 0x5d:
+            case 0x5e: case 0x5f: case 0x60: case 0x61:
+            case 0x62: case 0x63: case 0x64: case 0x65:
+            case 0x66: case 0x67: case 0x68: case 0x69:
+            case 0x6a: case 0x6b: case 0x6c: case 0x6d:
+            case 0x6e: case 0x6f: case 0x70: case 0x71:
+            case 0x72: case 0x73: case 0x74: case 0x75:
+            case 0x77: case 0x78: case 0x79: case 0x7a:
+            case 0x7b: case 0x7c: case 0x7d: case 0x7e:
+            case 0x7f: case 0xf8: case 0xf9: case 0xfa:
+            case 0x3e: case 0xf2: case 0xe0: case 0xe2:
+            case 0xea: case 0xf0: case 0x11: case 0x12:
+                return () -> load(opcode);
+
+
+            case 0x80: case 0x81: case 0x82: case 0x83:
+            case 0x84: case 0x85: case 0x86: case 0x87:
+            case 0xc6:
+                return () -> add(opcode);
+
+            case 0x88: case 0x89: case 0x8a: case 0x8b:
+            case 0x8c: case 0x8d: case 0x8e: case 0x8f:
+            case 0xce:
+                return () -> adc(opcode);
+
+            case 0x90: case 0x91: case 0x92: case 0x93:
+            case 0x94: case 0x95: case 0x96: case 0x97:
+            case 0xd6:
+                return () -> sub(opcode);
+
+            case 0x98: case 0x99: case 0x9a: case 0x9b:
+            case 0x9c: case 0x9d: case 0x9e: case 0x9f:
+            case 0xde:
+                return () -> sbc(opcode);
+
+            case 0xa0: case 0xa1: case 0xa2: case 0xa3:
+            case 0xa4: case 0xa5: case 0xa6: case 0xa7:
+            case 0xe6:
+                return () -> and(opcode);
+
+            case 0xa8: case 0xa9: case 0xaa: case 0xab:
+            case 0xac: case 0xad: case 0xae: case 0xaf:
+            case 0xee:
+                return () -> xor(opcode);
+
+            case 0xb0: case 0xb1: case 0xb2: case 0xb3:
+            case 0xb4: case 0xb5: case 0xb6: case 0xb7:
+            case 0xf6:
+                return () -> or(opcode);
+
+            case 0xb8: case 0xb9: case 0xba: case 0xbb:
+            case 0xbc: case 0xbd: case 0xbe: case 0xbf:
+            case 0xfe:
+                return () -> cp(opcode);
+
+            case 0xc0: case 0xc8: case 0xd0: case 0xd8:
+                return () -> retcc(opcode);
+
+            case 0xc2: case 0xca: case 0xd2: case 0xda:
+                return () -> jpcc(opcode);
+
+            case 0xc3:
+                return () -> jump(opcode);
+
+            case 0xc4: case 0xcc: case 0xd4: case 0xdc:
+                return () -> callcc(opcode);
+
+            case 0xcb:
+                return () -> log.fatal("Opcode 0xCB shouldn't be executed as-is.");
+            case 0xd3: case 0xdb: case 0xdd: case 0xe3:
+            case 0xe4: case 0xeb: case 0xec: case 0xed:
+            case 0xf4: case 0xfc: case 0xfd:
+                return () -> log.fatal(String.format("Opcode 0x%2X is invalid.", opcode));
+
+
+            case 0xc7: case 0xcf: case 0xd7: case 0xdf:
+            case 0xe7: case 0xef: case 0xff: case 0xf7:
+                return () -> rst(opcode);
+
+            case 0xcb00: case 0xcb01: case 0xcb02: case 0xcb03:
+            case 0xcb04: case 0xcb05: case 0xcb06: case 0xcb07:
+                return () -> rlc(opcode);
+
+            case 0xcb08: case 0xcb09: case 0xcb0a: case 0xcb0b:
+            case 0xcb0c: case 0xcb0d: case 0xcb0e: case 0xcb0f:
+                return () -> rrc(opcode);
+
+            case 0xcb10: case 0xcb11: case 0xcb12: case 0xcb13:
+            case 0xcb14: case 0xcb15: case 0xcb16: case 0xcb17:
+                return () -> rl(opcode);
+
+            case 0xcb18: case 0xcb19: case 0xcb1a: case 0xcb1b:
+            case 0xcb1c: case 0xcb1d: case 0xcb1e: case 0xcb1f:
+                return () -> rr(opcode);
+
+            case 0xcb20: case 0xcb21: case 0xcb22: case 0xcb23:
+            case 0xcb24: case 0xcb25: case 0xcb26: case 0xcb27:
+                return () -> sla(opcode);
+
+            case 0xcb28: case 0xcb29: case 0xcb2a: case 0xcb2b:
+            case 0xcb2c: case 0xcb2d: case 0xcb2e: case 0xcb2f:
+                return () -> sra(opcode);
+
+            case 0xcb30: case 0xcb31: case 0xcb32: case 0xcb33:
+            case 0xcb34: case 0xcb35: case 0xcb36: case 0xcb37:
+                return () -> swap(opcode);
+
+            case 0xcb38: case 0xcb39: case 0xcb3a: case 0xcb3b:
+            case 0xcb3c: case 0xcb3d: case 0xcb3e: case 0xcb3f:
+                return () -> srl(opcode);
+
+            case 0xcb40: case 0xcb41: case 0xcb42: case 0xcb43:
+            case 0xcb44: case 0xcb45: case 0xcb46: case 0xcb47:
+            case 0xcb48: case 0xcb49: case 0xcb4a: case 0xcb4b:
+            case 0xcb4c: case 0xcb4d: case 0xcb4e: case 0xcb4f:
+            case 0xcb50: case 0xcb51: case 0xcb52: case 0xcb53:
+            case 0xcb54: case 0xcb55: case 0xcb56: case 0xcb57:
+            case 0xcb58: case 0xcb59: case 0xcb5a: case 0xcb5b:
+            case 0xcb5c: case 0xcb5d: case 0xcb5e: case 0xcb5f:
+            case 0xcb60: case 0xcb61: case 0xcb62: case 0xcb63:
+            case 0xcb64: case 0xcb65: case 0xcb66: case 0xcb67:
+            case 0xcb68: case 0xcb69: case 0xcb6a: case 0xcb6b:
+            case 0xcb6c: case 0xcb6d: case 0xcb6e: case 0xcb6f:
+            case 0xcb70: case 0xcb71: case 0xcb72: case 0xcb73:
+            case 0xcb74: case 0xcb75: case 0xcb76: case 0xcb77:
+            case 0xcb78: case 0xcb79: case 0xcb7a: case 0xcb7b:
+            case 0xcb7c: case 0xcb7d: case 0xcb7e: case 0xcb7f:
+                return () -> bit(opcode);
+
+            case 0xcb80: case 0xcb81: case 0xcb82: case 0xcb83:
+            case 0xcb84: case 0xcb85: case 0xcb86: case 0xcb87:
+            case 0xcb88: case 0xcb89: case 0xcb8a: case 0xcb8b:
+            case 0xcb8c: case 0xcb8d: case 0xcb8e: case 0xcb8f:
+            case 0xcb90: case 0xcb91: case 0xcb92: case 0xcb93:
+            case 0xcb94: case 0xcb95: case 0xcb96: case 0xcb97:
+            case 0xcb98: case 0xcb99: case 0xcb9a: case 0xcb9b:
+            case 0xcb9c: case 0xcb9d: case 0xcb9e: case 0xcb9f:
+            case 0xcba0: case 0xcba1: case 0xcba2: case 0xcba3:
+            case 0xcba4: case 0xcba5: case 0xcba6: case 0xcba7:
+            case 0xcba8: case 0xcba9: case 0xcbaa: case 0xcbab:
+            case 0xcbac: case 0xcbad: case 0xcbae: case 0xcbaf:
+            case 0xcbb0: case 0xcbb1: case 0xcbb2: case 0xcbb3:
+            case 0xcbb4: case 0xcbb5: case 0xcbb6: case 0xcbb7:
+            case 0xcbb8: case 0xcbb9: case 0xcbba: case 0xcbbb:
+            case 0xcbbc: case 0xcbbd: case 0xcbbe: case 0xcbbf:
+                return () -> res(opcode);
+
+            case 0xcbc0: case 0xcbc1: case 0xcbc2: case 0xcbc3:
+            case 0xcbc4: case 0xcbc5: case 0xcbc6: case 0xcbc7:
+            case 0xcbc8: case 0xcbc9: case 0xcbca: case 0xcbcb:
+            case 0xcbcc: case 0xcbcd: case 0xcbce: case 0xcbcf:
+            case 0xcbd0: case 0xcbd1: case 0xcbd2: case 0xcbd3:
+            case 0xcbd4: case 0xcbd5: case 0xcbd6: case 0xcbd7:
+            case 0xcbd8: case 0xcbd9: case 0xcbda: case 0xcbdb:
+            case 0xcbdc: case 0xcbdd: case 0xcbde: case 0xcbdf:
+            case 0xcbe0: case 0xcbe1: case 0xcbe2: case 0xcbe3:
+            case 0xcbe4: case 0xcbe5: case 0xcbe6: case 0xcbe7:
+            case 0xcbe8: case 0xcbe9: case 0xcbea: case 0xcbeb:
+            case 0xcbec: case 0xcbed: case 0xcbee: case 0xcbef:
+            case 0xcbf0: case 0xcbf1: case 0xcbf2: case 0xcbf3:
+            case 0xcbf4: case 0xcbf5: case 0xcbf6: case 0xcbf7:
+            case 0xcbf8: case 0xcbf9: case 0xcbfa: case 0xcbfb:
+            case 0xcbfc: case 0xcbfd: case 0xcbfe: case 0xcbff:
+                return () -> set(opcode);
+        }
+        log.fatal(String.format("OPCODE 0x%04X NOT FOUND", opcode));
+        return null;
     }
     public void execute(Runnable operation) {
         operation.run();
@@ -725,7 +430,7 @@ public class Cpu {
 
     // main loop
     public void main() {
-        skipBios();
+        //skipBios();
 
         while (true) {
             cpuStep();
@@ -734,7 +439,8 @@ public class Cpu {
     public void cpuStep() {
         if (!isHalted) {
             int opcode = fetch();
-            execute(opcode);
+            Runnable instruction = decode(opcode);
+            execute(instruction);
 
             gpu.step(lastInstructionCycles);
 

@@ -1,7 +1,4 @@
 import javax.swing.*;
-import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.util.Random;
 
 /**
  * Created by Pablo Canseco on 3/28/2018.
@@ -9,69 +6,8 @@ import java.util.Random;
 class Gpu extends JPanel {
     private final String name ="GPU";
     private Logger log =  new Logger(name, Logger.Level.FATAL);
-    private int width = 160;
-    private int height = 144;
-    public BufferedImage canvas;
-    public JFrame frame;
-    private boolean isTestMode = true;
-
-    public enum Colors {
-
-        OFF(255, 255, 255),
-        LIGHT(192, 192, 192),
-        DARK(96, 96, 96),
-        ON(40, 40, 40);
-
-        //<editor-fold desc=" IMPLEMENTATION " defaultstate="collapsed">
-        private final int r;
-        private final int g;
-        private final int b;
-        private final String rgb;
-        Colors(final int r,final int g,final int b) {
-            this.r = r;
-            this.g = g;
-            this.b = b;
-            this.rgb = r + ", " + g + ", " + b;
-        }
-        public Color getColor() {
-            return new Color(r, g, b);
-        }
-        public static Color getRandomColor() {
-            Random random = new Random();
-            Colors c = values()[random.nextInt(values().length)];
-            return new Color(c.r, c.g, c.b);
-        }
-        public static Colors get(int index) {
-            return Colors.values()[index];
-        }
-        //</editor-fold>
-    }
-
-    private void initAppWindow() {
-        frame.setSize(300, 200);
-        frame.add(this);
-        frame.setVisible(true);
-        frame.setResizable(false);
-        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        frame.getContentPane().setLayout(new FlowLayout());
-        frame.getContentPane().add(new JLabel(new ImageIcon(canvas)));
-    }
-    private void canvasTestPattern() {
-        for (int i = 0; i < 160; i++) {
-            for (int j = 0; j < 144; j++) {
-                canvas.setRGB(i, j, Colors.getRandomColor().getRGB());
-
-                if (i < (160/2) && j < (144/2))
-                    canvas.setRGB(i, j, Colors.DARK.getColor().getRGB());
-                else if (i < (160/2) && j > (144/2))
-                    canvas.setRGB(i, j, Colors.DARK.getColor().getRGB());
-                else if (i > (160/2) && j < (144/2))
-                    canvas.setRGB(i, j, Colors.LIGHT.getColor().getRGB());
-                else
-                    canvas.setRGB(i, j, Colors.getRandomColor().getRGB());
-            }
-        }
-    }
+    public static final int width = 160;
+    public static final int height = 144;
 
     enum Mode {
         HBLANK,
@@ -88,31 +24,18 @@ class Gpu extends JPanel {
     public int scrollX;
     public int scrollY;
     public int[] vram = new int[0x2000]; // 8192
-    public int[][][] tileset = new int[384][8][8];
+    private int[][][] tileset = new int[384][8][8];
     private int[] screen = new int[160*144];
     public int[] backgroundPalette = { 0, 3, 3, 3};
     public int[] palette = { 0, 1, 2, 3};
 
     Gpu() {
-        canvas = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-
         modeClock = 0;
         currentMode = Mode.VRAM_ACCESS;
     }
     Gpu(Logger.Level level) {
         this();
         this.log = new Logger(name, level);
-    }
-    Gpu(boolean testMode) {
-        this();
-        this.isTestMode = testMode;
-
-        if (!isTestMode) {
-            frame = new JFrame("java-gb");
-            initAppWindow();
-            canvasTestPattern();
-            frame.repaint();
-        }
     }
 
     public void step(int cycles) {
@@ -145,11 +68,10 @@ class Gpu extends JPanel {
 
                     if (line == 143) {
                         currentMode = Mode.VBLANK;
-                        //log.debug("Triggered VBLANK interrupt.");
                         InterruptManager.getInstance()
                                 .raiseInterrupt(InterruptManager.InterruptTypes.VBLANK);
-                        renderFrame();
-                        //renderTileData();
+                        Display.getInstance().renderFrame(screen);
+                        //dumpTileData();
                     }
                     else {
                         currentMode = Mode.OAM_ACCESS;
@@ -199,7 +121,7 @@ class Gpu extends JPanel {
             tileset[tile][y][i] = val;
         }
     }
-    public void renderScanLine() {
+    private void renderScanLine() {
         boolean bgmap =  ((lcdControl & 0b0000_1000) >> 3) != 0;
         boolean bgtile = ((lcdControl & 0b0001_0000) >> 4) != 0;
 
@@ -246,20 +168,8 @@ class Gpu extends JPanel {
         }
         log.info("Rendered scanline " + this.line);
     }
-    public void renderFrame() {
-        for(int y=0; y<144; y++) {
-            for(int x=0; x<160; x++) {
-                Colors c = Colors.get(screen[((160*y) + x)]);
-                canvas.setRGB(x, y, c.getColor().getRGB());
-            }
-        }
-        if (!isTestMode){
-            frame.repaint();
-        }
-        log.debug("Rendered frame.");
-    }
 
-    public void renderTileData() {
+    /*public void dumpTileData() {
         for(int tile = 0; tile < 0xFF; tile++) {
             for (int y = 0; y < 8; y++) {
                 for (int x = 0; x < 8; x++) {
@@ -271,7 +181,7 @@ class Gpu extends JPanel {
             System.out.println();
             System.out.println();
         }
-    }
+    }*/
 
     public int getLcdStatus() {
         int value = lcdStatus;
@@ -285,7 +195,7 @@ class Gpu extends JPanel {
         return value;
         // other bits will be as written by the rom.
     }
-    public void processLcdStatusInterrupts() {
+    private void processLcdStatusInterrupts() {
 
         boolean lycIntEnable = false;
         boolean oamCheckInt = false;

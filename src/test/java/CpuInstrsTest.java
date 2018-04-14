@@ -14,18 +14,15 @@ public class CpuInstrsTest extends UnitTest {
     // this class will take all the Blargg cpu_instrs subtests and run them sequentially,
     // comparing the test results from the console.
 
-    private final String baseFilePath = "src/test/resources/gb-test-roms/cpu_instrs/individual/";
-    private Cartridge cart;
-    private MemoryManager mmu;
     private Cpu cpuUut;
-    private Gpu gpu;
-
-    private int timeoutCycles = 10000000;
 
     private void initRomSubtest(final String romName) {
-        gpu = new Gpu();
-        cart = new Cartridge(baseFilePath + romName);
-        mmu = new MemoryManager(cart, gpu);
+        Display.reset();
+        Display.getTestInstace();
+        Gpu gpu = new Gpu();
+        String baseFilePath = "src/test/resources/gb-test-roms/cpu_instrs/individual/";
+        Cartridge cart = new Cartridge(baseFilePath + romName);
+        MemoryManager mmu = new MemoryManager(cart, gpu);
         cpuUut = new Cpu(mmu, Logger.Level.FATAL);
         cpuUut.skipBios();
         TimerService.reset();
@@ -74,6 +71,7 @@ public class CpuInstrsTest extends UnitTest {
             }
 
             // timeout to catch infinite loops
+            int timeoutCycles = 10000000;
             if(i >= timeoutCycles) {
                 // revert stdout
                 System.setOut(stdout);
