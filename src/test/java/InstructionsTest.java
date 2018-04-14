@@ -38,11 +38,6 @@ public class InstructionsTest extends UnitTest {
         sp = cpu.getRegisterValue("SP");
         pc = cpu.getRegisterValue("PC");
     }
-    private void stepUut() {
-        int opcode = cpu.fetch();
-        cpu.execute(opcode);
-        gpu.step(cpu.lastInstructionCycles);
-    }
     private void readExpectedRegisterValues(int index) {
         expected_a  = biosValues.getJSONObject(index).getInt("a");
         expected_b  = biosValues.getJSONObject(index).getInt("b");
@@ -74,7 +69,7 @@ public class InstructionsTest extends UnitTest {
 
         // step the cpu through the ram init process
         while (pc < 0x0C) {
-            stepUut();
+            cpu.cpuStep();
             readUutRegisterValues();
         }
 
@@ -142,7 +137,7 @@ public class InstructionsTest extends UnitTest {
             }
 
 
-            stepUut();
+            cpu.cpuStep();
         }
         log("End of JSON reached.");
     }
@@ -153,7 +148,7 @@ public class InstructionsTest extends UnitTest {
         cpu = new Cpu(mmu);
         int i;
         for (i=0; cpu.getRegisterValue("PC") <  0x100; i++) {
-            stepUut();
+            cpu.cpuStep();
 
             if (i > 2400000) {
                 fail("cpu timed out before breaking out of bios.");
