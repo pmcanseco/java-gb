@@ -69,7 +69,7 @@ public class InstructionsTest extends UnitTest {
 
         // step the cpu through the ram init process
         while (pc < 0x0C) {
-            cpu.cpuStep();
+            cpu.step();
             readUutRegisterValues();
         }
 
@@ -137,7 +137,7 @@ public class InstructionsTest extends UnitTest {
             }
 
 
-            cpu.cpuStep();
+            cpu.step();
         }
         log("End of JSON reached.");
     }
@@ -148,7 +148,7 @@ public class InstructionsTest extends UnitTest {
         cpu = new Cpu(mmu);
         int i;
         for (i=0; cpu.getRegisterValue("PC") <  0x100; i++) {
-            cpu.cpuStep();
+            cpu.step();
 
             if (i > 2400000) {
                 fail("cpu timed out before breaking out of bios.");

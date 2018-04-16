@@ -18,6 +18,9 @@ public class CpuInstrsTest extends UnitTest {
 
     private void initRomSubtest(final String romName) {
         Display.reset();
+        TimerService.reset();
+        InterruptManager.reset();
+
         Display.getTestInstace();
         Gpu gpu = new Gpu();
         String baseFilePath = "src/test/resources/gb-test-roms/cpu_instrs/individual/";
@@ -25,11 +28,9 @@ public class CpuInstrsTest extends UnitTest {
         MemoryManager mmu = new MemoryManager(cart, gpu);
         cpuUut = new Cpu(mmu, Logger.Level.FATAL);
         cpuUut.skipBios();
-        TimerService.reset();
-        InterruptManager.reset();
     }
     private void stepUut() {
-        cpuUut.cpuStep();
+        cpuUut.step();
     }
     private void runSubtest() {
         int i = 0;
