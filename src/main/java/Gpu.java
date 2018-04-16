@@ -27,6 +27,7 @@ class Gpu extends JPanel {
     private int[][][] tileset = new int[384][8][8];
     private int[] screen = new int[160*144];
     public int[] backgroundPalette = { 0, 3, 3, 3};
+    public int[][] spritePalette = {  { 0, 3, 3, 3}  ,  { 0, 3, 3, 3}  };
     public int[] palette = { 0, 1, 2, 3};
 
     Gpu() {
@@ -163,7 +164,7 @@ class Gpu extends JPanel {
                 tile = vram[mapoffset + lineoffset];
                 /*if (bgtile && (tile < 128)) {
                     tile += 256;
-                }(*/
+                }*/
             }
         }
         log.info("Rendered scanline " + this.line);

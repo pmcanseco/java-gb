@@ -240,11 +240,11 @@ public class MemoryManager {
                 log.debug("write " + address + " gpu update background palette");
             }
             else if(address == 0xff48) { // write only
-                //for(int i = 0; i < 4; i++) spritePalette[0][i] = palette[(value >> (i * 2)) & 3];
+                for(int i = 0; i < 4; i++) gpu.spritePalette[0][i] =gpu.palette[(value >> (i * 2)) & 3];
                 log.debug("write " + address + " gpu update sprite palette 0");
             }
             else if(address == 0xff49) { // write only
-                //for(int i = 0; i < 4; i++) spritePalette[1][i] = palette[(value >> (i * 2)) & 3];
+                for(int i = 0; i < 4; i++) gpu.spritePalette[1][i] = gpu.palette[(value >> (i * 2)) & 3];
                 log.debug("write " + address + " gpu update sprite palette 1");
             }
             else if(address == 0xff0f) { // interrupt flags register

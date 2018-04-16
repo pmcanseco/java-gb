@@ -244,4 +244,8 @@ public class Cartridge {
     public int readFromAddress(int address) {
         return rom[address];
     }
+
+    public final CartridgeType getCartridgeType() {
+        return this.cartridgeType;
+    }
 }

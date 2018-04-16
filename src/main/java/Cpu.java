@@ -90,7 +90,7 @@ public class Cpu {
         this.log = new Logger(name, level);
     }
 
-    public int fetch() {
+    private int fetch() {
         int opcode = mmu.readByte(registerPC.read());
         log.debug(String.format("PC: 0x%04X    OP: 0x%04X", registerPC.read(), opcode));
         registerPC.inc();
@@ -103,7 +103,7 @@ public class Cpu {
 
         return opcode;
     }
-    public Runnable decode(int opcode) {
+    private Runnable decode(int opcode) {
         switch (opcode) {
             case 0x00: case 0x76: case 0x10:
                 return () -> nopHaltStop(opcode);
@@ -336,7 +336,7 @@ public class Cpu {
         log.fatal(String.format("OPCODE 0x%04X NOT FOUND", opcode));
         return null;
     }
-    public void execute(Runnable operation) {
+    private void execute(Runnable operation) {
         operation.run();
     }
     private void processEi(int opcode) {
@@ -352,6 +352,8 @@ public class Cpu {
         Map<InterruptManager.InterruptTypes, InterruptManager.Interrupt> raisedInterrupts =
                 InterruptManager.getInstance().getRaisedInterrupts();
 
+        boolean isAnyInterruptGettingHandled = false;
+
         // process each, depending on IME and if the interrupt is enabled.
         for (Map.Entry<InterruptManager.InterruptTypes, InterruptManager.Interrupt> e : raisedInterrupts.entrySet()) {
 
@@ -359,24 +361,28 @@ public class Cpu {
             //log.debug("Exiting HALT mode because " + e.getKey().name() + " was raised.");
             isHalted = false;
 
-
             if (InterruptManager.getInstance().isMasterEnabled()) {
-
                 if (e.getValue().isEnabled()) {
-                    log.info("handling " + e.getValue().name + " interrupt");
 
-                    // disable ime
-                    InterruptManager.getInstance().masterDisable();
+                    //if (e.getKey() != InterruptManager.InterruptTypes.VBLANK)
+                        log.info("handling " + e.getValue().name + " interrupt");
+
+                    isAnyInterruptGettingHandled = true;
 
                     // save current address
                     pushHelper(registerPC.read());
 
-                    // jump to interrupt handler
+                    // jump to interrupt handlerc
                     registerPC.write(e.getKey().handler);
 
                     e.getValue().clear();
                 }
             }
+        }
+
+        if (isAnyInterruptGettingHandled) {
+            // disable ime
+            InterruptManager.getInstance().masterDisable();
         }
 
         // gpu interrupts are processed in gpu.step()
@@ -433,10 +439,10 @@ public class Cpu {
         //skipBios();
 
         while (true) {
-            cpuStep();
+            step();
         }
     }
-    public void cpuStep() {
+    public void step() {
         if (!isHalted) {
             int opcode = fetch();
             Runnable instruction = decode(opcode);
