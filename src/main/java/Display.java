@@ -24,10 +24,8 @@ public class Display extends JPanel implements KeyListener {
     public static Display getInstance() {
         if (instance == null) {
             instance = new Display();
-            return instance;
-        } else {
-            return instance;
         }
+        return instance;
     }
     public static Display getTestInstace() {
         if (instance == null) {

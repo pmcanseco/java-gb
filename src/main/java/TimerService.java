@@ -9,7 +9,6 @@ public class TimerService {
     public static TimerService getInstance() {
         if (instance == null) {
             instance = new TimerService();
-            return instance;
         }
         return instance;
     }

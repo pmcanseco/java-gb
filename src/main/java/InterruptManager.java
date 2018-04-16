@@ -65,7 +65,6 @@ public class InterruptManager {
     public static InterruptManager getInstance() {
         if(instance == null) {
             instance = new InterruptManager();
-            return instance;
         }
         return instance;
     }
