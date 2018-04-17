@@ -33,7 +33,7 @@ public class Cpu {
     // * NOTE * The lower 4 bits always read zero even if 1 is written to them.
     private FlagsRegister registerFlags;
 
-    public int lastInstructionCycles = 0;
+    private int lastInstructionCycles = 0;
 
     private Map<String, Register> eightBitRegisters = new HashMap<>();
     private Map<String, Register> sixteenBitRegisters = new HashMap<>();
@@ -41,7 +41,6 @@ public class Cpu {
     private MemoryManager mmu;
     private Gpu gpu;
 
-    private boolean pendingInterruptDisable = false;
     private boolean pendingInterruptEnable = false;
     private boolean isHalted = false;
 
@@ -157,6 +156,7 @@ public class Cpu {
             case 0xc5: case 0xd5: case 0xe5: case 0xf5:
                 return () -> push(opcode);
 
+            //<editor-fold desc=" LOAD " default-state="collapsed">
             case 0x01: case 0x02: case 0x06: case 0x08:
             case 0x0a: case 0x0e: case 0x16: case 0x1a:
             case 0x1e: case 0x21: case 0x22: case 0x26:
@@ -181,7 +181,7 @@ public class Cpu {
             case 0x3e: case 0xf2: case 0xe0: case 0xe2:
             case 0xea: case 0xf0: case 0x11: case 0x12:
                 return () -> load(opcode);
-
+            //</editor-fold>
 
             case 0x80: case 0x81: case 0x82: case 0x83:
             case 0x84: case 0x85: case 0x86: case 0x87:
@@ -235,13 +235,14 @@ public class Cpu {
             case 0xc4: case 0xcc: case 0xd4: case 0xdc:
                 return () -> callcc(opcode);
 
+            //<editor-fold desc=" ILLEGAL " default-state=collapsed>
             case 0xcb:
                 return () -> log.fatal("Opcode 0xCB shouldn't be executed as-is.");
             case 0xd3: case 0xdb: case 0xdd: case 0xe3:
             case 0xe4: case 0xeb: case 0xec: case 0xed:
             case 0xf4: case 0xfc: case 0xfd:
                 return () -> log.fatal(String.format("Opcode 0x%2X is invalid.", opcode));
-
+            //</editor-fold>
 
             case 0xc7: case 0xcf: case 0xd7: case 0xdf:
             case 0xe7: case 0xef: case 0xff: case 0xf7:
@@ -279,6 +280,7 @@ public class Cpu {
             case 0xcb3c: case 0xcb3d: case 0xcb3e: case 0xcb3f:
                 return () -> srl(opcode);
 
+            //<editor-fold desc=" BIT " default-state="collapsed">
             case 0xcb40: case 0xcb41: case 0xcb42: case 0xcb43:
             case 0xcb44: case 0xcb45: case 0xcb46: case 0xcb47:
             case 0xcb48: case 0xcb49: case 0xcb4a: case 0xcb4b:
@@ -296,7 +298,9 @@ public class Cpu {
             case 0xcb78: case 0xcb79: case 0xcb7a: case 0xcb7b:
             case 0xcb7c: case 0xcb7d: case 0xcb7e: case 0xcb7f:
                 return () -> bit(opcode);
+            //</editor-fold>
 
+            //<editor-fold desc=" RES " default-state="collapsed">
             case 0xcb80: case 0xcb81: case 0xcb82: case 0xcb83:
             case 0xcb84: case 0xcb85: case 0xcb86: case 0xcb87:
             case 0xcb88: case 0xcb89: case 0xcb8a: case 0xcb8b:
@@ -314,7 +318,9 @@ public class Cpu {
             case 0xcbb8: case 0xcbb9: case 0xcbba: case 0xcbbb:
             case 0xcbbc: case 0xcbbd: case 0xcbbe: case 0xcbbf:
                 return () -> res(opcode);
+            //</editor-fold>
 
+            //<editor-fold desc=" SET " default-state="collapsed">
             case 0xcbc0: case 0xcbc1: case 0xcbc2: case 0xcbc3:
             case 0xcbc4: case 0xcbc5: case 0xcbc6: case 0xcbc7:
             case 0xcbc8: case 0xcbc9: case 0xcbca: case 0xcbcb:
@@ -332,6 +338,7 @@ public class Cpu {
             case 0xcbf8: case 0xcbf9: case 0xcbfa: case 0xcbfb:
             case 0xcbfc: case 0xcbfd: case 0xcbfe: case 0xcbff:
                 return () -> set(opcode);
+            //</editor-fold>
         }
         log.fatal(String.format("OPCODE 0x%04X NOT FOUND", opcode));
         return null;
@@ -440,18 +447,30 @@ public class Cpu {
             skipBootrom();
         }
 
+        int i = 0;
         while (true) {
             step();
+
+            if (registerPC.read() == 0xFE) {
+                log.info("System took " + i + " cycles to exit bootrom.");
+            }
+
+            i++;
         }
     }
     public void step() {
         if (!isHalted) {
             int opcode = fetch();
             Runnable instruction = decode(opcode);
-            execute(instruction);
+            try {
+                execute(instruction);
+            }
+            catch (NullPointerException e) {
+                System.err.print("Instruction for " + opcode + " was null.");
+                System.exit(1);
+            }
 
             gpu.step(lastInstructionCycles);
-
             processEi(opcode);
         }
         else {

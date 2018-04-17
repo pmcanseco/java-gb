@@ -148,7 +148,7 @@ public class InstructionsTest extends UnitTest {
                 new MbcManager(
                         new Cartridge("src/test/resources/gb-test-roms/cpu_instrs/cpu_instrs.gb")),
                 gpu);
-        cpu = new Cpu(mmu);
+        cpu = new Cpu(mmu, gpu);
         int i;
         for (i=0; cpu.getRegisterValue("PC") <  0x100; i++) {
             cpu.step();

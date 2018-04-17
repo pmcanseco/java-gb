@@ -12,7 +12,7 @@ import static org.junit.Assert.fail;
  */
 public class CpuInstrsTest extends UnitTest {
     // this class will take all the Blargg cpu_instrs subtests and run them sequentially,
-    // comparing the test results from the console.
+    // comparing the test results from the console. The full test rom will also be ran.
 
     private Cpu cpuUut;
 
@@ -29,10 +29,19 @@ public class CpuInstrsTest extends UnitTest {
         cpuUut = new Cpu(mmu, Logger.Level.FATAL);
         cpuUut.skipBootrom();
     }
-    private void stepUut() {
-        cpuUut.step();
+    private void initFullTest() {
+        Display.reset();
+        TimerService.reset();
+        InterruptManager.reset();
+        Display.getTestInstace();
+        Gpu gpu = new Gpu();
+        String path = "src/test/resources/gb-test-roms/cpu_instrs/cpu_instrs.gb";
+        MbcManager cartMbc = new MbcManager(new Cartridge(path));
+        MemoryManager mmu = new MemoryManager(cartMbc, gpu);
+        cpuUut = new Cpu(mmu, Logger.Level.FATAL);
+        // do not skip bootrom, to further exercise bootrom completion.
     }
-    private void runSubtest() {
+    private void runTest(boolean fullTest) {
         int i = 0;
         StringBuilder runningLog = new StringBuilder();
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -40,9 +49,9 @@ public class CpuInstrsTest extends UnitTest {
         while (true) {
 
             // send stuff to the console so travis doesn't error out.
-            if ((i % 10000 == 0) && (i != 0)) {
+            if ((i % 500000 == 0) && (i != 0)) { // every 500k cycles print dot.
                 System.out.print(".");
-                if( i % 500000 == 0) {
+                if (i % 20000000 == 0) { // every 20m cycles print new line.
                     System.out.println();
                 }
             }
@@ -52,7 +61,7 @@ public class CpuInstrsTest extends UnitTest {
             System.setOut(new PrintStream(baos));
 
             // cycle the cpu
-            stepUut();
+            cpuUut.step();
 
             // collect output
             String output = baos.toString();
@@ -61,19 +70,29 @@ public class CpuInstrsTest extends UnitTest {
             System.setOut(stdout);
 
             // process runningLog
-            if(output.length() > 0) {
+            if (output.length() > 0) {
                 runningLog.append(output);
+                System.out.print(output);
             }
 
             // if test is done, break out of loop
-            if(runningLog.toString().contains("Passed") || runningLog.toString().contains("Failed")) {
-                System.out.println();
+            if (  (runningLog.toString().contains("Passed") ||
+                   runningLog.toString().contains("Failed")) &&
+                 !fullTest  )
+            {
+                System.out.println(); System.out.println();
+                break;
+            }
+            else if (  fullTest &&
+                        (runningLog.toString().contains("Failed") ||
+                         runningLog.toString().contains("Passed all tests"))  ) {
+                System.out.println(); System.out.println();
                 break;
             }
 
             // timeout to catch infinite loops
-            int timeoutCycles = 10000000;
-            if(i >= timeoutCycles) {
+            int timeoutCycles = 50000000;
+            if (i >= timeoutCycles) {
                 // revert stdout
                 System.setOut(stdout);
                 fail("test timed out at " + i + " cycles: \n" + runningLog.toString());
@@ -88,6 +107,7 @@ public class CpuInstrsTest extends UnitTest {
 
         if(runningLog.toString().contains("Passed")) {
             log("\n" + runningLog.toString());
+            log("Test took " + i + " cycles to complete.");
         }
         else {
             fail(runningLog.toString());
@@ -98,76 +118,83 @@ public class CpuInstrsTest extends UnitTest {
     public void special01() {
         initRomSubtest("01-special.gb");
 
-        runSubtest();
+        runTest(false);
     }
 
     @Test
     public void interrupts02() {
         initRomSubtest("02-interrupts.gb");
 
-        runSubtest();
+        runTest(false);
     }
 
     @Test
     public void opsphl03() {
         initRomSubtest("03-op sp,hl.gb");
 
-        runSubtest();
+        runTest(false);
     }
 
     @Test
     public void oprimm04() {
         initRomSubtest("04-op r,imm.gb");
 
-        runSubtest();
+        runTest(false);
     }
 
     @Test
     public void oprp05() {
         initRomSubtest("05-op rp.gb");
 
-        runSubtest();
+        runTest(false);
     }
 
     @Test
     public void ldrr06() {
         initRomSubtest("06-ld r,r.gb");
 
-        runSubtest();
+        runTest(false);
     }
 
     @Test
     public void jrjpcallretrst07() {
         initRomSubtest("07-jr,jp,call,ret,rst.gb");
 
-        runSubtest();
+        runTest(false);
     }
 
     @Test
     public void miscinstrs08() {
         initRomSubtest("08-misc instrs.gb");
 
-        runSubtest();
+        runTest(false);
     }
 
     @Test
     public void oprr09() {
         initRomSubtest("09-op r,r.gb");
 
-        runSubtest();
+        runTest(false);
     }
 
     @Test
     public void bitops10() {
         initRomSubtest("10-bit ops.gb");
 
-        runSubtest();
+        runTest(false);
     }
 
     @Test
     public void opahl11() {
         initRomSubtest("11-op a,(hl).gb");
 
-        runSubtest();
+        runTest(false);
+    }
+
+    @Test
+    public void fulltest() {
+        initFullTest();
+
+        runTest(true);
     }
 }

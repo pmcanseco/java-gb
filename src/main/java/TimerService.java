@@ -2,7 +2,7 @@
  * Created by Pablo Canseco on 4/10/2018.
  */
 public class TimerService {
-    private Logger log = new Logger("TIM");
+    private Logger log = new Logger("TIM", Logger.Level.ERROR);
 
     // Singleton
     private static TimerService instance;
