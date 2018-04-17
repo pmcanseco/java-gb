@@ -65,8 +65,10 @@ public class Main {
 
         Cartridge cart = new Cartridge("src/test/resources/gb-test-roms/cpu_instrs/cpu_instrs.gb", true);
         //Cartridge cart = new Cartridge("src/main/resources/tetris.gb", true);
+
+        MbcManager mbc = new MbcManager(cart);
         Gpu gpu = new Gpu();
-        MemoryManager mmu = new MemoryManager(cart, gpu);
+        MemoryManager mmu = new MemoryManager(mbc, gpu);
         Cpu cpu = new Cpu(mmu, gpu);
 
         cpu.main();

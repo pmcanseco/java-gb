@@ -53,7 +53,7 @@ public class InstructionsTest extends UnitTest {
 
     @Test
     public void testInstructions() {
-        mmu = new MemoryManager(new Cartridge("src/test/resources/gb-test-roms/cpu_instrs/cpu_instrs.gb"));
+        mmu = new MemoryManager(new MbcManager(new Cartridge("src/test/resources/gb-test-roms/cpu_instrs/cpu_instrs.gb")));
         cpu = new Cpu(mmu, Logger.Level.FATAL);
         try {
             String biosJson = new String(
@@ -144,7 +144,10 @@ public class InstructionsTest extends UnitTest {
 
     @Test
     public void testBiosCompletion() {
-        mmu = new MemoryManager(new Cartridge("src/test/resources/gb-test-roms/cpu_instrs/cpu_instrs.gb"), gpu);
+        mmu = new MemoryManager(
+                new MbcManager(
+                        new Cartridge("src/test/resources/gb-test-roms/cpu_instrs/cpu_instrs.gb")),
+                gpu);
         cpu = new Cpu(mmu);
         int i;
         for (i=0; cpu.getRegisterValue("PC") <  0x100; i++) {

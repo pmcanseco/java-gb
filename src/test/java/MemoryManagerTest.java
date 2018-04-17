@@ -9,8 +9,8 @@ import static org.junit.Assert.*;
  */
 public class MemoryManagerTest extends UnitTest {
 
-    private Cartridge cart = new Cartridge("src/test/resources/gb-test-roms/cpu_instrs/cpu_instrs.gb");
-    private MemoryManager mmu = new MemoryManager(cart);
+    private MbcManager cartMbc = new MbcManager(new Cartridge("src/test/resources/gb-test-roms/cpu_instrs/cpu_instrs.gb"));
+    private MemoryManager mmu = new MemoryManager(cartMbc);
     private Random rng = new Random();
 
     @Test

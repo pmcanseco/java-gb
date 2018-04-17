@@ -65,69 +65,12 @@ public class Cartridge {
         //</editor-fold>
     }
 
-    private static class CartridgeType {
-        public final int id;
-        public final String name;
-        public final boolean hasRam;
-        public final boolean hasBattery;
-        public final boolean hasTimer;
-        public final boolean hasRumble;
-        public final boolean hasAccelerometer;
-        public CartridgeType(int id,
-                             String name,
-                             boolean ram,
-                             boolean bat,
-                             boolean tmr,
-                             boolean rmbl,
-                             boolean accl) {
-            this.id = id;
-            this.name = name;
-            this.hasRam = ram;
-            this.hasBattery = bat;
-            this.hasTimer = tmr;
-            this.hasRumble = rmbl;
-            this.hasAccelerometer = accl;
-        }
-    }
-    private static final Map<Integer, CartridgeType> cartridgeTypes = new HashMap<>();
-    static {
-        cartridgeTypes.put(0x00, new CartridgeType(0x00, "ROM Only",             false,false, false, false, false));
-        cartridgeTypes.put(0x01, new CartridgeType(0x01, "MBC1",                 false,false, false, false, false));
-        cartridgeTypes.put(0x02, new CartridgeType(0x02, "MBC1 + RAM",           true, false, false, false, false));
-        cartridgeTypes.put(0x03, new CartridgeType(0x03, "MBC1 + RAM + Battery", true, true,  false, false, false));
-        cartridgeTypes.put(0x05, new CartridgeType(0x05, "MBC2",                 false,false, false, false, false));
-        cartridgeTypes.put(0x06, new CartridgeType(0x06, "MBC2 + RAM + Battery", true, true,  false, false, false));
-        cartridgeTypes.put(0x08, new CartridgeType(0x08, "ROM + RAM",            true, false, false, false, false));
-        cartridgeTypes.put(0x09, new CartridgeType(0x09, "ROM + RAM + Battery",  true, true,  false, false, false));
-        /*cartridgeTypes.put(0x0B, new CartridgeType(0x0B, "MMM01"));
-        cartridgeTypes.put(0x0C, new CartridgeType(0x0C, "MMM01 + RAM"));
-        cartridgeTypes.put(0x0D, new CartridgeType(0x0D, "MMM01 + RAM + Battery"));
-        cartridgeTypes.put(0x0F, new CartridgeType(0x0F, "MBC3 + Timer + Battery"));
-        cartridgeTypes.put(0x10, new CartridgeType(0x10, "MBC3 + RAM + Timer + Battery"));
-        cartridgeTypes.put(0x11, new CartridgeType(0x11, "MBC3"));
-        cartridgeTypes.put(0x12, new CartridgeType(0x12, "MBC3 + RAM"));
-        cartridgeTypes.put(0x13, new CartridgeType(0x13, "MBC3 + RAM + Battery"));
-        cartridgeTypes.put(0x19, new CartridgeType(0x19, "MBC5"));
-        cartridgeTypes.put(0x1A, new CartridgeType(0x1A, "MBC5 + RAM"));
-        cartridgeTypes.put(0x1B, new CartridgeType(0x1B, "MBC5 + RAM + Battery"));
-        cartridgeTypes.put(0x1C, new CartridgeType(0x1C, "MBC5 + Rumble"));
-        cartridgeTypes.put(0x1D, new CartridgeType(0x1D, "MBC5 + RAM + Rumble"));
-        cartridgeTypes.put(0x1E, new CartridgeType(0x1E, "MBC5 + RAM + Battery + Rumble"));
-        cartridgeTypes.put(0x20, new CartridgeType(0x20, "MBC6 + RAM + Battery"));
-        cartridgeTypes.put(0x21, new CartridgeType(0x21, "Unused"));
-        cartridgeTypes.put(0x22, new CartridgeType(0x22, "MBC7 + RAM + Bat. + Accelerometer"));
-        cartridgeTypes.put(0xFC, new CartridgeType(0xFC, "POCKET CAMERA"));
-        cartridgeTypes.put(0xFD, new CartridgeType(0xFD, "BANDAI TAMA5"));
-        cartridgeTypes.put(0xFE, new CartridgeType(0xFE, "HuC3"));
-        cartridgeTypes.put(0xFF, new CartridgeType(0xFF, "HuC1 + RAM + Battery"));*/
-    }
-
     private int[] rom; // the entire contents
     private String title; // the game title
     private Locale locale; // japanese or non-japanese?
     private RamSize ramSize; // size of ram
     private RomSize romSize; // size of rom
-    private CartridgeType cartridgeType; // presence of additional hardware like MBC, RAM, BAT, etc.
+    private MbcManager.CartridgeType cartridgeType; // presence of additional hardware like MBC, RAM, BAT, etc.
     private int headerChecksum; // see verifyRom()
     private int expectedHeaderChecksum; // see verifyRom()
     private int cartridgeLogoChecksum; // see verifyRom()
@@ -199,7 +142,7 @@ public class Cartridge {
     }
 
     private void setCartridgeType() {
-        this.cartridgeType = cartridgeTypes.get(rom[0x0147]);
+        this.cartridgeType = MbcManager.cartridgeTypes.get(rom[0x0147]);
     }
 
     private void verifyHeaderChecksum() {
@@ -245,7 +188,7 @@ public class Cartridge {
         return rom[address];
     }
 
-    public final CartridgeType getCartridgeType() {
+    public final MbcManager.CartridgeType getCartridgeType() {
         return this.cartridgeType;
     }
 }

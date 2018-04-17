@@ -24,8 +24,8 @@ public class CpuInstrsTest extends UnitTest {
         Display.getTestInstace();
         Gpu gpu = new Gpu();
         String baseFilePath = "src/test/resources/gb-test-roms/cpu_instrs/individual/";
-        Cartridge cart = new Cartridge(baseFilePath + romName);
-        MemoryManager mmu = new MemoryManager(cart, gpu);
+        MbcManager cartMbc = new MbcManager(new Cartridge(baseFilePath + romName));
+        MemoryManager mmu = new MemoryManager(cartMbc, gpu);
         cpuUut = new Cpu(mmu, Logger.Level.FATAL);
         cpuUut.skipBios();
     }

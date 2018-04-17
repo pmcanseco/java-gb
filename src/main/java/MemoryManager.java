@@ -31,7 +31,7 @@ public class MemoryManager {
         return bootrom;
     }
 
-    private Cartridge cartridge;
+    private MbcManager cartMbc;
     private Gpu gpu;
     public final int memorySize = 0xFFFF;
 
@@ -45,11 +45,11 @@ public class MemoryManager {
 
     private boolean inBootrom = true;
 
-    MemoryManager(Cartridge cart, Gpu gpu) {
-        this.cartridge = cart;
+    MemoryManager(MbcManager cart, Gpu gpu) {
+        this.cartMbc = cart;
         this.gpu = gpu;
     }
-    MemoryManager(Cartridge cart) {
+    MemoryManager(MbcManager cart) {
         this(cart, new Gpu(Logger.Level.FATAL));
         this.log = new Logger(this.getClass().getName(), Logger.Level.FATAL);
     }
@@ -75,7 +75,7 @@ public class MemoryManager {
                         inBootrom = false;
                     }
                 }
-                return cartridge.readFromAddress(address);
+                return cartMbc.readFromAddress(address);
             }
             else if (address >= 0x8000 && address <= 0x9fff) {
                 return gpu.vram[address - 0x8000];
