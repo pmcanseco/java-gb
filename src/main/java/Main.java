@@ -29,7 +29,7 @@ public class Main {
         log.info("CartParseOnly set to " + cartParseOnly);
 
 
-        // instantiate classes
+        // cpu_instrs
         Cartridge cart = new Cartridge("src/test/resources/gb-test-roms/cpu_instrs/cpu_instrs.gb", true);
         //Cartridge cart = new Cartridge("src/test/resources/gb-test-roms/cpu_instrs/individual/01-special.gb", true);
         //Cartridge cart = new Cartridge("src/test/resources/gb-test-roms/cpu_instrs/individual/02-interrupts.gb", true);

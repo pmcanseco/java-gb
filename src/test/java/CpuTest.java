@@ -11,7 +11,7 @@ import static org.junit.Assert.assertEquals;
  */
 public class CpuTest extends UnitTest {
 
-    private MbcManager cartMbc = new MbcManager(new Cartridge("src/test/resources/gb-test-roms/cpu_instrs/cpu_instrs.gb"));
+    private MbcManager cartMbc = new MbcManager(new Cartridge("src/test/resources/gb-test-roms/cpu_instrs/cpu_instrs.gb"), Logger.Level.FATAL);
     private MemoryManager mmu = new MemoryManager(cartMbc);
     private Cpu cpuUut = new Cpu(mmu, Logger.Level.FATAL);
     private Random rng = new Random();

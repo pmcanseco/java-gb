@@ -5,7 +5,8 @@ import java.util.Map;
  * Created by Pablo Canseco on 4/17/2018.
  */
 public class MbcManager {
-    private Logger log = new Logger("MBC");
+    private final String name = "MBC";
+    private Logger log = new Logger(name);
 
     public enum MbcType {
         ROM_ONLY,
@@ -44,23 +45,23 @@ public class MbcManager {
     }
     public static final Map<Integer, CartridgeType> cartridgeTypes = new HashMap<>();
     static {
-        cartridgeTypes.put(0x00, new MbcManager.CartridgeType(0x00, "ROM Only",             MbcType.ROM_ONLY, false,false, false, false, false));
-        cartridgeTypes.put(0x01, new MbcManager.CartridgeType(0x01, "MBC1",                 MbcType.MBC1, false,false, false, false, false));
-        cartridgeTypes.put(0x02, new MbcManager.CartridgeType(0x02, "MBC1 + RAM",           MbcType.MBC1, true, false, false, false, false));
-        cartridgeTypes.put(0x03, new MbcManager.CartridgeType(0x03, "MBC1 + RAM + Battery", MbcType.MBC1, true, true,  false, false, false));
-        cartridgeTypes.put(0x05, new MbcManager.CartridgeType(0x05, "MBC2",                 MbcType.MBC2, false,false, false, false, false));
-        cartridgeTypes.put(0x06, new MbcManager.CartridgeType(0x06, "MBC2 + RAM + Battery", MbcType.MBC2, true, true,  false, false, false));
-        cartridgeTypes.put(0x08, new MbcManager.CartridgeType(0x08, "ROM + RAM",            MbcType.ROM_ONLY, true, false, false, false, false));
-        cartridgeTypes.put(0x09, new MbcManager.CartridgeType(0x09, "ROM + RAM + Battery",  MbcType.ROM_ONLY, true, true,  false, false, false));
+        cartridgeTypes.put(0x00, new CartridgeType(0x00, "ROM Only",             MbcType.ROM_ONLY, false,false, false, false, false));
+        cartridgeTypes.put(0x01, new CartridgeType(0x01, "MBC1",                 MbcType.MBC1, false,false, false, false, false));
+        cartridgeTypes.put(0x02, new CartridgeType(0x02, "MBC1 + RAM",           MbcType.MBC1, true, false, false, false, false));
+        cartridgeTypes.put(0x03, new CartridgeType(0x03, "MBC1 + RAM + Battery", MbcType.MBC1, true, true,  false, false, false));
+        cartridgeTypes.put(0x05, new CartridgeType(0x05, "MBC2",                 MbcType.MBC2, false,false, false, false, false));
+        cartridgeTypes.put(0x06, new CartridgeType(0x06, "MBC2 + RAM + Battery", MbcType.MBC2, true, true,  false, false, false));
+        cartridgeTypes.put(0x08, new CartridgeType(0x08, "ROM + RAM",            MbcType.ROM_ONLY, true, false, false, false, false));
+        cartridgeTypes.put(0x09, new CartridgeType(0x09, "ROM + RAM + Battery",  MbcType.ROM_ONLY, true, true,  false, false, false));
         /*cartridgeTypes.put(0x0B, new CartridgeType(0x0B, "MMM01"));
         cartridgeTypes.put(0x0C, new CartridgeType(0x0C, "MMM01 + RAM"));
-        cartridgeTypes.put(0x0D, new CartridgeType(0x0D, "MMM01 + RAM + Battery"));
-        cartridgeTypes.put(0x0F, new CartridgeType(0x0F, "MBC3 + Timer + Battery"));
-        cartridgeTypes.put(0x10, new CartridgeType(0x10, "MBC3 + RAM + Timer + Battery"));
-        cartridgeTypes.put(0x11, new CartridgeType(0x11, "MBC3"));
-        cartridgeTypes.put(0x12, new CartridgeType(0x12, "MBC3 + RAM"));
-        cartridgeTypes.put(0x13, new CartridgeType(0x13, "MBC3 + RAM + Battery"));
-        cartridgeTypes.put(0x19, new CartridgeType(0x19, "MBC5"));
+        cartridgeTypes.put(0x0D, new CartridgeType(0x0D, "MMM01 + RAM + Battery"));*/
+        cartridgeTypes.put(0x0F, new CartridgeType(0x0F, "MBC3 + Timer + Battery",  MbcType.MBC3, false, true, true, false, false));
+        cartridgeTypes.put(0x10, new CartridgeType(0x10, "MBC3 + RAM + Timer + Battery", MbcType.MBC3, true, true, true, false, false));
+        cartridgeTypes.put(0x11, new CartridgeType(0x11, "MBC3",                    MbcType.MBC3, false, false, false, false, false));
+        cartridgeTypes.put(0x12, new CartridgeType(0x12, "MBC3 + RAM",              MbcType.MBC3, true, false, false, false, false));
+        cartridgeTypes.put(0x13, new CartridgeType(0x13, "MBC3 + RAM + Battery",    MbcType.MBC3, true, true, false, false, false));
+        /*cartridgeTypes.put(0x19, new CartridgeType(0x19, "MBC5"));
         cartridgeTypes.put(0x1A, new CartridgeType(0x1A, "MBC5 + RAM"));
         cartridgeTypes.put(0x1B, new CartridgeType(0x1B, "MBC5 + RAM + Battery"));
         cartridgeTypes.put(0x1C, new CartridgeType(0x1C, "MBC5 + Rumble"));
@@ -85,6 +86,10 @@ public class MbcManager {
     MbcManager(Cartridge cart) {
         this.cart = cart;
         this.mbcType = cart.getCartridgeType().mbcType;
+    }
+    MbcManager(Cartridge cart, Logger.Level logLevel) {
+        this(cart);
+        this.log = new Logger(name, logLevel);
     }
 
     public int readFromAddress(int address) {

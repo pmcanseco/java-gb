@@ -91,7 +91,7 @@ public class CpuInstrsTest extends UnitTest {
             }
 
             // timeout to catch infinite loops
-            int timeoutCycles = 50000000;
+            int timeoutCycles = fullTest ? 60000000 : 30000000;
             if (i >= timeoutCycles) {
                 // revert stdout
                 System.setOut(stdout);

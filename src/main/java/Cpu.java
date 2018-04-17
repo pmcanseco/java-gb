@@ -447,25 +447,18 @@ public class Cpu {
             skipBootrom();
         }
 
-        int i = 0;
         while (true) {
             step();
-
-            if (registerPC.read() == 0xFE) {
-                log.info("System took " + i + " cycles to exit bootrom.");
-            }
-
-            i++;
         }
     }
     public void step() {
         if (!isHalted) {
             int opcode = fetch();
             Runnable instruction = decode(opcode);
-            try {
+            if (instruction != null) {
                 execute(instruction);
             }
-            catch (NullPointerException e) {
+            else {
                 System.err.print("Instruction for " + opcode + " was null.");
                 System.exit(1);
             }

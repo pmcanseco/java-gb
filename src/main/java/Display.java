@@ -88,7 +88,7 @@ public class Display extends JPanel implements KeyListener {
     private void initAppWindow() {
         frame = new JFrame("java-gb");
         canvas = new BufferedImage(Gpu.width, Gpu.height, BufferedImage.TYPE_INT_ARGB);
-        frame.setSize(300, 200);
+        frame.setSize(320, 288);
         frame.add(this);
         frame.setVisible(true);
         frame.setResizable(false);

@@ -22,9 +22,7 @@ public class InstructionsTest extends UnitTest {
     private int expected_sp, expected_pc;
 
     private JSONArray biosValues;
-    private MemoryManager mmu;
     private Cpu cpu;
-    private Gpu gpu = new Gpu();
 
     private void readUutRegisterValues() {
         a = cpu.getRegisterValue("A");
@@ -50,11 +48,21 @@ public class InstructionsTest extends UnitTest {
         expected_sp = biosValues.getJSONObject(index).getInt("sp");
         expected_pc = biosValues.getJSONObject(index).getInt("pc");
     }
+    private void initTest() {
+        Display.reset();
+        TimerService.reset();
+        InterruptManager.reset();
+
+        Display.getTestInstace();
+        Gpu gpu = new Gpu();
+        MemoryManager mmu = new MemoryManager(new MbcManager(new Cartridge("src/test/resources/gb-test-roms/cpu_instrs/cpu_instrs.gb"), Logger.Level.FATAL), gpu);
+        cpu = new Cpu(mmu, Logger.Level.FATAL);
+    }
 
     @Test
     public void testInstructions() {
-        mmu = new MemoryManager(new MbcManager(new Cartridge("src/test/resources/gb-test-roms/cpu_instrs/cpu_instrs.gb")));
-        cpu = new Cpu(mmu, Logger.Level.FATAL);
+        initTest();
+
         try {
             String biosJson = new String(
                     Files.readAllBytes(Paths.get(getClass().getResource("full-bios.txt").toURI())));
@@ -144,11 +152,8 @@ public class InstructionsTest extends UnitTest {
 
     @Test
     public void testBiosCompletion() {
-        mmu = new MemoryManager(
-                new MbcManager(
-                        new Cartridge("src/test/resources/gb-test-roms/cpu_instrs/cpu_instrs.gb")),
-                gpu);
-        cpu = new Cpu(mmu, gpu);
+        initTest();
+
         int i;
         for (i=0; cpu.getRegisterValue("PC") <  0x100; i++) {
             cpu.step();
