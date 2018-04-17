@@ -387,7 +387,7 @@ public class Cpu {
 
         // gpu interrupts are processed in gpu.step()
     }
-    public void skipBios() {
+    public void skipBootrom() {
         registerA.write(0x01);
         registerB.write(0x00);
         registerC.write(0x13);
@@ -436,7 +436,9 @@ public class Cpu {
 
     // main loop
     public void main() {
-        //skipBios();
+        if (Main.skipBootrom) {
+            skipBootrom();
+        }
 
         while (true) {
             step();

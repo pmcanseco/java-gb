@@ -27,7 +27,7 @@ public class CpuInstrsTest extends UnitTest {
         MbcManager cartMbc = new MbcManager(new Cartridge(baseFilePath + romName));
         MemoryManager mmu = new MemoryManager(cartMbc, gpu);
         cpuUut = new Cpu(mmu, Logger.Level.FATAL);
-        cpuUut.skipBios();
+        cpuUut.skipBootrom();
     }
     private void stepUut() {
         cpuUut.step();

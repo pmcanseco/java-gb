@@ -193,7 +193,10 @@ public class MemoryManager {
         //ram[address] = value;
 
         // from CTurt/Cinoop
-        if(address >= 0xa000 && address <= 0xbfff) {
+        if (address >= 0 && address <= 0x7fff) {
+            cartMbc.romWrite(address, value);
+        }
+        else if(address >= 0xa000 && address <= 0xbfff) {
             sram[address - 0xa000] = value;
         }
         else if(address >= 0x8000 && address <= 0x9fff) {

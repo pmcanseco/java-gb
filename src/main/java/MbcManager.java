@@ -5,6 +5,7 @@ import java.util.Map;
  * Created by Pablo Canseco on 4/17/2018.
  */
 public class MbcManager {
+    private Logger log = new Logger("MBC");
 
     public enum MbcType {
         ROM_ONLY,
@@ -75,22 +76,72 @@ public class MbcManager {
     }
 
     private final Cartridge cart;
-    private int romBankSelected;
+    private final MbcType mbcType;
+    private int romBankSelected = 1;
     private boolean ramEnabled;
-    private int ramBankSelected;
-    private boolean isRomMode;
+    private int ramBankSelected = 0;
+    private boolean isRomMode = true;
 
-    public MbcManager(Cartridge cart) {
+    MbcManager(Cartridge cart) {
         this.cart = cart;
+        this.mbcType = cart.getCartridgeType().mbcType;
     }
 
     public int readFromAddress(int address) {
-        return cart.readFromAddress(address);
+        switch (mbcType) {
+            case ROM_ONLY:
+                return cart.readFromAddress(address);
+            case MBC1:
+                if (address < 0x4000) {
+                    return cart.readFromAddress(address);
+                }
+                else {
+                    int effectiveAddress = (romBankSelected * 0x4000) + (address - 0x4000);
+                    return cart.readFromAddress(effectiveAddress);
+                }
+            default:
+                log.warning(mbcType.name() + " is not implemented yet. Reading from provided address");
+                return cart.readFromAddress(address);
+        }
     }
 
-    public MbcType getMbcType() {
-        return this.cart.getCartridgeType().mbcType;
+    public void romWrite(int address, int value) {
+        switch (mbcType) {
+            case ROM_ONLY:
+                log.debug("Cartridge is ROM_ONLY so writing to ROM won't do anything");
+                break;
+            case MBC1:
+
+                if (address <= 0x1FFF) {
+                    // lower 4 bits == 0xA means enable. Anything else disable.
+                    ramEnabled = ((value & 0b0000_1111) == 0xA);
+                    log.debug("ram enabled set to " + ramEnabled);
+                }
+                else if (address <= 0x3FFF) {
+                    // write the lower 5 bits of romBank selection
+                    romBankSelected = (value & 0b0001_1111);
+                    log.debug("selected " + romBankSelected + " for rom bank low");
+                }
+                else if (address <= 0x5FFF) {
+                    if (isRomMode) {
+                        romBankSelected &= 0b1001_1111; // clear bits 5 and 6
+                        romBankSelected |= (value & 0b0000_0011) << 5; // replace bits 1 and 2 from value
+                        log.debug("selected " + romBankSelected + " for rom bank high");
+                    }
+                    else {
+                        ramBankSelected = (value & 0b0000_0011); // select a bank from 0 to 3
+                        log.debug("selected ram bank " + ramBankSelected);
+                    }
+                }
+                else if (address <= 0x7FFF) {
+                    isRomMode = (value == 0); // 0=rom, 1=ram
+                    log.debug("rom mode set to " + isRomMode);
+                }
+
+                break;
+            default:
+                log.warning(mbcType.name() + " is not implemented yet. Rom write ignored.");
+                break;
+        }
     }
-
-
 }

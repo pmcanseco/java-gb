@@ -80,9 +80,9 @@ public class Cartridge {
         loadRomFile(path);
     }
 
-    Cartridge(String path, boolean print) {
+    Cartridge(String path, boolean printCartInfo) {
         this(path);
-        if (print) {
+        if (printCartInfo) {
             System.out.println("Loaded ROM: " + path);
             System.out.println(this.toString());
         }

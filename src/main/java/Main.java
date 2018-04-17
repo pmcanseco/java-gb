@@ -1,33 +1,36 @@
-import org.kohsuke.args4j.CmdLineException;
-import org.kohsuke.args4j.CmdLineParser;
-import org.kohsuke.args4j.Option;
-import static org.kohsuke.args4j.OptionHandlerFilter.ALL;
+import java.util.Arrays;
+import java.util.List;
 
+/**
+ * This class serves as the entry point for executing the emulator. It also takes care of
+ * commandline arguments
+ */
 public class Main {
 
-    @Option(name = "-sb", aliases = { "--skip-bootrom" }, /*required = false,*/
-            usage = "If ran with the -sb flag, the bootrom will be skipped and the" +
-                    "game will immediately begin executing.")
-    public static boolean skipBootRom;
+    public static boolean skipBootrom;
+    private static boolean cartParseOnly;
 
     public static void main(String[] args) {
         Logger log = new Logger("Main");
-        CmdLineParser parser = new CmdLineParser(Main.class);
-        try {
-            parser.parseArgument(args);
-        }
-        catch(CmdLineException e ) {
-            System.err.println(e.getMessage());
-            parser.printUsage(System.err);
-            System.err.println();
-            System.err.println("  Example: java Main "+parser.printExample(ALL));
 
+        // process commandline arguments
+        List<String> argsList = Arrays.asList(args);
+        skipBootrom = argsList.contains("-sb") || argsList.contains("--skip-bootrom");
+        cartParseOnly = argsList.contains("-cpo") || argsList.contains("--cart-parse-only");
+
+        if (argsList.contains("-h") || argsList.contains("-help") || argsList.contains("--help")) {
+            System.out.println("USAGE: java Main [options]");
+            System.out.println("\t\t -sb (--skip-bootrom) Begin executing the game immediately, bypassing the Nintendo logo scroll.");
             return;
         }
 
-        //log.info("Skip Bootrom set to " + skipBootrom);
+        // log command line argument values:
+        log.info("Skip Bootrom  set to " + skipBootrom);
+        log.info("CartParseOnly set to " + cartParseOnly);
 
 
+        // instantiate classes
+        Cartridge cart = new Cartridge("src/test/resources/gb-test-roms/cpu_instrs/cpu_instrs.gb", true);
         //Cartridge cart = new Cartridge("src/test/resources/gb-test-roms/cpu_instrs/individual/01-special.gb", true);
         //Cartridge cart = new Cartridge("src/test/resources/gb-test-roms/cpu_instrs/individual/02-interrupts.gb", true);
         //Cartridge cart = new Cartridge("src/test/resources/gb-test-roms/cpu_instrs/individual/03-op sp,hl.gb", true);
@@ -63,14 +66,18 @@ public class Main {
         //Cartridge cart = new Cartridge("src/test/resources/mooneye-gb-test-roms/tests/acceptance/timer/tim00.gb", true);
 
 
-        Cartridge cart = new Cartridge("src/test/resources/gb-test-roms/cpu_instrs/cpu_instrs.gb", true);
         //Cartridge cart = new Cartridge("src/main/resources/tetris.gb", true);
+
+        if (cartParseOnly) {
+            return;
+        }
 
         MbcManager mbc = new MbcManager(cart);
         Gpu gpu = new Gpu();
         MemoryManager mmu = new MemoryManager(mbc, gpu);
         Cpu cpu = new Cpu(mmu, gpu);
 
+        // go
         cpu.main();
     }
 }
