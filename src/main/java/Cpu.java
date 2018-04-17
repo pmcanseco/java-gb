@@ -451,13 +451,8 @@ public class Cpu {
             skipBootrom();
         }
 
-        int i = 0;
         while (true) {
             step();
-
-            if (registerPC.read() == 0xfe)
-                log.fatal("Exited bootrom in " + i + " cycles.");
-            i++;
         }
     }
     public void step() {

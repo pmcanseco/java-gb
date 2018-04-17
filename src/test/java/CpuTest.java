@@ -27,6 +27,7 @@ public class CpuTest extends UnitTest {
     }
     private void randomizeMemory() {
         for (int i = 0; i < mmu.memorySize; i++) {
+            if (i == 0xFF0F || i == 0xFF00 ) continue;
             mmu.writeByte(i, rng.nextInt(256));
         }
     }
