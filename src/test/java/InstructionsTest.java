@@ -56,7 +56,7 @@ public class InstructionsTest extends UnitTest {
         Display.getTestInstace();
         Gpu gpu = new Gpu();
         MemoryManager mmu = new MemoryManager(new MbcManager(new Cartridge("src/test/resources/gb-test-roms/cpu_instrs/cpu_instrs.gb"), Logger.Level.FATAL), gpu);
-        cpu = new Cpu(mmu, Logger.Level.FATAL);
+        cpu = new Cpu(mmu, gpu, Logger.Level.FATAL);
     }
 
     @Test

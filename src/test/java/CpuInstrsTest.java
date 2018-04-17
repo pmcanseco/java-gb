@@ -26,7 +26,7 @@ public class CpuInstrsTest extends UnitTest {
         String baseFilePath = "src/test/resources/gb-test-roms/cpu_instrs/individual/";
         MbcManager cartMbc = new MbcManager(new Cartridge(baseFilePath + romName));
         MemoryManager mmu = new MemoryManager(cartMbc, gpu);
-        cpuUut = new Cpu(mmu, Logger.Level.FATAL);
+        cpuUut = new Cpu(mmu, gpu, Logger.Level.FATAL);
         cpuUut.skipBootrom();
     }
     private void initFullTest() {
@@ -38,7 +38,7 @@ public class CpuInstrsTest extends UnitTest {
         String path = "src/test/resources/gb-test-roms/cpu_instrs/cpu_instrs.gb";
         MbcManager cartMbc = new MbcManager(new Cartridge(path));
         MemoryManager mmu = new MemoryManager(cartMbc, gpu);
-        cpuUut = new Cpu(mmu, Logger.Level.FATAL);
+        cpuUut = new Cpu(mmu, gpu, Logger.Level.FATAL);
         // do not skip bootrom, to further exercise bootrom completion.
     }
     private void runTest(boolean fullTest) {
@@ -76,18 +76,21 @@ public class CpuInstrsTest extends UnitTest {
             }
 
             // if test is done, break out of loop
-            if (  (runningLog.toString().contains("Passed") ||
-                   runningLog.toString().contains("Failed")) &&
-                 !fullTest  )
-            {
-                System.out.println(); System.out.println();
-                break;
+            if (!fullTest) {
+                if (runningLog.toString().contains("Passed") ||
+                    runningLog.toString().contains("Failed")) {
+                    System.out.println();
+                    System.out.println();
+                    break;
+                }
             }
-            else if (  fullTest &&
-                        (runningLog.toString().contains("Failed") ||
-                         runningLog.toString().contains("Passed all tests"))  ) {
-                System.out.println(); System.out.println();
-                break;
+            else {
+                if (runningLog.toString().contains("Failed") ||
+                    runningLog.toString().contains("Passed all tests")) {
+                    System.out.println();
+                    System.out.println();
+                    break;
+                }
             }
 
             // timeout to catch infinite loops

@@ -88,6 +88,10 @@ public class Cpu {
         this(memMgr);
         this.log = new Logger(name, level);
     }
+    Cpu(MemoryManager memMgr, Gpu gpu, Logger.Level level) {
+        this(memMgr, gpu);
+        this.log = new Logger(name, level);
+    }
 
     private int fetch() {
         int opcode = mmu.readByte(registerPC.read());
@@ -447,8 +451,13 @@ public class Cpu {
             skipBootrom();
         }
 
+        int i = 0;
         while (true) {
             step();
+
+            if (registerPC.read() == 0xfe)
+                log.fatal("Exited bootrom in " + i + " cycles.");
+            i++;
         }
     }
     public void step() {
