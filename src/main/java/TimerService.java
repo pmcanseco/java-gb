@@ -2,7 +2,7 @@
  * Created by Pablo Canseco on 4/10/2018.
  */
 public class TimerService {
-    private Logger log = new Logger("TIM", Logger.Level.ERROR);
+    private Logger log = new Logger("TIM", Logger.Level.INFO);
 
     // Singleton
     private static TimerService instance;
@@ -54,7 +54,7 @@ public class TimerService {
     // functions
     public void step(int clocksElapsed) {
         divClock += clocksElapsed;
-        if (divClock >= 255) {
+        if (divClock > 255) {
             divider++;
             divider &= 0b1111_1111;
             divClock %= 256;
@@ -101,11 +101,6 @@ public class TimerService {
     public void setControl(int value) {
         int speedValue   = value & 0b0000_0011;
         int runningValue = value & 0b0000_0100;
-
-        // obscure behavior in the hardware
-        if (this.speed.controlValue == 0 && speedValue == 1 && runningValue != 0) {
-            counter++;
-        }
 
         this.speed = TimerSpeed.findByControlValue(speedValue);
         this.isRunning = runningValue != 0;
