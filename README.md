@@ -8,7 +8,7 @@
 
 
 ## Progress:
-![Tetris Main Screen](https://i.imgur.com/JBRPeL2.gif) &nbsp; ![CPU_INSTRS](https://i.imgur.com/rD1P93j.png)
+![Tetris Main Screen](https://i.imgur.com/6zbdaB3.gif) &nbsp; ![CPU_INSTRS](https://i.imgur.com/rD1P93j.png)
 
 **Blargg CPU_INSTRS: ✅**
 - [X] 01-special
