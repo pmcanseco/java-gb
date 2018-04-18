@@ -1,8 +1,4 @@
-import javax.swing.ImageIcon;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.WindowConstants;
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -42,7 +38,7 @@ public class Display extends JPanel implements KeyListener {
     }
     private Display() {
         initAppWindow();
-        canvasTestPattern();
+        //canvasTestPattern();
     }
     private Display(boolean testMode) {
         this.isTestMode = testMode;
@@ -52,6 +48,9 @@ public class Display extends JPanel implements KeyListener {
 
     private BufferedImage canvas;
     private JFrame frame;
+    private final int frameXoffset = 6;
+    private final int frameYoffset = 37;
+    private final int scaleFactor = 2;
 
     public enum Colors {
 
@@ -87,14 +86,14 @@ public class Display extends JPanel implements KeyListener {
 
     private void initAppWindow() {
         frame = new JFrame("java-gb");
-        canvas = new BufferedImage(Gpu.width, Gpu.height, BufferedImage.TYPE_INT_ARGB);
-        frame.setSize(320, 288);
+        canvas = new BufferedImage(Gpu.width * scaleFactor, Gpu.height * scaleFactor, BufferedImage.TYPE_INT_ARGB);
+        frame.setSize((Gpu.width * scaleFactor) + frameXoffset, (Gpu.height * scaleFactor) + frameYoffset);
         frame.add(this);
         frame.setVisible(true);
         frame.setResizable(false);
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        frame.getContentPane().setLayout(new FlowLayout());
-        frame.getContentPane().add(new JLabel(new ImageIcon(canvas)));
+        frame.getContentPane().setLayout(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        frame.getContentPane().add(new JLabel(new ImageIcon(canvas)), FlowLayout.LEFT);
         frame.addKeyListener(this);
     }
     private void canvasTestPattern() {
@@ -117,9 +116,9 @@ public class Display extends JPanel implements KeyListener {
 
     public void renderFrame(int[] screen) {
         if (!isTestMode) {
-            for (int y = 0; y < 144; y++) {
-                for (int x = 0; x < 160; x++) {
-                    Colors c = Colors.get(screen[((160 * y) + x)]);
+            for (int y = 0; y < 144 * scaleFactor; y++) {
+                for (int x = 0; x < 160 * scaleFactor; x++) {
+                    Colors c = Colors.get(screen[((160 * (y/scaleFactor)) + (x/scaleFactor))]);
                     canvas.setRGB(x, y, c.getColor().getRGB());
                 }
             }

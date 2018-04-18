@@ -7,7 +7,7 @@ import java.util.Map;
  */
 public class Cpu {
     private final String name = "CPU";
-    private Logger log = new Logger(name, Logger.Level.INFO);
+    private Logger log = new Logger(name, Logger.Level.WARN);
 
     // 8-bit registers
     private Register registerA;
@@ -375,7 +375,7 @@ public class Cpu {
             if (InterruptManager.getInstance().isMasterEnabled()) {
                 if (e.getValue().isEnabled()) {
 
-                    //if (e.getKey() != InterruptManager.InterruptTypes.VBLANK)
+                    if (e.getKey() != InterruptManager.InterruptTypes.VBLANK)
                         log.info("handling " + e.getValue().name + " interrupt");
 
                     isAnyInterruptGettingHandled = true;
@@ -383,7 +383,7 @@ public class Cpu {
                     // save current address
                     pushHelper(registerPC.read());
 
-                    // jump to interrupt handlerc
+                    // jump to interrupt handler
                     registerPC.write(e.getKey().handler);
 
                     e.getValue().clear();

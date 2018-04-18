@@ -8,7 +8,6 @@ import java.util.List;
 public class Main {
 
     public static boolean skipBootrom;
-    private static boolean cartParseOnly;
 
     public static void main(String[] args) {
         Logger log = new Logger("Main");
@@ -16,7 +15,7 @@ public class Main {
         // process commandline arguments
         List<String> argsList = Arrays.asList(args);
         skipBootrom = argsList.contains("-sb") || argsList.contains("--skip-bootrom");
-        cartParseOnly = argsList.contains("-cpo") || argsList.contains("--cart-parse-only");
+        boolean cartParseOnly = argsList.contains("-cpo") || argsList.contains("--cart-parse-only");
 
         if (argsList.contains("-h") || argsList.contains("-help") || argsList.contains("--help")) {
             System.out.println("USAGE: java Main [options]");
@@ -30,7 +29,7 @@ public class Main {
 
 
         // cpu_instrs
-        Cartridge cart = new Cartridge("src/test/resources/gb-test-roms/cpu_instrs/cpu_instrs.gb", true);
+        //Cartridge cart = new Cartridge("src/test/resources/gb-test-roms/cpu_instrs/cpu_instrs.gb", true);
         //Cartridge cart = new Cartridge("src/test/resources/gb-test-roms/cpu_instrs/individual/01-special.gb", true);
         //Cartridge cart = new Cartridge("src/test/resources/gb-test-roms/cpu_instrs/individual/02-interrupts.gb", true);
         //Cartridge cart = new Cartridge("src/test/resources/gb-test-roms/cpu_instrs/individual/03-op sp,hl.gb", true);
@@ -41,15 +40,12 @@ public class Main {
         //Cartridge cart = new Cartridge("src/test/resources/gb-test-roms/cpu_instrs/individual/09-op r,r.gb", true);
         //Cartridge cart = new Cartridge("src/test/resources/gb-test-roms/cpu_instrs/individual/10-bit ops.gb", true);
 
-
-        // mem_timing
-        //Cartridge cart = new Cartridge("src/test/resources/gb-test-roms/mem_timing/individual/01-read_timing.gb", true);
-        //Cartridge cart = new Cartridge("src/test/resources/gb-test-roms/mem_timing/individual/02-write_timing.gb", true);
-
         // instr_timing
         //Cartridge cart = new Cartridge("src/test/resources/gb-test-roms/instr_timing/instr_timing.gb", true);
 
         // mem_timing
+        //Cartridge cart = new Cartridge("src/test/resources/gb-test-roms/mem_timing/individual/01-read_timing.gb", true);
+        //Cartridge cart = new Cartridge("src/test/resources/gb-test-roms/mem_timing/individual/02-write_timing.gb", true);
         //Cartridge cart = new Cartridge("src/test/resources/gb-test-roms/mem_timing/mem_timing.gb", true);
         //Cartridge cart = new Cartridge("src/test/resources/gb-test-roms/mem_timing-2/mem_timing.gb", true);
 
@@ -66,7 +62,7 @@ public class Main {
         //Cartridge cart = new Cartridge("src/test/resources/mooneye-gb-test-roms/tests/acceptance/timer/tim00.gb", true);
 
 
-        //Cartridge cart = new Cartridge("src/main/resources/tetris.gb", true);
+        Cartridge cart = new Cartridge("src/main/resources/tetris.gb", true);
 
         if (cartParseOnly) {
             return;
