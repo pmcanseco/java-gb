@@ -47,14 +47,15 @@ public class Display extends JPanel implements KeyListener {
         log = new Logger(name, Logger.Level.WARN);
     }
 
-    GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-    GraphicsConfiguration gc = ge.getDefaultScreenDevice().getDefaultConfiguration();
+    GraphicsEnvironment ge;
+    GraphicsConfiguration gc;
     private BufferedImage canvasBuffer;
     private VolatileImage canvas;
     private JFrame frame;
-    private final int frameXoffset = 6;
-    private final int frameYoffset = 37;
+
     private final int scaleFactor = 2;
+    private final int frameXoffset = 6;
+    private final int frameYoffset = 34;
 
     public enum Colors {
 
@@ -90,6 +91,9 @@ public class Display extends JPanel implements KeyListener {
 
     private void initAppWindow() {
         frame = new JFrame("java-gb");
+
+        ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+        gc = ge.getDefaultScreenDevice().getDefaultConfiguration();
 
         canvasBuffer = gc.createCompatibleImage(Gpu.width, Gpu.height, Transparency.TRANSLUCENT);
         canvas = gc.createCompatibleVolatileImage(Gpu.width * scaleFactor, Gpu.height  * scaleFactor, Transparency.TRANSLUCENT);
@@ -133,6 +137,7 @@ public class Display extends JPanel implements KeyListener {
                     canvasBuffer.setRGB(x, y, c.getColor().getRGB());
                 }
             }
+
             Graphics2D g2 = canvas.createGraphics();
             g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
             g2.drawImage(canvasBuffer, 0, 0, Gpu.width * scaleFactor, Gpu.height * scaleFactor, null);
