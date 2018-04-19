@@ -58,4 +58,31 @@ public class InterruptManagerTest extends UnitTest {
         assertEquals(2, getIM().getRaisedInterrupts().size());
     }
 
+    @Test
+    public void testRegisterIF() {
+        InterruptManager.reset();
+
+        assertEquals(0, getIM().getInterruptsRaised());
+
+        getIM().raiseInterrupt(InterruptManager.InterruptTypes.VBLANK);
+        assertEquals(1, getIM().getInterruptsRaised());
+
+        getIM().raiseInterrupt(InterruptManager.InterruptTypes.JOYPAD_INPUT);
+        assertEquals(0b0001_0001, getIM().getInterruptsRaised());
+    }
+
+    @Test
+    public void testRegisterIE() {
+        InterruptManager.reset();
+
+        assertEquals(0, getIM().getInterruptsEnabled());
+
+        getIM().enableInterrupt(InterruptManager.InterruptTypes.VBLANK);
+        assertEquals(1, getIM().getInterruptsEnabled());
+
+        getIM().enableInterrupt(0b0000_1000);
+        assertEquals(0b0000_1000, getIM().getInterruptsEnabled());
+
+    }
+
 }

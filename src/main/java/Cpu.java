@@ -468,7 +468,11 @@ public class Cpu {
             gpu.step(lastInstructionCycles);
             processEi(opcode);
         }
+        else {
+            lastInstructionCycles = 4;
+        }
 
+        gpu.step(lastInstructionCycles);
         TimerService.getInstance().step(lastInstructionCycles);
 
         processInterrupts();

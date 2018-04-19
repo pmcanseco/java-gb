@@ -111,23 +111,6 @@ public class Display extends JPanel implements KeyListener {
         log.info("HW Acceleration:       " + canvas.getCapabilities(gc).isAccelerated());
         log.info("Acceleration Priority: " + canvas.getAccelerationPriority());
     }
-    private void canvasTestPattern() {
-        for (int i = 0; i < 160; i++) {
-            for (int j = 0; j < 144; j++) {
-                canvasBuffer.setRGB(i, j, Colors.getRandomColor().getRGB());
-
-                if (i < (160/2) && j < (144/2))
-                    canvasBuffer.setRGB(i, j, Colors.DARK.getColor().getRGB());
-                else if (i < (160/2) && j > (144/2))
-                    canvasBuffer.setRGB(i, j, Colors.DARK.getColor().getRGB());
-                else if (i > (160/2) && j < (144/2))
-                    canvasBuffer.setRGB(i, j, Colors.LIGHT.getColor().getRGB());
-                else
-                    canvasBuffer.setRGB(i, j, Colors.getRandomColor().getRGB());
-            }
-        }
-        frame.repaint();
-    }
 
     public void renderFrame(int[] screen) {
         if (!isTestMode) {

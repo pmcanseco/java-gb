@@ -3,22 +3,26 @@
  */
 class Logger { // extend me for logging facilities.
 
-   public enum Level {
+    public enum Level {
         DEBUG("DEBUG"),
-        INFO ("\u001B[36mINFO "),
-        WARN ("\u001B[33mWARN "),
+        INFO("\u001B[36mINFO "),
+        WARN("\u001B[33mWARN "),
         ERROR("\u001B[31mERROR"),
         FATAL("\u001B[31;1mFATAL");
 
         String levelString;
+
         Level(String s) {
             this.levelString = s;
         }
     }
 
+    public String noColor = "\u001B[0m";
+
     Logger(String name) {
-       this.className = name;
+        this.className = name;
     }
+
     Logger(String name, Level level) {
         this(name);
         this.level = level.ordinal();
@@ -29,11 +33,11 @@ class Logger { // extend me for logging facilities.
 
     private void log(Level level, String msg) {
         if (level.ordinal() >= this.level) {
-            String noColor = "\u001B[0m";
+
             String brightBlack = "\u001B[90m";
             System.out.println(level.levelString
                     + " - " + className + ": " + msg + " "
-                    + brightBlack + "(line " + Thread.currentThread().getStackTrace()[2].getLineNumber()
+                    + brightBlack + "(" + Thread.currentThread().getStackTrace()[3].getFileName() + ":" + Thread.currentThread().getStackTrace()[3].getLineNumber()
                     + ")" + noColor);
         }
     }
@@ -41,15 +45,19 @@ class Logger { // extend me for logging facilities.
     void debug(String msg) {
         log(Level.DEBUG, msg);
     }
+
     void info(String msg) {
         log(Level.INFO, msg);
     }
+
     void warning(String msg) {
         log(Level.WARN, msg);
     }
+
     void error(String msg) {
         log(Level.ERROR, msg);
     }
+
     void fatal(String msg) {
         log(Level.FATAL, msg);
     }

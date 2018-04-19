@@ -50,7 +50,6 @@ class Gpu extends JPanel {
                 if (modeClock >= 80) {
                     currentMode = Mode.VRAM_ACCESS;
                     modeClock = 0;
-                    //log.debug("Entering VRAM_ACCESS line" + line);
                 }
                 break;
             case VRAM_ACCESS:
@@ -76,7 +75,6 @@ class Gpu extends JPanel {
                     }
                     else {
                         currentMode = Mode.OAM_ACCESS;
-                        //log.debug("Entering OAM_ACCESS line" + line);
                     }
                 }
                 break;
@@ -94,8 +92,8 @@ class Gpu extends JPanel {
                 break;
         }
 
-        processLcdStatusInterrupts();
         lcdStatus = getLcdStatus();
+        processLcdStatusInterrupts();
     }
 
     public void updateTile(int address, int value) {
@@ -172,7 +170,11 @@ class Gpu extends JPanel {
         if (line == lyc) {
             value |= 0b0000_0100;
         }
+        else {
+            value &= 0b1111_1011;
+        }
 
+        value &= 0b1111_1100;
         value |= currentMode.ordinal();
 
         return value;

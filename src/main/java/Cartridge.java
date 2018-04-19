@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Scanner;
 
 public class Cartridge {
+    private Logger log = new Logger("CART");
 
     private enum Locale {
         Japanese,
@@ -83,8 +84,7 @@ public class Cartridge {
     Cartridge(String path, boolean printCartInfo) {
         this(path);
         if (printCartInfo) {
-            System.out.println("Loaded ROM: " + path);
-            System.out.println(this.toString());
+            log.info(log.noColor + "\nLoaded ROM: " + path + "\n" + this.toString());
         }
     }
 

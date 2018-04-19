@@ -10,24 +10,27 @@ public class Main {
     public static boolean skipBootrom;
 
     public static void main(String[] args) {
-        System.setProperty("sun.java2d.opengl", "true");
         Logger log = new Logger("Main");
-        log.info("\"sun.java2d.opengl\" set to " + System.getProperty("sun.java2d.opengl"));
 
         // process commandline arguments
         List<String> argsList = Arrays.asList(args);
         skipBootrom = argsList.contains("-sb") || argsList.contains("--skip-bootrom");
         boolean cartParseOnly = argsList.contains("-cpo") || argsList.contains("--cart-parse-only");
+        boolean noAcceleration = argsList.contains("-noaccel") || argsList.contains("--no-hw-acceleration");
 
         if (argsList.contains("-h") || argsList.contains("-help") || argsList.contains("--help")) {
             System.out.println("USAGE: java Main [options]");
-            System.out.println("\t\t -sb (--skip-bootrom) Begin executing the game immediately, bypassing the Nintendo logo scroll.");
+            System.out.println("\t -sb      (--skip-bootrom) \t\t\tBegin executing the game immediately, bypassing the Nintendo logo scroll.");
+            System.out.println("\t -noaccel (--no-hw-acceleration) \tDisables the use of Java2D OpenGL.");
             return;
         }
 
         // log command line argument values:
-        log.info("Skip Bootrom  set to " + skipBootrom);
-        log.info("CartParseOnly set to " + cartParseOnly);
+        log.info("======= CMDLINE PARAMS =======");
+        log.info("Skip Bootrom   set to " + skipBootrom);
+        log.info("CartParseOnly  set to " + cartParseOnly);
+        log.info("noAcceleration set to " + noAcceleration);
+        log.info("==============================");
 
 
         // cpu_instrs
@@ -67,13 +70,18 @@ public class Main {
         //Cartridge cart = new Cartridge("src/test/resources/mooneye-gb-test-roms/tests/acceptance/timer/tim00.gb", true);
 
 
-        //Cartridge cart = new Cartridge("src/main/resources/tetris.gb", true);
-        Cartridge cart = new Cartridge("src/main/resources/drmario.gb", true);
+        Cartridge cart = new Cartridge("src/main/resources/tetris.gb", true);
+        //Cartridge cart = new Cartridge("src/main/resources/drmario.gb", true);
 
 
         if (cartParseOnly) {
             return;
         }
+
+        if (!noAcceleration) {
+            System.setProperty("sun.java2d.opengl", "true");
+        }
+        log.info("\"sun.java2d.opengl\" set to " + System.getProperty("sun.java2d.opengl"));
 
         MbcManager mbc = new MbcManager(cart);
         Gpu gpu = new Gpu();
