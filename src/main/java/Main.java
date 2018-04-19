@@ -43,6 +43,9 @@ public class Main {
         // instr_timing
         //Cartridge cart = new Cartridge("src/test/resources/gb-test-roms/instr_timing/instr_timing.gb", true);
 
+        // interrupt_time
+        //Cartridge cart = new Cartridge("src/test/resources/gb-test-roms/interrupt_time/interrupt_time.gb", true);
+
         // mem_timing
         //Cartridge cart = new Cartridge("src/test/resources/gb-test-roms/mem_timing/individual/01-read_timing.gb", true);
         //Cartridge cart = new Cartridge("src/test/resources/gb-test-roms/mem_timing/individual/02-write_timing.gb", true);
@@ -62,7 +65,8 @@ public class Main {
         //Cartridge cart = new Cartridge("src/test/resources/mooneye-gb-test-roms/tests/acceptance/timer/tim00.gb", true);
 
 
-        Cartridge cart = new Cartridge("src/main/resources/tetris.gb", true);
+        //Cartridge cart = new Cartridge("src/main/resources/tetris.gb", true);
+        Cartridge cart = new Cartridge("src/main/resources/drmario.gb", true);
 
         if (cartParseOnly) {
             return;

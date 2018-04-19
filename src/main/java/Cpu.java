@@ -375,10 +375,9 @@ public class Cpu {
             if (InterruptManager.getInstance().isMasterEnabled()) {
                 if (e.getValue().isEnabled()) {
 
-                    if (e.getKey() != InterruptManager.InterruptTypes.VBLANK)
+                    //if (e.getKey() != InterruptManager.InterruptTypes.VBLANK)
                         log.info("handling " + e.getValue().name + " interrupt");
 
-                    isAnyInterruptGettingHandled = true;
 
                     // save current address
                     pushHelper(registerPC.read());
@@ -387,13 +386,12 @@ public class Cpu {
                     registerPC.write(e.getKey().handler);
 
                     e.getValue().clear();
+
+                    InterruptManager.getInstance().masterDisable();
+
+                    lastInstructionCycles = 20;
                 }
             }
-        }
-
-        if (isAnyInterruptGettingHandled) {
-            // disable ime
-            InterruptManager.getInstance().masterDisable();
         }
 
         // gpu interrupts are processed in gpu.step()
@@ -469,9 +467,6 @@ public class Cpu {
 
             gpu.step(lastInstructionCycles);
             processEi(opcode);
-        }
-        else {
-            lastInstructionCycles = 4;
         }
 
         TimerService.getInstance().step(lastInstructionCycles);
@@ -3776,7 +3771,7 @@ public class Cpu {
         temp <<= 8;
         address |= temp;
         load(registerPC, address); // load it into PC so it will be executed next.
-        lastInstructionCycles = 12;
+        lastInstructionCycles = 16;
     }
     public void jpcc(int opcode) {
         /*
@@ -3827,6 +3822,7 @@ public class Cpu {
 
         // if our condition for jumping is false, don't jump
         if (!condition) {
+            lastInstructionCycles = 12;
             return;
         }
 
@@ -3834,7 +3830,7 @@ public class Cpu {
         temp <<= 8;
         address |= temp;
         load(registerPC, address); // load it into PC so it will be executed next.
-        lastInstructionCycles = 12;
+        lastInstructionCycles = 16;
     }
     public void jphl(int opcode) {
         /*
@@ -3931,6 +3927,7 @@ public class Cpu {
 
         // if our condition for jumping is false, don't jump
         if (!condition) {
+            lastInstructionCycles = 8;
             return;
         }
 
@@ -4034,7 +4031,7 @@ public class Cpu {
         temp <<= 8;
         address |= temp;                              // combine
         load(registerPC, address);                    // jump to this address.
-        lastInstructionCycles = 20;
+        lastInstructionCycles = 24;
     }
 
     public void rst(int opcode) {
@@ -4100,13 +4097,12 @@ public class Cpu {
         }
         load(registerPC, address);
 
-        lastInstructionCycles = 32;
+        lastInstructionCycles = 16;
     }
 
     private void retHelper() {
         int address = popHelper();
         load(registerPC, address);
-        lastInstructionCycles = 8;
     }
     public void ret(int opcode) {
         /*
@@ -4123,6 +4119,7 @@ public class Cpu {
         }
 
         retHelper();
+        lastInstructionCycles = 16;
     }
     public void retcc(int opcode) {
         /*
@@ -4167,11 +4164,13 @@ public class Cpu {
 
         // if our condition for jumping is false, don't jump
         if (!condition) {
+            lastInstructionCycles = 8;
             return;
         }
 
         // actually return/jump
         retHelper();
+        lastInstructionCycles = 20;
     }
     public void reti(int opcode) {
         /*3. RETI
@@ -4189,5 +4188,6 @@ public class Cpu {
 
         retHelper();
         InterruptManager.getInstance().masterEnable();
+        lastInstructionCycles = 16;
     }
 }

@@ -35,8 +35,6 @@ public class MemoryManager {
     private Gpu gpu;
     public final int memorySize = 0xFFFF;
 
-    private int[] ram = new int[memorySize];
-
     private int[] sram = new int[0x2000]; // 8192
     private int[] io   = new int[0x100];  // 256
     private int[] oam  = new int[0x100];  // 256
@@ -54,12 +52,6 @@ public class MemoryManager {
         this.log = new Logger(this.getClass().getName(), Logger.Level.FATAL);
     }
 
-    public void zeroize() {
-        for (int i = 0; i < memorySize; i++) {
-            ram[i] = 0;
-        }
-    }
-
     public int readByte(final int address) throws IndexOutOfBoundsException {
         if (isValidMemoryAddress(address)) {
             //return ram[address];
@@ -73,6 +65,7 @@ public class MemoryManager {
                     }
                     else if (address == 0x0100) { // pc is 256
                         inBootrom = false;
+                        log.fatal("DIV=" + readByte(0xff04) + " AT PC=0x100");
                     }
                 }
                 return cartMbc.readFromAddress(address);
@@ -371,8 +364,4 @@ public class MemoryManager {
         }
     }
 
-    // DO NOT USE EXCEPT BY TEST
-    public int[] getRawRam() {
-        return this.ram;
-    }
 }

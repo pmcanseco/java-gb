@@ -20,7 +20,7 @@ public class TimerService {
     // members
     private static final int gameboyCpuSpeed = 4194304;
 
-    private int divider = 0;
+    private int divider = Main.skipBootrom ? 0xAB : 0;
     private int counter = 0;
     private int modulo = 0;
     private boolean isRunning = false;
@@ -48,17 +48,13 @@ public class TimerService {
         }
         //</editor-fold>
     }
-    private int divClock = 0;
     private int timerClock = 0;
 
     // functions
     public void step(int clocksElapsed) {
-        divClock += clocksElapsed;
-        if (divClock > 255) {
-            divider++;
-            divider &= 0b1111_1111;
-            divClock %= 256;
-            //log.info("DIV=" + divider);
+        divider+=clocksElapsed;
+        if (divider > 0xffff) {
+            divider = 0;
         }
 
         if (isRunning) {
@@ -80,15 +76,10 @@ public class TimerService {
         this.divider = 0;
         this.counter = 0;
 
-        // obscure hardware behavior
-        if (timerClock >= (getnumCyclesToIncrement() / 2)) {
-            counter++;
-        }
-
         log.warning("cleared divider");
     }
     public int getDivider() {
-        return this.divider;
+        return (this.divider & 0xFF00) >> 8;
     }
     public void setCounter(int value) {
         this.counter = value;

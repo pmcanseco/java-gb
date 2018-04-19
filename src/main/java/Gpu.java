@@ -124,11 +124,7 @@ class Gpu extends JPanel {
     }
     private void renderScanLine() {
         boolean bgmap =  ((lcdControl & 0b0000_1000) >> 3) != 0;
-        boolean bgtile = ((lcdControl & 0b0001_0000) >> 4) != 0;
-
-        if (line == 3 && scrollY == 0x4A) {
-            log.warning("WE ARE HERE");
-        }
+        boolean bgtile = ((lcdControl & 0b0001_0000) >> 4) == 0;
 
         int mapoffset = 0x1800; /*bgmap ? 0x1C00 : 0x1800;*/
         mapoffset += (((line + scrollY) & 0b1111_1111) >> 3) << 5;
@@ -143,9 +139,9 @@ class Gpu extends JPanel {
         int colorint;
         int tile = vram[mapoffset + lineoffset];
 
-        /*if (bgtile && (tile < 128)) {
+        if (bgtile && (tile < 128)) {
             tile += 256;
-        }*/
+        }
 
         int[] scanlineRow = new int[160];
 
@@ -162,27 +158,13 @@ class Gpu extends JPanel {
                 x = 0;
                 lineoffset = (lineoffset + 1) & 31;
                 tile = vram[mapoffset + lineoffset];
-                /*if (bgtile && (tile < 128)) {
+                if (bgtile && (tile < 128)) {
                     tile += 256;
-                }*/
+                }
             }
         }
         log.info("Rendered scanline " + this.line);
     }
-
-    /*public void dumpTileData() {
-        for(int tile = 0; tile < 0xFF; tile++) {
-            for (int y = 0; y < 8; y++) {
-                for (int x = 0; x < 8; x++) {
-                    System.out.print(String.format("%02x ", tileset[tile][y][x]).replace("00", "  "));
-                }
-                System.out.println();
-            }
-            System.out.println();
-            System.out.println();
-            System.out.println();
-        }
-    }*/
 
     public int getLcdStatus() {
         int value = lcdStatus;
@@ -212,7 +194,7 @@ class Gpu extends JPanel {
 
         if (  (lycIntEnable && lycCheckInt) ||
               oamCheckInt                   ||
-              vblankCheckInt                ||
+              /*vblankCheckInt                ||*/
               hblankCheckInt  ) {
 
             InterruptManager.getInstance().raiseInterrupt(InterruptManager.InterruptTypes.LCDC_STATUS);

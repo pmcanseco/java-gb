@@ -6,7 +6,7 @@ import java.util.Map;
  */
 public class MbcManager {
     private final String name = "MBC";
-    private Logger log = new Logger(name);
+    private Logger log = new Logger(name, Logger.Level.WARN);
 
     public enum MbcType {
         ROM_ONLY,
