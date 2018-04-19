@@ -1,3 +1,6 @@
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.awt.image.VolatileImage;
 import java.util.Arrays;
 import java.util.List;
 
@@ -10,7 +13,9 @@ public class Main {
     public static boolean skipBootrom;
 
     public static void main(String[] args) {
+        System.setProperty("sun.java2d.opengl", "true");
         Logger log = new Logger("Main");
+        log.info("\"sun.java2d.opengl\" set to " + System.getProperty("sun.java2d.opengl"));
 
         // process commandline arguments
         List<String> argsList = Arrays.asList(args);
@@ -67,6 +72,7 @@ public class Main {
 
         //Cartridge cart = new Cartridge("src/main/resources/tetris.gb", true);
         Cartridge cart = new Cartridge("src/main/resources/drmario.gb", true);
+
 
         if (cartParseOnly) {
             return;

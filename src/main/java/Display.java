@@ -3,6 +3,7 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.image.BufferedImage;
+import java.awt.image.VolatileImage;
 import java.util.Random;
 
 /**
@@ -12,7 +13,7 @@ import java.util.Random;
 public class Display extends JPanel implements KeyListener {
 
     private String name ="GUI";
-    private Logger log =  new Logger(name, Logger.Level.WARN);
+    private Logger log =  new Logger(name, Logger.Level.INFO);
     private boolean isTestMode = false;
 
     // Singleton
@@ -46,7 +47,10 @@ public class Display extends JPanel implements KeyListener {
         log = new Logger(name, Logger.Level.WARN);
     }
 
-    private BufferedImage canvas;
+    GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+    GraphicsConfiguration gc = ge.getDefaultScreenDevice().getDefaultConfiguration();
+    private BufferedImage canvasBuffer;
+    private VolatileImage canvas;
     private JFrame frame;
     private final int frameXoffset = 6;
     private final int frameYoffset = 37;
@@ -86,7 +90,11 @@ public class Display extends JPanel implements KeyListener {
 
     private void initAppWindow() {
         frame = new JFrame("java-gb");
-        canvas = new BufferedImage(Gpu.width * scaleFactor, Gpu.height * scaleFactor, BufferedImage.TYPE_INT_ARGB);
+
+        canvasBuffer = gc.createCompatibleImage(Gpu.width, Gpu.height, Transparency.TRANSLUCENT);
+        canvas = gc.createCompatibleVolatileImage(Gpu.width * scaleFactor, Gpu.height  * scaleFactor, Transparency.TRANSLUCENT);
+        canvas.setAccelerationPriority( (float) 1.0 );
+
         frame.setSize((Gpu.width * scaleFactor) + frameXoffset, (Gpu.height * scaleFactor) + frameYoffset);
         frame.add(this);
         frame.setVisible(true);
@@ -95,20 +103,23 @@ public class Display extends JPanel implements KeyListener {
         frame.getContentPane().setLayout(new FlowLayout(FlowLayout.LEFT, 0, 0));
         frame.getContentPane().add(new JLabel(new ImageIcon(canvas)), FlowLayout.LEFT);
         frame.addKeyListener(this);
+
+        log.info("HW Acceleration:       " + canvas.getCapabilities(gc).isAccelerated());
+        log.info("Acceleration Priority: " + canvas.getAccelerationPriority());
     }
     private void canvasTestPattern() {
         for (int i = 0; i < 160; i++) {
             for (int j = 0; j < 144; j++) {
-                canvas.setRGB(i, j, Colors.getRandomColor().getRGB());
+                canvasBuffer.setRGB(i, j, Colors.getRandomColor().getRGB());
 
                 if (i < (160/2) && j < (144/2))
-                    canvas.setRGB(i, j, Colors.DARK.getColor().getRGB());
+                    canvasBuffer.setRGB(i, j, Colors.DARK.getColor().getRGB());
                 else if (i < (160/2) && j > (144/2))
-                    canvas.setRGB(i, j, Colors.DARK.getColor().getRGB());
+                    canvasBuffer.setRGB(i, j, Colors.DARK.getColor().getRGB());
                 else if (i > (160/2) && j < (144/2))
-                    canvas.setRGB(i, j, Colors.LIGHT.getColor().getRGB());
+                    canvasBuffer.setRGB(i, j, Colors.LIGHT.getColor().getRGB());
                 else
-                    canvas.setRGB(i, j, Colors.getRandomColor().getRGB());
+                    canvasBuffer.setRGB(i, j, Colors.getRandomColor().getRGB());
             }
         }
         frame.repaint();
@@ -116,12 +127,16 @@ public class Display extends JPanel implements KeyListener {
 
     public void renderFrame(int[] screen) {
         if (!isTestMode) {
-            for (int y = 0; y < 144 * scaleFactor; y++) {
-                for (int x = 0; x < 160 * scaleFactor; x++) {
-                    Colors c = Colors.get(screen[((160 * (y/scaleFactor)) + (x/scaleFactor))]);
-                    canvas.setRGB(x, y, c.getColor().getRGB());
+            for (int y = 0; y < 144; y++) {
+                for (int x = 0; x < 160; x++) {
+                    Colors c = Colors.get(screen[((160 * (y)) + (x))]);
+                    canvasBuffer.setRGB(x, y, c.getColor().getRGB());
                 }
             }
+            Graphics2D g2 = canvas.createGraphics();
+            g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+            g2.drawImage(canvasBuffer, 0, 0, Gpu.width * scaleFactor, Gpu.height * scaleFactor, null);
+
             frame.repaint();
         }
     }

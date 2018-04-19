@@ -54,9 +54,8 @@ public class MemoryManager {
 
     public int readByte(final int address) throws IndexOutOfBoundsException {
         if (isValidMemoryAddress(address)) {
-            //return ram[address];
 
-            // from CTurt/Cinoop
+            // from github CTurt/Cinoop
             if (address <= 0x7fff) {
                 if (inBootrom)
                 {
@@ -183,9 +182,7 @@ public class MemoryManager {
             throw new NumberFormatException(value + " isn't between 0 and 255 inclusive");
         }
 
-        //ram[address] = value;
-
-        // from CTurt/Cinoop
+        // from github CTurt/Cinoop
         if (address >= 0 && address <= 0x7fff) {
             cartMbc.romWrite(address, value);
         }
