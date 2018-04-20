@@ -74,7 +74,9 @@ public class Main {
 
         //Cartridge cart = new Cartridge("src/main/resources/tetris.gb", true);
         //Cartridge cart = new Cartridge("src/main/resources/drmario.gb", true);
-        Cartridge cart = new Cartridge("src/main/resources/10-print.gb", true);
+        //Cartridge cart = new Cartridge("src/main/resources/10-print.gb", true);
+        //Cartridge cart = new Cartridge("src/main/resources/pokebluejp.gb", true);
+        Cartridge cart = new Cartridge("src/main/resources/supermarioland.gb", true);
 
 
         if (cartParseOnly) {

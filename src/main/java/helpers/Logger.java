@@ -40,7 +40,7 @@ public class Logger { // extend me for logging facilities.
             System.out.println(level.levelString
                     + " - " + className + ": " + msg + " "
                     + brightBlack + "("
-                    + Thread.currentThread().getStackTrace()[3].getFileName() + ":"
+                    + Thread.currentThread().getStackTrace()[3].getClassName() + ":"
                     + Thread.currentThread().getStackTrace()[3].getLineNumber()
                     + ")" + noColor);
         }

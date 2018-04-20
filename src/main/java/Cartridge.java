@@ -5,6 +5,18 @@ import java.nio.file.Files;
 import java.util.Scanner;
 
 public class Cartridge {
+    private static final int ADDRESS_RAM_SIZE = 0x0149;
+    private static final int ADDRESS_TITLE_START = 0x134;
+    private static final int ADDRESS_TITLE_END = 0x143;
+    private static final int ADDRESS_LOCALE = 0x14A;
+    private static final int ADDRESS_ROM_SIZE = 0x148;
+    private static final int ADDRESS_CART_TYPE = 0x0147;
+    private static final int ADDRESS_LOGO_START = 0x104;
+    private static final int ADDRESS_LOGO_END = 0x0133;
+    private static final int ADDRESS_HEADER_CHECKSUM_EXPECTED = 0x014D;
+    private static final int ADDRESS_HEADER_CHECKSUM_CALCULATED_START = 0x0134;
+    private static final int ADDRESS_HEADER_CHECKSUM_CALCULATED_END = 0x014C;
+
     private Logger log = new Logger("CART");
 
     private enum Locale {
@@ -113,20 +125,29 @@ public class Cartridge {
     private void setTitle() {
         // bytes at 0x0134 through 0x0143 contain the title
         StringBuilder sb = new StringBuilder();
-        for (int i=0x134; i<0x143; i++) sb.append((char) this.rom[i]);
+        for (int i = ADDRESS_TITLE_START; i<= ADDRESS_TITLE_END; i++) {
+            sb.append((char) this.rom[i]);
+        }
         this.title = sb.toString();
     }
 
     private void setLocale() {
         // 0x014A contains the destination code. 0 = Japan, 1 = anywhere else
-        if (rom[0x14A] == 0x00)  locale = Locale.Japanese;
-        else if (rom[0x14A] == 0x01) locale = Locale.World;
-        else locale = Locale.Unknown;
+        int localeValue = rom[ADDRESS_LOCALE];
+        if (localeValue == 0x00) {
+            locale = Locale.Japanese;
+        }
+        else if (localeValue == 0x01) {
+            locale = Locale.World;
+        }
+        else {
+            locale = Locale.Unknown;
+        }
     }
 
     private void setRamSize() {
         // 0x0149 is the size of the cart's ram.
-        switch (rom[0x0149]) {
+        switch (rom[ADDRESS_RAM_SIZE]) {
             case 0: this.ramSize = RamSize.None; break;
             case 1: this.ramSize = RamSize.Ram2KB; break;
             case 2: this.ramSize = RamSize.Ram8KB; break;
@@ -138,11 +159,11 @@ public class Cartridge {
     }
 
     private void setRomSize() {
-        this.romSize = RomSize.getById(rom[0x148]);
+        this.romSize = RomSize.getById(rom[ADDRESS_ROM_SIZE]);
     }
 
     private void setCartridgeType() {
-        this.cartridgeType = MbcManager.cartridgeTypes.get(rom[0x0147]);
+        this.cartridgeType = MbcManager.cartridgeTypes.get(rom[ADDRESS_CART_TYPE]);
     }
 
     private void verifyHeaderChecksum() {
@@ -151,12 +172,12 @@ public class Cartridge {
         // Formula: x=0:FOR i=0134h TO 014Ch:x=x-MEM[i]-1:NEXT
         // The lower 8 bits of the result must be the same than the value in this entry.
         // The GAME WON'T WORK if this headerChecksum is incorrect.
-        headerChecksum = rom[0x014D];
-        expectedHeaderChecksum = 0;
-        for (int i = 0x0134; i <= 0x014C; i++) {
-            expectedHeaderChecksum = expectedHeaderChecksum - rom[i] - 1;
+        expectedHeaderChecksum = rom[ADDRESS_HEADER_CHECKSUM_EXPECTED];
+        headerChecksum = 0;
+        for (int i = ADDRESS_HEADER_CHECKSUM_CALCULATED_START; i <= ADDRESS_HEADER_CHECKSUM_CALCULATED_END; i++) {
+            headerChecksum = headerChecksum - rom[i] - 1;
         }
-        expectedHeaderChecksum &= 255; // mask to lower 8 bits
+        headerChecksum &= 255; // mask to lower 8 bits
     }
 
     private void calculateCartAndBootromLogoChecksums() {
@@ -168,7 +189,7 @@ public class Cartridge {
         for (int i : MemoryManager.getBiosLogo())
             bootromLogoChecksum += i;
 
-        for (int i=0x104; i <= 0x0133; i++)
+        for (int i = ADDRESS_LOGO_START; i <= ADDRESS_LOGO_END; i++)
             cartridgeLogoChecksum += rom[i];
     }
 
@@ -190,5 +211,24 @@ public class Cartridge {
 
     public final MbcManager.CartridgeType getCartridgeType() {
         return this.cartridgeType;
+    }
+
+    public final int getRamSize() {
+        switch (ramSize) {
+            case None:
+                return 0;
+            case Ram2KB:
+                return 2048;
+            case Ram8KB:
+                return 8192;
+            case Ram32KB:
+                return 8192 * 4; // 8KB * 4
+            case Ram64KB:
+                return 8192 * 8; // 8KB * 8
+            case Ram128KB:
+                return 8192 * 16; // 8KB * 16
+            default:
+                return 0;
+        }
     }
 }

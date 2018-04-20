@@ -82,19 +82,30 @@ public class MbcManager {
     private final MbcType mbcType;
     private int romBankSelected = 1;
     private boolean ramEnabled;
-    private int ramBankSelected = 0;
+    private int ramBankSelected = 1;
     private boolean isRomMode = true;
+    private final boolean hasRam;
+    private final boolean hasBattery;
+    private final boolean hasTimer;
+    private int[] ram;
 
     MbcManager(Cartridge cart) {
         this.cart = cart;
-        this.mbcType = cart.getCartridgeType().mbcType;
+        this.mbcType    = cart.getCartridgeType().mbcType;
+        this.hasRam     = cart.getCartridgeType().hasRam;
+        this.hasBattery = cart.getCartridgeType().hasBattery;
+        this.hasTimer   = cart.getCartridgeType().hasTimer;
+        this.ram        = new int[cart.getRamSize()];
+        for(int i : ram) {
+            i = 0xFF;
+        }
     }
     MbcManager(Cartridge cart, Logger.Level logLevel) {
         this(cart);
         this.log = new Logger(name, logLevel);
     }
 
-    public int mbcRead(int address) {
+    public int mbcRead(final int address) {
         switch (mbcType) {
             case ROM_ONLY:
                 return cart.readFromAddress(address);
@@ -102,9 +113,26 @@ public class MbcManager {
                 if (address < 0x4000) {
                     return cart.readFromAddress(address);
                 }
-                else {
+                else if (address < 0x8000){
                     int effectiveAddress = (romBankSelected * 0x4000) + (address - 0x4000);
                     return cart.readFromAddress(effectiveAddress);
+                }
+                else if (address >= 0xA000 && address <= 0xBFFF) {
+                    if (!ramEnabled || !hasRam) {
+                        return 0xFF;
+                    }
+                    else if (ramBankSelected == 0) {
+                        log.debug(String.format("read from effective address 0x%04X, array 0x%04X", address, address - 0xA000));
+                        return ram[address - 0xA000];
+                    }
+                    else {
+                        int effectiveAddress = ((ramBankSelected * 0x2000) + (address - 0xA000));
+                        log.debug(String.format("read from effective address 0x%04X, array 0x%04X", address, effectiveAddress));
+                        return ram[effectiveAddress];
+                    }
+                }
+                else {
+                    log.error(String.format("mbcRead() at address 0x%04X is not supported", address));
                 }
             default:
                 log.warning(mbcType.name() + " is not implemented yet. Reading from provided address");
@@ -112,7 +140,7 @@ public class MbcManager {
         }
     }
 
-    public void mbcWrite(int address, int value) {
+    public void mbcWrite(final int address, final int value) {
         switch (mbcType) {
             case ROM_ONLY:
                 log.debug("Cartridge is ROM_ONLY so writing to ROM won't do anything");
@@ -128,6 +156,13 @@ public class MbcManager {
                     // write the lower 5 bits of romBank selection
                     romBankSelected = (value & 0b0001_1111);
                     log.debug("selected " + romBankSelected + " for rom bank low");
+
+                    if (romBankSelected == 0 ||
+                        romBankSelected == 0x20 ||
+                        romBankSelected == 0x40 ||
+                        romBankSelected == 0x60) {
+                        romBankSelected++;
+                    }
                 }
                 else if (address <= 0x5FFF) {
                     if (isRomMode) {
@@ -143,6 +178,20 @@ public class MbcManager {
                 else if (address <= 0x7FFF) {
                     isRomMode = (value == 0); // 0=rom, 1=ram
                     log.debug("rom mode set to " + isRomMode);
+                }
+                else if (address <= 0xBFFF && address >= 0xA000) {
+                    if (!ramEnabled || !hasRam) {
+                        return;
+                    }
+                    else if (ramBankSelected == 0) {
+                        log.debug(String.format("write ram at effective address 0x%04X, array 0x%04X", address, address - 0xA000));
+                        ram[address - 0xA000] = value;
+                    }
+                    else {
+                        int effectiveAddress = ((ramBankSelected * 0x2000) + (address - 0xA000));
+                        log.debug(String.format("write ram at effective address 0x%04X, array 0x%04X", address, effectiveAddress));
+                        ram[effectiveAddress] = value;
+                    }
                 }
 
                 break;

@@ -36,7 +36,6 @@ public class MemoryManager {
     private Gpu gpu;
     public final int memorySize = 0xFFFF;
 
-    private int[] sram = new int[0x2000]; // 8192
     private int[] io   = new int[0x100];  // 256
     private int[] oam  = new int[0x100];  // 256
     private int[] wram = new int[0x2000]; // 8192
@@ -74,7 +73,7 @@ public class MemoryManager {
                 return gpu.vram[address - 0x8000];
             }
             else if (address >= 0xa000 && address <= 0xbfff) {
-                return sram[address - 0xa000];
+                return cartMbc.mbcRead(address);
             }
             else if (address >= 0xc000 && address <= 0xdfff) {
                 return wram[address - 0xc000];
@@ -92,17 +91,12 @@ public class MemoryManager {
                 return processUnusedBits(address, gpu.getLcdStatus());
             }
             else if (address == 0xff42) {
-                if(gpu.scrollY <= 5) {
-                    log.debug("SCROLLY = " + gpu.scrollY);
-                }
-                //dumpVram();
                 return gpu.scrollY;
             }
             else if (address == 0xff43) {
                 return gpu.scrollX;
             }
             else if (address == 0xff44) {
-                log.debug("mmu read gpu.line = " + gpu.line);
                 return gpu.line; // read only
             }
             else if (address == 0xff45) {
@@ -188,7 +182,7 @@ public class MemoryManager {
             cartMbc.mbcWrite(address, value);
         }
         else if(address >= 0xa000 && address <= 0xbfff) {
-            sram[address - 0xa000] = value;
+            cartMbc.mbcWrite(address, value);
         }
         else if(address >= 0x8000 && address <= 0x9fff) {
             gpu.vram[address - 0x8000] = value;
