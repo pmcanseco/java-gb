@@ -1,7 +1,7 @@
+import helpers.Logger;
+
 import java.io.File;
 import java.nio.file.Files;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Scanner;
 
 public class Cartridge {

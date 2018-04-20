@@ -1,3 +1,5 @@
+import helpers.Logger;
+
 /**
  * Created by Pablo Canseco on 4/10/2018.
  */

@@ -1,3 +1,5 @@
+package helpers;
+
 public class FlagsRegister extends Register {
 
     // the ordinal number of each element here is used
@@ -13,7 +15,7 @@ public class FlagsRegister extends Register {
         Z
     }
 
-    FlagsRegister(String regName, int regSize, int regVal) {
+    public FlagsRegister(String regName, int regSize, int regVal) {
         super(regName, regSize, regVal);
     }
 

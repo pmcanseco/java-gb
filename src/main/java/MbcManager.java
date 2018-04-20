@@ -1,3 +1,5 @@
+import helpers.Logger;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,12 +25,12 @@ public class MbcManager {
     public static class CartridgeType {
         public final int id;
         public final String name;
-        public final MbcType mbcType;
-        public final boolean hasRam;
-        public final boolean hasBattery;
-        public final boolean hasTimer;
-        public final boolean hasRumble;
-        public final boolean hasAccelerometer;
+        private final MbcType mbcType;
+        private final boolean hasRam;
+        private final boolean hasBattery;
+        private final boolean hasTimer;
+        private final boolean hasRumble;
+        private final boolean hasAccelerometer;
         public CartridgeType(int id, String name, MbcType mbcType,
                              boolean ram, boolean bat,
                              boolean tmr, boolean rmbl,
@@ -92,7 +94,7 @@ public class MbcManager {
         this.log = new Logger(name, logLevel);
     }
 
-    public int readFromAddress(int address) {
+    public int mbcRead(int address) {
         switch (mbcType) {
             case ROM_ONLY:
                 return cart.readFromAddress(address);
@@ -110,7 +112,7 @@ public class MbcManager {
         }
     }
 
-    public void romWrite(int address, int value) {
+    public void mbcWrite(int address, int value) {
         switch (mbcType) {
             case ROM_ONLY:
                 log.debug("Cartridge is ROM_ONLY so writing to ROM won't do anything");

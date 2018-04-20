@@ -1,5 +1,6 @@
 import java.util.HashMap;
 import java.util.Map;
+import helpers.*;
 
 /**
  * Created by Pablo Canseco on 12/22/2017.
@@ -66,10 +67,10 @@ public class Cpu {
         // initialize 16-bit registers
         registerPC = new Register("PC", 16, 0);
         registerSP = new Register("SP", 16, 0);
-        //registerI   = new Register("I",   16, 0);
-        //registerR   = new Register("R",   16, 0);
-        //registerM   = new Register("M",   16, 0);
-        //registerT   = new Register("T",   16, 0);
+        //registerI   = new helpers.Register("I",   16, 0);
+        //registerR   = new helpers.Register("R",   16, 0);
+        //registerM   = new helpers.Register("M",   16, 0);
+        //registerT   = new helpers.Register("T",   16, 0);
         sixteenBitRegisters.put("PC", registerPC);
         sixteenBitRegisters.put("SP", registerSP);
         //sixteenBitRegisters.put("I",  registerI);

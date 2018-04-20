@@ -1,7 +1,9 @@
+package helpers;
+
 /**
  * Created by Pablo Canseco on 1/27/2018.
  */
-class Logger { // extend me for logging facilities.
+public class Logger { // extend me for logging facilities.
 
     public enum Level {
         DEBUG("DEBUG"),
@@ -19,11 +21,11 @@ class Logger { // extend me for logging facilities.
 
     public String noColor = "\u001B[0m";
 
-    Logger(String name) {
+    public Logger(String name) {
         this.className = name;
     }
 
-    Logger(String name, Level level) {
+    public Logger(String name, Level level) {
         this(name);
         this.level = level.ordinal();
     }
@@ -37,28 +39,30 @@ class Logger { // extend me for logging facilities.
             String brightBlack = "\u001B[90m";
             System.out.println(level.levelString
                     + " - " + className + ": " + msg + " "
-                    + brightBlack + "(" + Thread.currentThread().getStackTrace()[3].getFileName() + ":" + Thread.currentThread().getStackTrace()[3].getLineNumber()
+                    + brightBlack + "("
+                    + Thread.currentThread().getStackTrace()[3].getFileName() + ":"
+                    + Thread.currentThread().getStackTrace()[3].getLineNumber()
                     + ")" + noColor);
         }
     }
 
-    void debug(String msg) {
+    public void debug(String msg) {
         log(Level.DEBUG, msg);
     }
 
-    void info(String msg) {
+    public void info(String msg) {
         log(Level.INFO, msg);
     }
 
-    void warning(String msg) {
+    public void warning(String msg) {
         log(Level.WARN, msg);
     }
 
-    void error(String msg) {
+    public void error(String msg) {
         log(Level.ERROR, msg);
     }
 
-    void fatal(String msg) {
+    public void fatal(String msg) {
         log(Level.FATAL, msg);
     }
 }

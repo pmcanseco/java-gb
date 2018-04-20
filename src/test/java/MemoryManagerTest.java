@@ -1,8 +1,6 @@
-import org.junit.Test;
+import helpers.Logger;
 
 import java.util.Random;
-
-import static org.junit.Assert.*;
 
 /**
  * Created by Pablo Canseco on 12/24/2017.

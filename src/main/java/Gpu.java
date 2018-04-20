@@ -1,3 +1,5 @@
+import helpers.Logger;
+
 import javax.swing.*;
 
 /**

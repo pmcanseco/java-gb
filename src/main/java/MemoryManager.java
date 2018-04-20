@@ -1,5 +1,6 @@
+import helpers.Logger;
+
 import java.util.Arrays;
-import java.util.Timer;
 
 /**
  * Created by Pablo Canseco on 12/24/2017.
@@ -67,7 +68,7 @@ public class MemoryManager {
                         log.fatal("DIV=" + readByte(0xff04) + " AT PC=0x100");
                     }
                 }
-                return cartMbc.readFromAddress(address);
+                return cartMbc.mbcRead(address);
             }
             else if (address >= 0x8000 && address <= 0x9fff) {
                 return gpu.vram[address - 0x8000];
@@ -184,7 +185,7 @@ public class MemoryManager {
 
         // from github CTurt/Cinoop
         if (address >= 0 && address <= 0x7fff) {
-            cartMbc.romWrite(address, value);
+            cartMbc.mbcWrite(address, value);
         }
         else if(address >= 0xa000 && address <= 0xbfff) {
             sram[address - 0xa000] = value;

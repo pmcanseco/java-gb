@@ -1,3 +1,5 @@
+import helpers.FlagsRegister;
+import helpers.Register;
 import org.junit.Test;
 
 import java.util.BitSet;

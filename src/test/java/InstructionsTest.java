@@ -1,3 +1,4 @@
+import helpers.Logger;
 import org.json.JSONArray;
 import org.junit.Test;
 

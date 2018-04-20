@@ -1,3 +1,5 @@
+package helpers;
+
 /**
  * Created by Pablo Canseco on 12/24/2017.
  */
@@ -121,7 +123,7 @@ public class Register {
         return this.size;
     }
     public String toString() {
-        return "Register " + getName() + " (" + getSize() + "-bit): " + read();
+        return "helpers.Register " + getName() + " (" + getSize() + "-bit): " + read();
     }
 }
 

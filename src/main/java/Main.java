@@ -1,3 +1,5 @@
+import helpers.Logger;
+
 import java.util.Arrays;
 import java.util.List;
 
@@ -70,8 +72,9 @@ public class Main {
         //Cartridge cart = new Cartridge("src/test/resources/mooneye-gb-test-roms/tests/acceptance/timer/tim00.gb", true);
 
 
-        Cartridge cart = new Cartridge("src/main/resources/tetris.gb", true);
+        //Cartridge cart = new Cartridge("src/main/resources/tetris.gb", true);
         //Cartridge cart = new Cartridge("src/main/resources/drmario.gb", true);
+        Cartridge cart = new Cartridge("src/main/resources/10-print.gb", true);
 
 
         if (cartParseOnly) {
