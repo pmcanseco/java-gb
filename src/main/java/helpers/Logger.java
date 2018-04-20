@@ -21,17 +21,13 @@ public class Logger { // extend me for logging facilities.
 
     public String noColor = "\u001B[0m";
 
-    public Logger(String name) {
-        this.className = name;
-    }
-
     public Logger(String name, Level level) {
-        this(name);
+        this.className = name;
         this.level = level.ordinal();
     }
 
     private String className;
-    private int level = Level.DEBUG.ordinal(); // global log level
+    private final int level;
 
     private void log(Level level, String msg) {
         if (level.ordinal() >= this.level) {

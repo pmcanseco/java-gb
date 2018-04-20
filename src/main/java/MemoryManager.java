@@ -1,6 +1,7 @@
 import helpers.Logger;
 
 import java.util.Arrays;
+import java.util.Timer;
 
 /**
  * Created by Pablo Canseco on 12/24/2017.
@@ -64,7 +65,8 @@ public class MemoryManager {
                     }
                     else if (address == 0x0100) { // pc is 256
                         inBootrom = false;
-                        log.fatal("DIV=" + readByte(0xff04) + " AT PC=0x100");
+                        int div = TimerService.getInstance().getDivider();
+                        log.fatal("DIV=" + div + " AT PC=0x100");
                     }
                 }
                 return cartMbc.mbcRead(address);
@@ -102,25 +104,8 @@ public class MemoryManager {
             else if (address == 0xff45) {
                 return gpu.lyc;
             }
-            else if (address == 0xff00) { // 0b--XX_XXXX
-                if ((io[0x00] & 0x20) == 0) {
-                    //return (unsigned char)(0xc0 | keys.keys1 | 0x10);
-                    log.debug("Unimplemented RAM address " + address + ". Deals with input.");
-                    return processUnusedBits(address, 1);
-                }
-
-                else if ((io[0x00] & 0x10) == 0) {
-                    //return (unsigned char)(0xc0 | keys.keys2 | 0x20);
-                    log.debug("Unimplemented RAM address " + address + ". Deals with input.");
-                    return processUnusedBits(address, 1);
-                }
-
-                else if ((io[0x00] & 0x30) == 0) {
-                    return 0xff;
-                }
-                else {
-                    return processUnusedBits(address, 0);
-                }
+            else if (address == 0xff00) { // JOYPAD
+                return processUnusedBits(address, 0xFF);
             }
             else if (address >= 0xff01 && address <= 0xffff) {
 
@@ -293,15 +278,6 @@ public class MemoryManager {
     }
 
     // utility methods
-    public static int[] hexStringToByteArray(final String s) {
-        int len = s.length();
-        int[] data = new int[len / 2];
-        for (int i = 0; i < len; i += 2) {
-            data[i / 2] = (Character.digit(s.charAt(i), 16) << 4)
-                    + Character.digit(s.charAt(i + 1), 16);
-        }
-        return data;
-    }
     private boolean isValidMemoryAddress(final int address) {
         if (address < 0 || address > memorySize) {
             log.error("Address " + address + " is not in memory range (" + memorySize + ").");

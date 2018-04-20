@@ -4,7 +4,7 @@ package helpers;
  * Created by Pablo Canseco on 12/24/2017.
  */
 public class Register {
-    private Logger log = new Logger(this.getClass().getName());
+    private Logger log = new Logger(this.getClass().getName(), Logger.Level.DEBUG);
 
     // members
     private final String name;

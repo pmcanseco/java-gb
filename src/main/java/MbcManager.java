@@ -92,7 +92,7 @@ public class MbcManager {
     MbcManager(Cartridge cart) {
         this.cart = cart;
         this.mbcType    = cart.getCartridgeType().mbcType;
-        this.hasRam     = cart.getCartridgeType().hasRam;
+        this.hasRam     = cart.getCartridgeType().hasRam && (cart.getRamSize() != 0);
         this.hasBattery = cart.getCartridgeType().hasBattery;
         this.hasTimer   = cart.getCartridgeType().hasTimer;
         this.ram        = new int[cart.getRamSize()];
@@ -155,7 +155,7 @@ public class MbcManager {
                 else if (address <= 0x3FFF) {
                     // write the lower 5 bits of romBank selection
                     romBankSelected = (value & 0b0001_1111);
-                    log.debug("selected " + romBankSelected + " for rom bank low");
+                    log.debug(String.format("selected 0x%02X for rom bank low", romBankSelected));
 
                     if (romBankSelected == 0) {
                         romBankSelected++;
@@ -163,7 +163,7 @@ public class MbcManager {
                 }
                 else if (address <= 0x5FFF) {
                     if (isRomMode) {
-                        romBankSelected &= 0b1001_1111; // clear bits 5 and 6
+                        romBankSelected &= 0b0001_1111; // clear bits 5 and 6
                         romBankSelected |= (value & 0b0000_0011) << 5; // replace bits 1 and 2 from value
                         log.debug("selected " + romBankSelected + " for rom bank high");
                         if (romBankSelected == 0 ||
@@ -180,6 +180,14 @@ public class MbcManager {
                 }
                 else if (address <= 0x7FFF) {
                     isRomMode = (value == 0); // 0=rom, 1=ram
+
+                    if (isRomMode) {
+                        ramBankSelected = 0;
+                    }
+                    else {
+                        romBankSelected &= 0b0001_1111;
+                    }
+
                     log.debug("rom mode set to " + isRomMode);
                 }
                 else if (address <= 0xBFFF && address >= 0xA000) {

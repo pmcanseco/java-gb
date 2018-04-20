@@ -17,7 +17,7 @@ public class Cartridge {
     private static final int ADDRESS_HEADER_CHECKSUM_CALCULATED_START = 0x0134;
     private static final int ADDRESS_HEADER_CHECKSUM_CALCULATED_END = 0x014C;
 
-    private Logger log = new Logger("CART");
+    private Logger log = new Logger("CART", Logger.Level.DEBUG);
 
     private enum Locale {
         Japanese,

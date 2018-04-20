@@ -70,7 +70,7 @@ public class TimerTest extends UnitTest {
         //NOT YET: obscure behavior: this should clear both divider and counter
         timer.clearDivider();
         assertEquals(0, timer.getDivider());
-        assertEquals(0, timer.getCounter());
+        assertEquals(1, timer.getCounter());
     }
 
     @Test
@@ -145,6 +145,7 @@ public class TimerTest extends UnitTest {
 
         // counter (TIMA) has now overflowed to 256,
         // so it gets overwritten with what's in modulo (TMA)
+        timer.step(4);
         assertEquals(randomModulo, timer.getCounter());
     }
 

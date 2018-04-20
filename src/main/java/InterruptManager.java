@@ -7,7 +7,7 @@ import java.util.Map;
  * Created by Pablo Canseco on 4/10/2018.
  */
 public class InterruptManager {
-    Logger log = new Logger("INT");
+    Logger log = new Logger("INT", Logger.Level.WARN);
 
     public enum InterruptTypes {
 

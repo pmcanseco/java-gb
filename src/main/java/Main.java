@@ -12,7 +12,7 @@ public class Main {
     public static boolean skipBootrom;
 
     public static void main(String[] args) {
-        Logger log = new Logger("Main");
+        Logger log = new Logger("Main", Logger.Level.DEBUG);
 
         // process commandline arguments
         List<String> argsList = Arrays.asList(args);
@@ -70,13 +70,19 @@ public class Main {
         //Cartridge cart = new Cartridge("src/test/resources/mooneye-gb-test-roms/tests/acceptance/timer/div_write.gb", true);
         //Cartridge cart = new Cartridge("src/test/resources/mooneye-gb-test-roms/tests/acceptance/timer/rapid_toggle.gb", true);
         //Cartridge cart = new Cartridge("src/test/resources/mooneye-gb-test-roms/tests/acceptance/timer/tim00.gb", true);
+        //Cartridge cart = new Cartridge("src/test/resources/mooneye-gb-test-roms/tests/acceptance/timer/tim01.gb", true);
+        //Cartridge cart = new Cartridge("src/test/resources/mooneye-gb-test-roms/tests/acceptance/timer/tim10.gb", true);
+        //Cartridge cart = new Cartridge("src/test/resources/mooneye-gb-test-roms/tests/acceptance/timer/tim11.gb", true);
+        //Cartridge cart = new Cartridge("src/test/resources/mooneye-gb-test-roms/tests/acceptance/timer/tima_reload.gb", true);
+        //Cartridge cart = new Cartridge("src/test/resources/mooneye-gb-test-roms/tests/acceptance/timer/tim11_div_trigger.gb", true);
+        //Cartridge cart = new Cartridge("src/test/resources/mooneye-gb-test-roms/tests/acceptance/timer/tima_write_reloading.gb", true);
+        Cartridge cart = new Cartridge("src/test/resources/mooneye-gb-test-roms/tests/acceptance/timer/tma_write_reloading.gb", true);
 
 
         //Cartridge cart = new Cartridge("src/main/resources/tetris.gb", true);
         //Cartridge cart = new Cartridge("src/main/resources/drmario.gb", true);
-        //Cartridge cart = new Cartridge("src/main/resources/10-print.gb", true);
         //Cartridge cart = new Cartridge("src/main/resources/pokebluejp.gb", true);
-        Cartridge cart = new Cartridge("src/main/resources/supermarioland.gb", true);
+        //Cartridge cart = new Cartridge("src/main/resources/supermarioland.gb", true);
 
 
         if (cartParseOnly) {

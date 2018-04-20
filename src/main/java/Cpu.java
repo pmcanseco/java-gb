@@ -34,8 +34,6 @@ public class Cpu {
     // * NOTE * The lower 4 bits always read zero even if 1 is written to them.
     private FlagsRegister registerFlags;
 
-    private int lastInstructionCycles = 0;
-
     private Map<String, Register> eightBitRegisters = new HashMap<>();
     private Map<String, Register> sixteenBitRegisters = new HashMap<>();
 
@@ -390,7 +388,7 @@ public class Cpu {
 
                     InterruptManager.getInstance().masterDisable();
 
-                    lastInstructionCycles = 20;
+                    consumeClockCycles(20);
                 }
             }
         }
@@ -411,6 +409,7 @@ public class Cpu {
         registerFlags.setC();
         registerSP.write(0xFFFE);
         registerPC.write(0x0100);
+        TimerService.getInstance().setDivBypass(0xAB); // DIV
         mmu.writeByte(0xFF05, 0x00); // TIMA
         mmu.writeByte(0xFF06, 0x00); // TMA
         mmu.writeByte(0xFF07, 0x00); // TAC
@@ -443,6 +442,12 @@ public class Cpu {
         mmu.writeByte(0xFF4B, 0x00); // WX
         mmu.writeByte(0xFFFF, 0x00); // IE
     }
+    public void consumeClockCycles(int cycles) {
+        for (int i = 0; i < cycles; i++) {
+            TimerService.getInstance().tick();
+            gpu.step(1);
+        }
+    }
 
     // main loop
     public void main() {
@@ -455,6 +460,10 @@ public class Cpu {
         }
     }
     public void step() {
+
+        processInterrupts();
+
+
         if (!isHalted) {
             int opcode = fetch();
             Runnable instruction = decode(opcode);
@@ -466,17 +475,12 @@ public class Cpu {
                 System.exit(1);
             }
 
-            gpu.step(lastInstructionCycles);
             processEi(opcode);
         }
         else {
-            lastInstructionCycles = 4;
+            consumeClockCycles(4);
         }
 
-        gpu.step(lastInstructionCycles);
-        TimerService.getInstance().step(lastInstructionCycles);
-
-        processInterrupts();
     }
 
     // utility functions
@@ -605,32 +609,32 @@ public class Cpu {
             case 0x06:
                 load(registerB, mmu.readByte(registerPC.read()));
                 registerPC.inc();
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0x0E:
                 load(registerC, mmu.readByte(registerPC.read()));
                 registerPC.inc();
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0x16:
                 load(registerD, mmu.readByte(registerPC.read()));
                 registerPC.inc();
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0x1E:
                 load(registerE, mmu.readByte(registerPC.read()));
                 registerPC.inc();
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0x26:
                 load(registerH, mmu.readByte(registerPC.read()));
                 registerPC.inc();
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0x2E:
                 load(registerL, mmu.readByte(registerPC.read()));
                 registerPC.inc();
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             //</editor-fold>
             //<editor-fold desc="3.3.1.2 8-Bit Loads - LD r1,r2" defaultstate="collapsed">
@@ -643,246 +647,246 @@ public class Cpu {
              */
             case 0x78:
                 load(registerA, registerB);
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x7F:
                 load(registerA, registerA);
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x79:
                 load(registerA, registerC);
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x7A:
                 load(registerA, registerD);
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x7B:
                 load(registerA, registerE);
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x7C:
                 load(registerA, registerH);
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x7D:
                 load(registerA, registerL);
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x7E:
                 address = readCombinedRegisters(registerH, registerL);
                 load(registerA, mmu.readByte(address));
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0x40:
                 load(registerB, registerB);
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x41:
                 load(registerB, registerC);
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x42:
                 load(registerB, registerD);
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x43:
                 load(registerB, registerE);
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x44:
                 load(registerB, registerH);
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x45:
                 load(registerB, registerL);
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x46:
                 address = readCombinedRegisters(registerH, registerL);
                 load(registerB, mmu.readByte(address));
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0x48:
                 load(registerC, registerB);
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x49:
                 load(registerC, registerC);
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x4A:
                 load(registerC, registerD);
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x4B:
                 load(registerC, registerE);
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x4C:
                 load(registerC, registerH);
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x4D:
                 load(registerC, registerL);
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x4E:
                 address = readCombinedRegisters(registerH, registerL);
                 load(registerC, mmu.readByte(address));
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0x50:
                 load(registerD, registerB);
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x51:
                 load(registerD, registerC);
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x52:
                 load(registerD, registerD);
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x53:
                 load(registerD, registerE);
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x54:
                 load(registerD, registerH);
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x55:
                 load(registerD, registerL);
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x56:
                 address = readCombinedRegisters(registerH, registerL);
                 load(registerD, mmu.readByte(address));
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0x58:
                 load(registerE, registerB);
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x59:
                 load(registerE, registerC);
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x5A:
                 load(registerE, registerD);
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x5B:
                 load(registerE, registerE);
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x5C:
                 load(registerE, registerH);
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x5D:
                 load(registerE, registerL);
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x5E:
                 address = readCombinedRegisters(registerH, registerL);
                 load(registerE, mmu.readByte(address));
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0x60:
                 load(registerH, registerB);
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x61:
                 load(registerH, registerC);
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x62:
                 load(registerH, registerD);
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x63:
                 load(registerH, registerE);
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x64:
                 load(registerH, registerH);
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x65:
                 load(registerH, registerL);
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x66:
                 address = readCombinedRegisters(registerH, registerL);
                 load(registerH, mmu.readByte(address));
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0x68:
                 load(registerL, registerB);
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x69:
                 load(registerL, registerC);
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x6A:
                 load(registerL, registerD);
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x6B:
                 load(registerL, registerE);
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x6C:
                 load(registerL, registerH);
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x6D:
                 load(registerL, registerL);
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x6E:
                 address = readCombinedRegisters(registerH, registerL);
                 load(registerL, mmu.readByte(address));
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0x70:
                 address = readCombinedRegisters(registerH, registerL);
                 mmu.writeByte(address, registerB.read());
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0x71:
                 address = readCombinedRegisters(registerH, registerL);
                 mmu.writeByte(address, registerC.read());
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0x72:
                 address = readCombinedRegisters(registerH, registerL);
                 mmu.writeByte(address, registerD.read());
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0x73:
                 address = readCombinedRegisters(registerH, registerL);
                 mmu.writeByte(address, registerE.read());
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0x74:
                 address = readCombinedRegisters(registerH, registerL);
                 mmu.writeByte(address, registerH.read());
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0x75:
                 address = readCombinedRegisters(registerH, registerL);
                 mmu.writeByte(address, registerL.read());
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0x36: // 12 cycles
                 address = readCombinedRegisters(registerH, registerL);
                 mmu.writeByte(address, mmu.readByte(registerPC.read()));
                 registerPC.inc();
-                lastInstructionCycles = 12;
+                consumeClockCycles(12);
                 break;
             //</editor-fold>
             //<editor-fold desc="3.3.1.3 8-bit Loads - LD A, n" defaultstate="collapsed">
@@ -896,22 +900,22 @@ public class Cpu {
              */
             case 0x0A:
                 load(registerA, mmu.readByte(readCombinedRegisters(registerB, registerC)));
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;  // LD A,(BC) 0A 8
             case 0x1A:
                 load(registerA, mmu.readByte(readCombinedRegisters(registerD, registerE)));
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;  // LD A,(DE) 1A 8
             case 0xFA: // 16 cycles
                 load(registerA, mmu.readByte(mmu.readWord(registerPC.read())));
                 registerPC.inc();
                 registerPC.inc();
-                lastInstructionCycles = 16;
+                consumeClockCycles(16);
                 break;
             case 0x3E:
                 load(registerA, mmu.readByte(registerPC.read()));
                 registerPC.inc();
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;  // LD A,# 3E 8
             //</editor-fold>
             //<editor-fold desc="3.3.1.4 8-bit Loads - LD n, A" defaultstate="collapsed">
@@ -925,99 +929,99 @@ public class Cpu {
              */
             case 0x47:
                 load(registerB, registerA);
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break; // LD B,A 47 4
             case 0x4F:
                 load(registerC, registerA);
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break; // LD C,A 4F 4
             case 0x57:
                 load(registerD, registerA);
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break; // LD D,A 57 4
             case 0x5F:
                 load(registerE, registerA);
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break; // LD E,A 5F 4
             case 0x67:
                 load(registerH, registerA);
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break; // LD H,A 67 4
             case 0x6F:
                 load(registerL, registerA);
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break; // LD L,A 6F 4
             case 0x02:
                 mmu.writeByte(readCombinedRegisters(registerB, registerC), registerA.read());
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break; // LD (BC),A 02 8
             case 0x12:
                 mmu.writeByte(readCombinedRegisters(registerD, registerE), registerA.read());
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break; // LD (DE),A 12 8
             case 0x77:
                 mmu.writeByte(readCombinedRegisters(registerH, registerL), registerA.read());
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break; // LD (HL),A 77 8
             case 0xEA: // 16 cycles
                 mmu.writeByte(mmu.readWord(registerPC.read()), registerA.read());
                 registerPC.inc();
                 registerPC.inc();
-                lastInstructionCycles = 16;
+                consumeClockCycles(16);
                 break; // LD (nn),A EA 16
             //</editor-fold>
             //<editor-fold desc="3.3.1.5 -- 3.3.1.20 8-bit Loads" defaultstate="collapsed">
             case 0xF2:
                 // Put value at address $FF00 + register C into A , takes 8 cycles
                 load(registerA, mmu.readByte(registerC.read() + 0xFF00));
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0xE2:
                 // Put A into address $FF00 + register C , takes 8 cycles
                 mmu.writeByte(0xFF00 + registerC.read(), registerA.read());
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0x3A:
                 // Put value at address HL into A, Decrement HL. Takes 8 cycles
                 temp = readCombinedRegisters(registerH, registerL);
                 load(registerA, mmu.readByte(temp));
                 writeCombinedRegisters(registerH, registerL, temp - 1);
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0x32:
                 // put A into memory address HL. Decrement HL. Takes 8 cycles.
                 temp = readCombinedRegisters(registerH, registerL);
                 mmu.writeByte(temp, registerA.read());
                 writeCombinedRegisters(registerH, registerL, temp - 1);
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0x2A:
                 // Put value at address HL into A, Increment HL. Takes 8 cycles
                 temp = readCombinedRegisters(registerH, registerL);
                 load(registerA, mmu.readByte(temp));
                 writeCombinedRegisters(registerH, registerL, temp + 1);
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0x22:
                 // put A into memory address HL. Increment HL. Takes 8 cycles.
                 temp = readCombinedRegisters(registerH, registerL);
                 mmu.writeByte(temp, registerA.read());
                 writeCombinedRegisters(registerH, registerL, temp + 1);
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0xE0:
                 // Put A into memory address $FF00+n . 12 cycles
                 temp = 0xFF00 + mmu.readByte(registerPC.read());
                 mmu.writeByte(temp, registerA.read());
                 registerPC.inc();
-                lastInstructionCycles = 12;
+                consumeClockCycles(12);
                 break;
             case 0xF0:
                 // Put memory address $FF00+n into A. 12 cycles
                 temp = 0xFF00 + mmu.readByte(registerPC.read());
                 load(registerA, mmu.readByte(temp));
                 registerPC.inc();
-                lastInstructionCycles = 12;
+                consumeClockCycles(12);
                 break;
             //</editor-fold>
             //<editor-fold desc="3.3.2.1 -- 3.3.2.5 16-bit Loads" defaultstate="collapsed">
@@ -1027,7 +1031,7 @@ public class Cpu {
                 registerPC.inc();
                 load(registerB, mmu.readByte(registerPC.read()));
                 registerPC.inc();
-                lastInstructionCycles = 12;
+                consumeClockCycles(12);
                 break;
             case 0x11:
                 // LD DE,nn 11 12
@@ -1035,7 +1039,7 @@ public class Cpu {
                 registerPC.inc();
                 load(registerD, mmu.readByte(registerPC.read()));
                 registerPC.inc();
-                lastInstructionCycles = 12;
+                consumeClockCycles(12);
                 break;
             case 0x21:
                 // LD HL,nn 21 12
@@ -1043,19 +1047,19 @@ public class Cpu {
                 registerPC.inc();
                 load(registerH, mmu.readByte(registerPC.read()));
                 registerPC.inc();
-                lastInstructionCycles = 12;
+                consumeClockCycles(12);
                 break;
             case 0x31:
                 // LD SP,nn 31 12
                 load(registerSP, mmu.readWord(registerPC.read()));
                 registerPC.inc();
                 registerPC.inc();
-                lastInstructionCycles = 12;
+                consumeClockCycles(12);
                 break;
             case 0xF9:
                 // LD SP,HL F9 8
                 load(registerSP, readCombinedRegisters(registerH, registerL));
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0xF8:
                 // LDHL SP,n F8 12
@@ -1085,7 +1089,7 @@ public class Cpu {
                     registerFlags.clearH();
                 }
 
-                lastInstructionCycles = 12;
+                consumeClockCycles(12);
                 break;
             case 0x08:
                 // LD (nn),SP 08 20 (TWENTY CYCLES)
@@ -1098,7 +1102,7 @@ public class Cpu {
                 address = ((upperValue << 8) + lowerValue);
                 mmu.writeByte(address, registerSP.readLow());
                 mmu.writeByte(address + 1, (registerSP.readHigh() >> 8));
-                lastInstructionCycles = 20;
+                consumeClockCycles(20);
                 break;
             //</editor-fold>
             default:
@@ -1150,7 +1154,7 @@ public class Cpu {
         }
 
         pushHelper(temp);
-        lastInstructionCycles = 16;
+        consumeClockCycles(16);
     }
     public void pop(int opcode) {
         // 3.3.2.7 POP nn
@@ -1189,7 +1193,7 @@ public class Cpu {
             //   Pop two bytes off stack into register pair nn.
             //   Increment Stack Pointer (SP) twice
             writeCombinedRegisters(upperRegister, lowerRegister, popHelper());
-            lastInstructionCycles = 12;
+            consumeClockCycles(12);
         }
         else {
             // error out
@@ -1226,40 +1230,40 @@ public class Cpu {
         switch (opcode) {
             case 0x87:
                 second = registerA.read();
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x80:
                 second = registerB.read();
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x81:
                 second = registerC.read();
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x82:
                 second = registerD.read();
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x83:
                 second = registerE.read();
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x84:
                 second = registerH.read();
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x85:
                 second = registerL.read();
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x86:
                 second = mmu.readByte(readCombinedRegisters(registerH, registerL));
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0xC6:
                 second = mmu.readByte(registerPC.read());
                 registerPC.inc();
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             default:
                 log.debug(String.format("log.error: Opcode %05X does not belong to add(int opcode) . ", opcode));
@@ -1323,40 +1327,40 @@ public class Cpu {
         switch (opcode) {
             case 0x8F:
                 second = registerA.read();
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x88:
                 second = registerB.read();
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x89:
                 second = registerC.read();
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x8A:
                 second = registerD.read();
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x8B:
                 second = registerE.read();
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x8C:
                 second = registerH.read();
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x8D:
                 second = registerL.read();
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x8E:
                 second = mmu.readByte(readCombinedRegisters(registerH, registerL));
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0xCE:
                 second = mmu.readByte(registerPC.read());
                 registerPC.inc();
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             default:
                 log.error(String.format("Opcode %05X does not belong to adc(int opcode) . ", opcode));
@@ -1427,19 +1431,19 @@ public class Cpu {
         switch (opcode) {
             case 0x09:
                 value = readCombinedRegisters(registerB, registerC);
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0x19:
                 value = readCombinedRegisters(registerD, registerE);
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0x29:
                 value = readCombinedRegisters(registerH, registerL);
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0x39:
                 value = registerSP.read();
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0xE8:
                 value = mmu.readByte(registerPC.read());
@@ -1447,7 +1451,7 @@ public class Cpu {
                 if (value > 127) {
                     value = -((~value + 1) & 255); // 2's complement
                 }
-                lastInstructionCycles = 16;
+                consumeClockCycles(16);
                 break;
             default:
                 log.debug(String.format("log.error: Opcode %05X does not belong to add16(int opcode) . ", opcode));
@@ -1536,40 +1540,40 @@ public class Cpu {
         switch (opcode) {
             case 0x97:
                 second = registerA.read();
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x90:
                 second = registerB.read();
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x91:
                 second = registerC.read();
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x92:
                 second = registerD.read();
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x93:
                 second = registerE.read();
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x94:
                 second = registerH.read();
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x95:
                 second = registerL.read();
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x96:
                 second = mmu.readByte(readCombinedRegisters(registerH, registerL));
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0xD6:
                 second = mmu.readByte(registerPC.read());
                 registerPC.inc();
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             default:
                 log.debug(String.format("log.error: Opcode %05X does not belong to sub(int opcode) . ", opcode));
@@ -1637,40 +1641,40 @@ public class Cpu {
         switch (opcode) {
             case 0x9F:
                 second = registerA.read();
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x98:
                 second = registerB.read();
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x99:
                 second = registerC.read();
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x9A:
                 second = registerD.read();
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x9B:
                 second = registerE.read();
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x9C:
                 second = registerH.read();
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x9D:
                 second = registerL.read();
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x9E:
                 second = mmu.readByte(readCombinedRegisters(registerH, registerL));
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0xDE:
                 second = mmu.readByte(registerPC.read());
                 registerPC.inc();
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             default:
                 log.debug(String.format("log.error: Opcode %05X does not belong to sbc(int opcode) . ", opcode));
@@ -1741,40 +1745,40 @@ public class Cpu {
         switch (opcode) {
             case 0xA7:
                 second = registerA.read();
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0xA0:
                 second = registerB.read();
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0xA1:
                 second = registerC.read();
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0xA2:
                 second = registerD.read();
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0xA3:
                 second = registerE.read();
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0xA4:
                 second = registerH.read();
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0xA5:
                 second = registerL.read();
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0xA6:
                 second = mmu.readByte(readCombinedRegisters(registerH, registerL));
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0xE6:
                 second = mmu.readByte(registerPC.read());
                 registerPC.inc();
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             default:
                 log.debug(String.format("log.error: Opcode %05X does not belong to and(int opcode) . ", opcode));
@@ -1822,40 +1826,40 @@ public class Cpu {
         switch (opcode) {
             case 0xB7:
                 second = registerA.read();
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0xB0:
                 second = registerB.read();
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0xB1:
                 second = registerC.read();
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0xB2:
                 second = registerD.read();
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0xB3:
                 second = registerE.read();
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0xB4:
                 second = registerH.read();
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0xB5:
                 second = registerL.read();
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0xB6:
                 second = mmu.readByte(readCombinedRegisters(registerH, registerL));
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0xF6:
                 second = mmu.readByte(registerPC.read());
                 registerPC.inc();
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             default:
                 log.debug(String.format("log.error: Opcode %05X does not belong to or(int opcode) . ", opcode));
@@ -1903,35 +1907,35 @@ public class Cpu {
         switch (opcode) {
             case 0xAF:
                 second = registerA.read();
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0xA8:
                 second = registerB.read();
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0xA9:
                 second = registerC.read();
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0xAA:
                 second = registerD.read();
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0xAB:
                 second = registerE.read();
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0xAC:
                 second = registerH.read();
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0xAD:
                 second = registerL.read();
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0xAE:
                 second = mmu.readByte(readCombinedRegisters(registerH, registerL));
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0xEE:
                 second = mmu.readByte(registerPC.read());
@@ -1939,7 +1943,7 @@ public class Cpu {
 
                 //log.fatal(String.format("PC: 0x%04X    A: 0x%02X    OPERAND: " + second + " d    RESULT: 0x%02X    F: 0x%02X", registerPC.read(), registerA.read(), registerA.read() ^ second, registerFlags.read()));
 
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             default:
                 log.debug(String.format("log.error: Opcode %05X does not belong to xor(int opcode) . ", opcode));
@@ -1989,40 +1993,40 @@ public class Cpu {
         switch (opcode) {
             case 0xBF:
                 second = registerA.read();
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0xB8:
                 second = registerB.read();
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0xB9:
                 second = registerC.read();
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0xBA:
                 second = registerD.read();
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0xBB:
                 second = registerE.read();
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0xBC:
                 second = registerH.read();
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0xBD:
                 second = registerL.read();
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0xBE:
                 second = mmu.readByte(readCombinedRegisters(registerH, registerL));
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0xFE:
                 second = mmu.readByte(registerPC.read());
                 registerPC.inc();
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             default:
                 log.debug(String.format("log.error: Opcode %05X does not belong to cp(int opcode) . ", opcode));
@@ -2085,43 +2089,43 @@ public class Cpu {
             case 0x3C:
                 registerA.inc();
                 value = registerA.read();
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x04:
                 registerB.inc();
                 value = registerB.read();
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x0C:
                 registerC.inc();
                 value = registerC.read();
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x14:
                 registerD.inc();
                 value = registerD.read();
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x1C:
                 registerE.inc();
                 value = registerE.read();
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x24:
                 registerH.inc();
                 value = registerH.read();
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x2C:
                 registerL.inc();
                 value = registerL.read();
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x34:
                 final int address = readCombinedRegisters(registerH, registerL);
                 value = mmu.readByte(address) + 1;
                 mmu.writeByte(address, (value & 255));
-                lastInstructionCycles = 12;
+                consumeClockCycles(12);
                 break;
             default:
                 log.debug(String.format("log.error: Opcode %05X does not belong to inc(int opcode) . ", opcode));
@@ -2187,7 +2191,7 @@ public class Cpu {
         value = readCombinedRegisters(highReg, lowReg);
         value += 1;
         writeCombinedRegisters(highReg, lowReg, value);
-        lastInstructionCycles = 8;
+        consumeClockCycles(8);
     }
 
     public void dec(int opcode) {
@@ -2218,43 +2222,43 @@ public class Cpu {
                 oldValue = registerA.read();
                 registerA.dec();
                 value = registerA.read();
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x05:
                 oldValue = registerB.read();
                 registerB.dec();
                 value = registerB.read();
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x0D:
                 oldValue = registerC.read();
                 registerC.dec();
                 value = registerC.read();
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x15:
                 oldValue = registerD.read();
                 registerD.dec();
                 value = registerD.read();
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x1D:
                 oldValue = registerE.read();
                 registerE.dec();
                 value = registerE.read();
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x25:
                 oldValue = registerH.read();
                 registerH.dec();
                 value = registerH.read();
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x2D:
                 oldValue = registerL.read();
                 registerL.dec();
                 value = registerL.read();
-                lastInstructionCycles = 4;
+                consumeClockCycles(4);
                 break;
             case 0x35:
                 int address = readCombinedRegisters(registerH, registerL);
@@ -2263,7 +2267,7 @@ public class Cpu {
                 value -= 1;
                 value &= 255;
                 mmu.writeByte(address, value);
-                lastInstructionCycles = 12;
+                consumeClockCycles(12);
                 break;
             default:
                 log.debug(String.format("log.error: Opcode %05X does not belong to dec(int opcode) . ", opcode));
@@ -2328,7 +2332,7 @@ public class Cpu {
         value = readCombinedRegisters(highReg, lowReg);
         value -= 1;
         writeCombinedRegisters(highReg, lowReg, value);
-        lastInstructionCycles = 8;
+        consumeClockCycles(8);
     }
 
     private int swapHelper(int value) {
@@ -2368,43 +2372,43 @@ public class Cpu {
             case 0xCB37:
                 value = swapHelper(registerA.read());
                 registerA.write(value);
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0xCB30:
                 value = swapHelper(registerB.read());
                 registerB.write(value);
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0xCB31:
                 value = swapHelper(registerC.read());
                 registerC.write(value);
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0xCB32:
                 value = swapHelper(registerD.read());
                 registerD.write(value);
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0xCB33:
                 value = swapHelper(registerE.read());
                 registerE.write(value);
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0xCB34:
                 value = swapHelper(registerH.read());
                 registerH.write(value);
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0xCB35:
                 value = swapHelper(registerL.read());
                 registerL.write(value);
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0xCB36:
                 int address = readCombinedRegisters(registerH, registerL);
                 value = swapHelper(mmu.readByte(address));
                 mmu.writeByte(address, value);
-                lastInstructionCycles = 16;
+                consumeClockCycles(16);
                 break;
             default:
                 log.debug(String.format("log.error: Opcode %05X does not belong to swap(int opcode) . ", opcode));
@@ -2492,7 +2496,7 @@ public class Cpu {
 
         registerA.write(a & 0xFF);
 
-        lastInstructionCycles = 4;
+        consumeClockCycles(4);
     }
 
     public void cpl(int opcode) {
@@ -2520,7 +2524,7 @@ public class Cpu {
         registerFlags.setN();
         registerFlags.setH();
 
-        lastInstructionCycles = 4;
+        consumeClockCycles(4);
     }
     public void ccf(int opcode) {
         /*
@@ -2553,7 +2557,7 @@ public class Cpu {
             registerFlags.setC();
         }
 
-        lastInstructionCycles = 4;
+        consumeClockCycles(4);
     }
     public void scf(int opcode) {
         /*
@@ -2578,20 +2582,20 @@ public class Cpu {
         registerFlags.clearH();
         registerFlags.setC();
 
-        lastInstructionCycles = 4;
+        consumeClockCycles(4);
     }
 
     public void nopHaltStop(int opcode) {
         if (opcode == 0x00) {
             // NOP - 4 cycles, 0x00 opcode
             log.debug("NOP - No operation.");
-            lastInstructionCycles = 4;
+            consumeClockCycles(4);
         }
         else if (opcode == 0x76) {
             // HALT - power down CPU until interrupt occurs. Opcode 0x76. 4 cycles.
-            log.fatal("HALT");
+            log.debug("HALT");
             isHalted = true;
-            lastInstructionCycles = 4;
+            consumeClockCycles(4);
         }
         else if (opcode == 0x10) {
             // STOP - halt cpu and lcd display until button pressed. Opcode 0x1000. 4 cycles.
@@ -2599,7 +2603,7 @@ public class Cpu {
             /*while (true) {
                 // TODO - wait until button is pressed then break
             }*/
-            lastInstructionCycles = 4;
+            consumeClockCycles(4);
         }
         else {
             log.debug("We're in nopHaltStop() but opcode " + opcode + " isn't 0x00, 0x76, or 0x10");
@@ -2633,11 +2637,11 @@ public class Cpu {
         if (opcode == 0xF3) {
             InterruptManager.getInstance().masterDisable();
             log.info("Disabled interrupts.");
-            lastInstructionCycles = 4;
+            consumeClockCycles(4);
         }
         else if (opcode == 0xFB) {
             pendingInterruptEnable = true;
-            lastInstructionCycles = 4;
+            consumeClockCycles(4);
         }
         else {
             log.error("Why are we even in diEi() if opcode " + opcode + " isn't 0xF3 or 0xFB?");
@@ -2680,7 +2684,7 @@ public class Cpu {
             registerFlags.clearC();
         }
 
-        lastInstructionCycles = 4;
+        consumeClockCycles(4);
     }
     public void rla(int opcode) {
         /*
@@ -2721,7 +2725,7 @@ public class Cpu {
         registerFlags.clearH();
         registerFlags.clearN();
 
-        lastInstructionCycles = 4;
+        consumeClockCycles(4);
     }
 
     public void rrca(int opcode) {
@@ -2759,7 +2763,7 @@ public class Cpu {
         registerFlags.clearN();
         registerFlags.clearZ();
 
-        lastInstructionCycles = 4;
+        consumeClockCycles(4);
     }
     public void rra(int opcode) {
         /*
@@ -2795,7 +2799,7 @@ public class Cpu {
         registerFlags.clearH();
         registerFlags.clearN();
 
-        lastInstructionCycles = 4;
+        consumeClockCycles(4);
     }
 
     public void rlc(int opcode) {
@@ -2863,35 +2867,35 @@ public class Cpu {
         switch (opcode) {
             case 0xCB07:
                 registerA.write(result);
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0xCB00:
                 registerB.write(result);
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0xCB01:
                 registerC.write(result);
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0xCB02:
                 registerD.write(result);
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0xCB03:
                 registerE.write(result);
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0xCB04:
                 registerH.write(result);
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0xCB05:
                 registerL.write(result);
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0xCB06:
                 mmu.writeByte(readCombinedRegisters(registerH, registerL), result);
-                lastInstructionCycles = 16;
+                consumeClockCycles(16);
                 break;
         }
 
@@ -2973,35 +2977,35 @@ public class Cpu {
         switch (opcode) {
             case 0xCB17:
                 registerA.write(result);
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0xCB10:
                 registerB.write(result);
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0xCB11:
                 registerC.write(result);
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0xCB12:
                 registerD.write(result);
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0xCB13:
                 registerE.write(result);
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0xCB14:
                 registerH.write(result);
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0xCB15:
                 registerL.write(result);
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0xCB16:
                 mmu.writeByte(readCombinedRegisters(registerH, registerL), result);
-                lastInstructionCycles = 16;
+                consumeClockCycles(16);
                 break;
         }
 
@@ -3083,35 +3087,35 @@ public class Cpu {
         switch (opcode) {
             case 0xCB0F:
                 registerA.write(result);
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0xCB08:
                 registerB.write(result);
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0xCB09:
                 registerC.write(result);
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0xCB0A:
                 registerD.write(result);
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0xCB0B:
                 registerE.write(result);
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0xCB0C:
                 registerH.write(result);
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0xCB0D:
                 registerL.write(result);
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0xCB0E:
                 mmu.writeByte(readCombinedRegisters(registerH, registerL), result);
-                lastInstructionCycles = 16;
+                consumeClockCycles(16);
                 break;
         }
 
@@ -3192,35 +3196,35 @@ public class Cpu {
         switch (opcode) {
             case 0xCB1F:
                 registerA.write(result);
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0xCB18:
                 registerB.write(result);
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0xCB19:
                 registerC.write(result);
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0xCB1A:
                 registerD.write(result);
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0xCB1B:
                 registerE.write(result);
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0xCB1C:
                 registerH.write(result);
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0xCB1D:
                 registerL.write(result);
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0xCB1E:
                 mmu.writeByte(readCombinedRegisters(registerH, registerL), result);
-                lastInstructionCycles = 16;
+                consumeClockCycles(16);
                 break;
         }
 
@@ -3302,35 +3306,35 @@ public class Cpu {
         switch (opcode) {
             case 0xCB27:
                 registerA.write(result);
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0xCB20:
                 registerB.write(result);
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0xCB21:
                 registerC.write(result);
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0xCB22:
                 registerD.write(result);
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0xCB23:
                 registerE.write(result);
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0xCB24:
                 registerH.write(result);
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0xCB25:
                 registerL.write(result);
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0xCB26:
                 mmu.writeByte(readCombinedRegisters(registerH, registerL), result);
-                lastInstructionCycles = 16;
+                consumeClockCycles(16);
                 break;
         }
 
@@ -3410,35 +3414,35 @@ public class Cpu {
         switch (opcode) {
             case 0xCB2F:
                 registerA.write(result);
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0xCB28:
                 registerB.write(result);
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0xCB29:
                 registerC.write(result);
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0xCB2A:
                 registerD.write(result);
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0xCB2B:
                 registerE.write(result);
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0xCB2C:
                 registerH.write(result);
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0xCB2D:
                 registerL.write(result);
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0xCB2E:
                 mmu.writeByte(readCombinedRegisters(registerH, registerL), result);
-                lastInstructionCycles = 16;
+                consumeClockCycles(16);
                 break;
         }
 
@@ -3518,35 +3522,35 @@ public class Cpu {
         switch (opcode) {
             case 0xCB3F:
                 registerA.write(result);
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0xCB38:
                 registerB.write(result);
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0xCB39:
                 registerC.write(result);
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0xCB3A:
                 registerD.write(result);
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0xCB3B:
                 registerE.write(result);
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0xCB3C:
                 registerH.write(result);
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0xCB3D:
                 registerL.write(result);
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0xCB3E:
                 mmu.writeByte(readCombinedRegisters(registerH, registerL), result);
-                lastInstructionCycles = 16;
+                consumeClockCycles(16);
                 break;
         }
 
@@ -3575,42 +3579,42 @@ public class Cpu {
             case 0x0:
             case 0x8:
                 value = registerB.read();
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0x1:
             case 0x9:
                 value = registerC.read();
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0x2:
             case 0xA:
                 value = registerD.read();
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0x3:
             case 0xB:
                 value = registerE.read();
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0x4:
             case 0xC:
                 value = registerH.read();
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0x5:
             case 0xD:
                 value = registerL.read();
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0x6:
             case 0xE:
                 value = mmu.readByte(readCombinedRegisters(registerH, registerL));
-                lastInstructionCycles = 16;
+                consumeClockCycles(16);
                 break;
             case 0x7:
             case 0xF:
                 value = registerA.read();
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
         }
 
@@ -3623,42 +3627,42 @@ public class Cpu {
             case 0x0:
             case 0x8:
                 registerB.write(value);
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0x1:
             case 0x9:
                 registerC.write(value);
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0x2:
             case 0xA:
                 registerD.write(value);
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0x3:
             case 0xB:
                 registerE.write(value);
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0x4:
             case 0xC:
                 registerH.write(value);
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0x5:
             case 0xD:
                 registerL.write(value);
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
             case 0x6:
             case 0xE:
                 mmu.writeByte(readCombinedRegisters(registerH, registerL), value);
-                lastInstructionCycles = 16;
+                consumeClockCycles(16);
                 break;
             case 0x7:
             case 0xF:
                 registerA.write(value);
-                lastInstructionCycles = 8;
+                consumeClockCycles(8);
                 break;
         }
     }
@@ -3776,7 +3780,7 @@ public class Cpu {
         temp <<= 8;
         address |= temp;
         load(registerPC, address); // load it into PC so it will be executed next.
-        lastInstructionCycles = 16;
+        consumeClockCycles(16);
     }
     public void jpcc(int opcode) {
         /*
@@ -3827,7 +3831,7 @@ public class Cpu {
 
         // if our condition for jumping is false, don't jump
         if (!condition) {
-            lastInstructionCycles = 12;
+            consumeClockCycles(12);
             return;
         }
 
@@ -3835,7 +3839,7 @@ public class Cpu {
         temp <<= 8;
         address |= temp;
         load(registerPC, address); // load it into PC so it will be executed next.
-        lastInstructionCycles = 16;
+        consumeClockCycles(16);
     }
     public void jphl(int opcode) {
         /*
@@ -3852,7 +3856,7 @@ public class Cpu {
         }
 
         load(registerPC, readCombinedRegisters(registerH, registerL));
-        lastInstructionCycles = 4;
+        consumeClockCycles(4);
     }
     public void jr(int opcode) {
         /*
@@ -3882,7 +3886,7 @@ public class Cpu {
 
         address += n;
         load(registerPC, address);
-        lastInstructionCycles = 12;
+        consumeClockCycles(12);
     }
     public void jrcc(int opcode) {
         /*
@@ -3932,7 +3936,7 @@ public class Cpu {
 
         // if our condition for jumping is false, don't jump
         if (!condition) {
-            lastInstructionCycles = 8;
+            consumeClockCycles(8);
             return;
         }
 
@@ -3942,7 +3946,7 @@ public class Cpu {
         int address = registerPC.read();
         address += n;
         load(registerPC, address);
-        lastInstructionCycles = 12;
+        consumeClockCycles(12);
     }
 
     public void call(int opcode) {
@@ -3975,7 +3979,7 @@ public class Cpu {
         pushHelper(registerPC.read());
 
         load(registerPC, address);                    // jump to this address.
-        lastInstructionCycles = 12;
+        consumeClockCycles(12);
     }
     public void callcc(int opcode) {
         /*2. CALL cc,nn
@@ -4026,7 +4030,7 @@ public class Cpu {
 
         // if our condition for jumping is false, don't jump
         if (!condition) {
-            lastInstructionCycles = 12;
+            consumeClockCycles(12);
             return;
         }
 
@@ -4036,7 +4040,7 @@ public class Cpu {
         temp <<= 8;
         address |= temp;                              // combine
         load(registerPC, address);                    // jump to this address.
-        lastInstructionCycles = 24;
+        consumeClockCycles(24);
     }
 
     public void rst(int opcode) {
@@ -4102,7 +4106,7 @@ public class Cpu {
         }
         load(registerPC, address);
 
-        lastInstructionCycles = 16;
+        consumeClockCycles(16);
     }
 
     private void retHelper() {
@@ -4124,7 +4128,7 @@ public class Cpu {
         }
 
         retHelper();
-        lastInstructionCycles = 16;
+        consumeClockCycles(16);
     }
     public void retcc(int opcode) {
         /*
@@ -4169,13 +4173,13 @@ public class Cpu {
 
         // if our condition for jumping is false, don't jump
         if (!condition) {
-            lastInstructionCycles = 8;
+            consumeClockCycles(8);
             return;
         }
 
         // actually return/jump
         retHelper();
-        lastInstructionCycles = 20;
+        consumeClockCycles(20);
     }
     public void reti(int opcode) {
         /*3. RETI
@@ -4193,6 +4197,6 @@ public class Cpu {
 
         retHelper();
         InterruptManager.getInstance().masterEnable();
-        lastInstructionCycles = 16;
+        consumeClockCycles(16);
     }
 }

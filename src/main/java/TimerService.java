@@ -1,7 +1,8 @@
 import helpers.Logger;
 
 /**
- * Created by Pablo Canseco on 4/10/2018.
+ * File created by Pablo Canseco on 4/10/2018.
+ * Implementation lifted from https://github.com/trekawek/coffee-gb
  */
 public class TimerService {
     private Logger log = new Logger("TIM", Logger.Level.INFO);
@@ -19,112 +20,97 @@ public class TimerService {
     }
     private TimerService() {}
 
-    // members
-    private static final int gameboyCpuSpeed = 4194304;
+    private static final int[] FREQ_TO_BIT = {9, 3, 5, 7};
 
-    private int divider = Main.skipBootrom ? 0xAB : 0;
-    private int counter = 0;
-    private int modulo = 0;
-    private boolean isRunning = false;
-    private TimerSpeed speed = TimerSpeed.HZ_4096;
-    public enum TimerSpeed {
-        HZ_4096  (0, 4096  ),
-        HZ_262144(1, 262144),
-        HZ_65536 (2, 65536 ),
-        HZ_16384 (3, 16384 );
+    private int div, tac, tma, tima;
 
-        //<editor-fold desc=" IMPLEMENTATION " default-state="collapsed">
-        private int controlValue;
-        private int speedInHertz;
-        TimerSpeed(int controlValue, int hertz) {
-            this.controlValue = controlValue;
-            this.speedInHertz = hertz;
+    private boolean previousBit;
+
+    private boolean overflow;
+
+    private int ticksSinceOverflow;
+
+    public void step(int numSteps) {
+        for (int i = 0; i < numSteps; i++) {
+            tick();
         }
-        static TimerSpeed findByControlValue(int ctrlVal) {
-            for (TimerSpeed ts : TimerSpeed.values()) {
-                if (ts.controlValue == ctrlVal) {
-                    return ts;
-                }
-            }
-            return null;
-        }
-        //</editor-fold>
     }
-    private int timerClock = 0;
 
-    // functions
-    public void step(int clocksElapsed) {
-        divider+=clocksElapsed;
-        if (divider > 0xffff) {
-            divider = 0;
-        }
-
-        if (isRunning) {
-            timerClock += clocksElapsed;
-            int numCyclesToIncrement = getnumCyclesToIncrement();
-
-            if (timerClock >= numCyclesToIncrement) {
-                counter++;
-                timerClock %= numCyclesToIncrement;
-                if (counter >= 256) { // overflow
-                    counter = modulo;
-                    InterruptManager.getInstance().raiseInterrupt(
-                            InterruptManager.InterruptTypes.TIMER_OVERFLOW);
-                }
+    public void tick() {
+        updateDiv((div + 1) & 0xffff);
+        if (overflow) {
+            ticksSinceOverflow++;
+            if (ticksSinceOverflow == 4) {
+                InterruptManager.getInstance().raiseInterrupt(InterruptManager.InterruptTypes.TIMER_OVERFLOW);
+            }
+            if (ticksSinceOverflow == 5) {
+                tima = tma;
+            }
+            if (ticksSinceOverflow == 6) {
+                tima = tma;
+                overflow = false;
+                ticksSinceOverflow = 0;
             }
         }
     }
+
+    private void incTima() {
+        tima++;
+        tima %= 0x100;
+        if (tima == 0) {
+            overflow = true;
+            ticksSinceOverflow = 0;
+        }
+    }
+
     public void clearDivider() {
-        this.divider = 0;
-        this.counter = 0;
-
-        log.warning("cleared divider");
+        updateDiv(0);
     }
+
     public int getDivider() {
-        return (this.divider & 0xFF00) >> 8;
+        return div >> 8;
     }
-    public void setCounter(int value) {
-        this.counter = value;
-        log.warning("setting counter to " + value);
-    }
+
     public int getCounter() {
-        log.warning("read counter = " + this.counter);
-        return this.counter;
+        return this.tima;
     }
-    public void setControl(int value) {
-        int speedValue   = value & 0b0000_0011;
-        int runningValue = value & 0b0000_0100;
 
-        this.speed = TimerSpeed.findByControlValue(speedValue);
-        this.isRunning = runningValue != 0;
-
-        // obscure behavior in the hardware:
-        if (!this.isRunning) {
-            if (timerClock >= (getnumCyclesToIncrement() / 2)) {
-                log.warning("OBSCURE BEHAVIOR 1");
-                this.counter++;
-            }
-        }
-
-        log.warning("Configured timer for:" +
-                "\n\tspeed=" + this.speed.name() +
-                "\n\trunning=" + isRunning +
-                "\n\tclocksToIncrementCounter=" + getnumCyclesToIncrement());
-    }
-    public int getControl() {
-        int retval = 0;
-        retval |= (this.speed.controlValue); // 0000_0001
-        retval |= ((this.isRunning ? 1 : 0) << 2);
-        return retval;
-    }
-    public void setModulo(int value) {
-        log.warning("setting modulo to " + value);
-        this.modulo = value;
-    }
     public int getModulo() {
-        return this.modulo;
+        return this.tma;
     }
-    private int getnumCyclesToIncrement() {
-        return (gameboyCpuSpeed / speed.speedInHertz);
+
+    public int getControl() {
+        return this.tac;
+    }
+
+    public void setCounter(int value) {
+        if (ticksSinceOverflow < 5) {
+            tima = value;
+            overflow = false;
+            ticksSinceOverflow = 0;
+        }
+    }
+
+    public void setModulo(int value) {
+        this.tma = value;
+    }
+
+    public void setControl(int value) {
+        this.tac = value;
+    }
+
+    private void updateDiv(int newDiv) {
+        this.div = newDiv;
+        int bitPos = FREQ_TO_BIT[tac & 0b11];
+        //bitPos <<= 2 - 1; // uncomment for double speed mode
+        boolean bit = (div & (1 << bitPos)) != 0;
+        bit &= (tac & (1 << 2)) != 0;
+        if (!bit && previousBit) {
+            incTima();
+        }
+        previousBit = bit;
+    }
+    public void setDivBypass(int value) {
+        this.div = value;
     }
 }
