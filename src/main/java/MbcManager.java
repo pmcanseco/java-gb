@@ -82,7 +82,7 @@ public class MbcManager {
     private final MbcType mbcType;
     private int romBankSelected = 1;
     private boolean ramEnabled;
-    private int ramBankSelected = 1;
+    private int ramBankSelected = 0;
     private boolean isRomMode = true;
     private final boolean hasRam;
     private final boolean hasBattery;
@@ -157,10 +157,7 @@ public class MbcManager {
                     romBankSelected = (value & 0b0001_1111);
                     log.debug("selected " + romBankSelected + " for rom bank low");
 
-                    if (romBankSelected == 0 ||
-                        romBankSelected == 0x20 ||
-                        romBankSelected == 0x40 ||
-                        romBankSelected == 0x60) {
+                    if (romBankSelected == 0) {
                         romBankSelected++;
                     }
                 }
@@ -169,6 +166,12 @@ public class MbcManager {
                         romBankSelected &= 0b1001_1111; // clear bits 5 and 6
                         romBankSelected |= (value & 0b0000_0011) << 5; // replace bits 1 and 2 from value
                         log.debug("selected " + romBankSelected + " for rom bank high");
+                        if (romBankSelected == 0 ||
+                                romBankSelected == 0x20 ||
+                                romBankSelected == 0x40 ||
+                                romBankSelected == 0x60) {
+                            romBankSelected++;
+                        }
                     }
                     else {
                         ramBankSelected = (value & 0b0000_0011); // select a bank from 0 to 3
