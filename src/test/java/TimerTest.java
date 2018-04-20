@@ -70,7 +70,7 @@ public class TimerTest extends UnitTest {
         //NOT YET: obscure behavior: this should clear both divider and counter
         timer.clearDivider();
         assertEquals(0, timer.getDivider());
-        assertEquals(1, timer.getCounter());
+        assertEquals(0, timer.getCounter());
     }
 
     @Test
