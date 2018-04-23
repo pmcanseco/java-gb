@@ -90,7 +90,7 @@ public class MemoryManager {
                 return gpu.lcdControl;
             }
             else if(address == 0xff41) {
-                return processUnusedBits(address, gpu.getLcdStatus());
+                return processUnusedBits(address, gpu.lcdStatus.getLcdStat());
             }
             else if (address == 0xff42) {
                 return gpu.scrollY;
@@ -194,7 +194,7 @@ public class MemoryManager {
                 gpu.lcdControl = value;
             }
             else if(address == 0xff41) {
-                gpu.lcdStatus = value;
+                gpu.lcdStatus.setLcdStat(value);
             }
             else if(address == 0xff42) {
                 gpu.scrollY = value;

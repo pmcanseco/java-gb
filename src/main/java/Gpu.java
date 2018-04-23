@@ -11,6 +11,61 @@ class Gpu extends JPanel {
     public static final int width = 160;
     public static final int height = 144;
 
+    public class LcdStat {
+        private boolean isAnyStat = false;
+
+        private boolean lylycEnable = false;
+        private boolean oamAccessEnable = false;
+        private boolean vblankEnable = false;
+        private boolean hblankEnable = false;
+
+        private boolean isLyLyc = false;
+
+        public int getLcdStat() {
+            int value = 0;
+
+            value |= 0b1000_0000; // bit 7 is unused and always returns 1
+
+            value |= ((lylycEnable)     ? 0b0100_0000 : 0); // bit 6 is ly==lyc enable
+            value |= ((oamAccessEnable) ? 0b0010_0000 : 0); // bit 5 is mode 2 enable
+            value |= ((vblankEnable)    ? 0b0001_0000 : 0); // bit 4 is mode 1 enable
+            value |= ((hblankEnable)    ? 0b0000_1000 : 0); // bit 3 is mode 0 enable
+
+            value |= ((line == lyc)     ? 0b0000_0100 : 0); // bit 2 is if ly currently equals lyc
+
+            value |= currentMode.ordinal();
+
+            return value;
+        }
+
+        public void setLcdStat(final int value) {
+            lylycEnable     = (value & 0b0100_0000) != 0; // bit 6 is ly==lyc enable
+            oamAccessEnable = (value & 0b0010_0000) != 0; // bit 5 is mode 2 enable
+            vblankEnable    = (value & 0b0001_0000) != 0; // bit 4 is mode 1 enable
+            hblankEnable    = (value & 0b0000_1000) != 0; // bit 3 is mode 0 enable
+        }
+
+        void processLcdStatus() {
+            isLyLyc = (line == lyc);
+
+            // from The Cycle Accurate Game Boy Document (TCAGBD.pdf)
+            if(
+                  (isLyLyc && lylycEnable ) ||
+                  ( (currentMode.ordinal() == 0) && (hblankEnable) ) ||
+                  ( (currentMode.ordinal() == 2) && (oamAccessEnable) ) ||
+                  ( (currentMode.ordinal() == 1) && (vblankEnable || oamAccessEnable) )
+            ) {
+                if (!isAnyStat) {
+                    isAnyStat = true;
+                    InterruptManager.getInstance().raiseInterrupt(InterruptManager.InterruptTypes.LCDC_STATUS);
+                }
+            }
+            else {
+                isAnyStat = false;
+            }
+        }
+    }
+
     enum Mode {
         HBLANK,
         VBLANK,
@@ -22,7 +77,7 @@ class Gpu extends JPanel {
     public int line;
     public int lyc;
     public int lcdControl = 0x91;
-    public int lcdStatus = 0;
+    public final LcdStat lcdStatus = new LcdStat();
     public int scrollX;
     public int scrollY;
     public int[] vram = new int[0x2000]; // 8192
@@ -94,8 +149,7 @@ class Gpu extends JPanel {
                 break;
         }
 
-        lcdStatus = getLcdStatus();
-        processLcdStatusInterrupts();
+        lcdStatus.processLcdStatus();
     }
 
     public void updateTile(int address, int value) {
@@ -166,42 +220,4 @@ class Gpu extends JPanel {
         log.info("Rendered scanline " + this.line);
     }
 
-    public int getLcdStatus() {
-        int value = lcdStatus;
-
-        if (line == lyc) {
-            value |= 0b0000_0100;
-        }
-        else {
-            value &= 0b1111_1011;
-        }
-
-        value &= 0b1111_1100;
-        value |= currentMode.ordinal();
-
-        return value;
-        // other bits will be as written by the rom.
-    }
-    private void processLcdStatusInterrupts() {
-
-        boolean lycIntEnable = false;
-        boolean oamCheckInt = false;
-        boolean vblankCheckInt = false;
-        boolean hblankCheckInt = false;
-        boolean lycCheckInt = false;
-
-        if ((lcdStatus & 0b0100_0000) != 0) lycIntEnable = true;
-        if ((lcdStatus & 0b0010_0000) != 0) oamCheckInt = true;
-        if ((lcdStatus & 0b0001_0000) != 0) vblankCheckInt = true;
-        if ((lcdStatus & 0b0000_1000) != 0) hblankCheckInt = true;
-        if ((lcdStatus & 0b0000_0100) != 0) lycCheckInt = true;
-
-        if (  (lycIntEnable && lycCheckInt) ||
-              oamCheckInt                   ||
-              /*vblankCheckInt                ||*/
-              hblankCheckInt  ) {
-
-            InterruptManager.getInstance().raiseInterrupt(InterruptManager.InterruptTypes.LCDC_STATUS);
-        }
-    }
 }
