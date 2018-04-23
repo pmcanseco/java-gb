@@ -76,13 +76,13 @@ public class Main {
         //Cartridge cart = new Cartridge("src/test/resources/mooneye-gb-test-roms/tests/acceptance/timer/tima_reload.gb", true);
         //Cartridge cart = new Cartridge("src/test/resources/mooneye-gb-test-roms/tests/acceptance/timer/tim11_div_trigger.gb", true);
         //Cartridge cart = new Cartridge("src/test/resources/mooneye-gb-test-roms/tests/acceptance/timer/tima_write_reloading.gb", true);
-        Cartridge cart = new Cartridge("src/test/resources/mooneye-gb-test-roms/tests/acceptance/timer/tma_write_reloading.gb", true);
+        //Cartridge cart = new Cartridge("src/test/resources/mooneye-gb-test-roms/tests/acceptance/timer/tma_write_reloading.gb", true);
 
 
         //Cartridge cart = new Cartridge("src/main/resources/tetris.gb", true);
         //Cartridge cart = new Cartridge("src/main/resources/drmario.gb", true);
         //Cartridge cart = new Cartridge("src/main/resources/pokebluejp.gb", true);
-        //Cartridge cart = new Cartridge("src/main/resources/supermarioland.gb", true);
+        Cartridge cart = new Cartridge("src/main/resources/mario.gb", true);
 
 
         if (cartParseOnly) {

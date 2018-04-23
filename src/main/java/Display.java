@@ -2,8 +2,6 @@ import helpers.Logger;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.awt.image.BufferedImage;
 import java.awt.image.VolatileImage;
 import java.util.Random;
@@ -12,7 +10,7 @@ import java.util.Random;
  * Created by Pablo Canseco on 4/13/2018.
  */
 
-public class Display extends JPanel implements KeyListener {
+public class Display extends JPanel {
 
     private String name ="GUI";
     private Logger log =  new Logger(name, Logger.Level.INFO);
@@ -41,7 +39,6 @@ public class Display extends JPanel implements KeyListener {
     }
     private Display() {
         initAppWindow();
-        //canvasTestPattern();
     }
     private Display(boolean testMode) {
         this.isTestMode = testMode;
@@ -49,8 +46,8 @@ public class Display extends JPanel implements KeyListener {
         log = new Logger(name, Logger.Level.WARN);
     }
 
-    GraphicsEnvironment ge;
-    GraphicsConfiguration gc;
+    private GraphicsEnvironment ge;
+    private GraphicsConfiguration gc;
     private BufferedImage canvasBuffer;
     private VolatileImage canvas;
     private JFrame frame;
@@ -108,7 +105,7 @@ public class Display extends JPanel implements KeyListener {
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.getContentPane().setLayout(new FlowLayout(FlowLayout.LEFT, 0, 0));
         frame.getContentPane().add(new JLabel(new ImageIcon(canvas)), FlowLayout.LEFT);
-        frame.addKeyListener(this);
+        frame.addKeyListener(Joypad.getInstance());
 
         log.info("HW Acceleration:       " + canvas.getCapabilities(gc).isAccelerated());
         log.info("Acceleration Priority: " + canvas.getAccelerationPriority());
@@ -131,18 +128,4 @@ public class Display extends JPanel implements KeyListener {
         }
     }
 
-    @Override
-    public void keyTyped(KeyEvent e) {
-        log.warning("keyTyped: " + e.getKeyChar() + " : " + e.getKeyCode());
-    }
-
-    @Override
-    public void keyPressed(KeyEvent e) {
-        log.warning("keyPressed: " + e.getKeyChar() + " : " + e.getKeyCode());
-    }
-
-    @Override
-    public void keyReleased(KeyEvent e) {
-        log.warning("keyReleased: " + e.getKeyChar() + " : " + e.getKeyCode());
-    }
 }

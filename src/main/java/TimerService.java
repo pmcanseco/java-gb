@@ -1,7 +1,7 @@
 import helpers.Logger;
 
 /**
- * File created by Pablo Canseco on 4/10/2018.
+ * File created on 4/10/2018.
  * Implementation lifted from https://github.com/trekawek/coffee-gb
  */
 public class TimerService {
@@ -9,16 +9,20 @@ public class TimerService {
 
     // Singleton
     private static TimerService instance;
+
     public static TimerService getInstance() {
         if (instance == null) {
             instance = new TimerService();
         }
         return instance;
     }
+
     public static void reset() {
         instance = null;
     }
-    private TimerService() {}
+
+    private TimerService() {
+    }
 
     private static final int[] FREQ_TO_BIT = {9, 3, 5, 7};
 
@@ -110,6 +114,7 @@ public class TimerService {
         }
         previousBit = bit;
     }
+
     public void setDivBypass(int value) {
         this.div = value;
     }
