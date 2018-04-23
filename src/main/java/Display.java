@@ -117,18 +117,6 @@ public class Display extends JPanel {
     public void renderFrame(int[] screen) {
         if (!isTestMode) {
 
-            // frame limiter
-            long thisFrameTime = System.currentTimeMillis();
-            long differenceFromLastFrame = thisFrameTime - lastFrameTime;
-            if (differenceFromLastFrame < 16) {
-                try {
-                    Thread.sleep(16 - differenceFromLastFrame);
-                }
-                catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-
             for (int y = 0; y < 144; y++) {
                 for (int x = 0; x < 160; x++) {
                     Colors c = Colors.get(screen[((160 * (y)) + (x))]);

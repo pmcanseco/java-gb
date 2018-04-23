@@ -185,6 +185,7 @@ public class MemoryManager {
         }
         else if(address >= 0xfe00 && address <= 0xfeff) {
             oam[address - 0xfe00] = value;
+            gpu.buildSprite(address - 0xfe00, value);
         }
         else if(address >= 0xff80 && address <= 0xfffe) {
             hram[address - 0xff80] = value;
@@ -207,22 +208,21 @@ public class MemoryManager {
             }
             else if(address == 0xff46) {
                 log.debug("write " + address + "copy(0xfe00, value << 8, 160); // OAM DMA");
+                for(int i = 0; i < 160; i++) {
+                    writeByte(0xfe00 + i, readByte((value << 8) + i));
+                }
             }
-            else if(address == 0xff47) { // write only
+            else if(address == 0xff47) { // background palette, write only
                 for(int i = 0; i < 4; i++) gpu.backgroundPalette[i] = gpu.palette[(value >> (i * 2)) & 3];
-                log.debug("write " + address + " gpu update background palette");
             }
-            else if(address == 0xff48) { // write only
+            else if(address == 0xff48) { // sprite palette 0, write only
                 for(int i = 0; i < 4; i++) gpu.spritePalette[0][i] =gpu.palette[(value >> (i * 2)) & 3];
-                log.debug("write " + address + " gpu update sprite palette 0");
             }
-            else if(address == 0xff49) { // write only
+            else if(address == 0xff49) { // sprite palette 1, write only
                 for(int i = 0; i < 4; i++) gpu.spritePalette[1][i] = gpu.palette[(value >> (i * 2)) & 3];
-                log.debug("write " + address + " gpu update sprite palette 1");
             }
             else if(address == 0xff0f) { // interrupt flags register
                 InterruptManager.getInstance().raiseInterrupt(value);
-                //log.info("write " + address + "=" + value + ": interrupt flags");
             }
 
             // TIMER ADDRESSES
