@@ -14,7 +14,7 @@ public class Display extends JPanel {
 
     private String name ="GUI";
     private Logger log =  new Logger(name, Logger.Level.INFO);
-    private boolean isTestMode = false;
+    private final boolean isTestMode;
 
     // Singleton
     private static Display instance;
@@ -38,6 +38,7 @@ public class Display extends JPanel {
         instance = null;
     }
     private Display() {
+        isTestMode = false;
         initAppWindow();
     }
     private Display(boolean testMode) {
@@ -55,6 +56,8 @@ public class Display extends JPanel {
     private final int scaleFactor = 2;
     private final int frameXoffset = 6;
     private final int frameYoffset = 34;
+
+    private long lastFrameTime;
 
     public enum Colors {
 
@@ -113,6 +116,19 @@ public class Display extends JPanel {
 
     public void renderFrame(int[] screen) {
         if (!isTestMode) {
+
+            // frame limiter
+            long thisFrameTime = System.currentTimeMillis();
+            long differenceFromLastFrame = thisFrameTime - lastFrameTime;
+            if (differenceFromLastFrame < 16) {
+                try {
+                    Thread.sleep(16 - differenceFromLastFrame);
+                }
+                catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+
             for (int y = 0; y < 144; y++) {
                 for (int x = 0; x < 160; x++) {
                     Colors c = Colors.get(screen[((160 * (y)) + (x))]);
@@ -125,6 +141,7 @@ public class Display extends JPanel {
             g2.drawImage(canvasBuffer, 0, 0, Gpu.width * scaleFactor, Gpu.height * scaleFactor, null);
 
             frame.repaint();
+            lastFrameTime = System.currentTimeMillis();
         }
     }
 

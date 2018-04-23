@@ -11,7 +11,7 @@ class Gpu extends JPanel {
     public static final int width = 160;
     public static final int height = 144;
 
-    public class LcdStat {
+    public class LcdStatus {
         private boolean isAnyStat = false;
 
         private boolean lylycEnable = false;
@@ -65,6 +65,43 @@ class Gpu extends JPanel {
             }
         }
     }
+    public class LcdControl {
+
+        private boolean lcdEnable = true;                //Bit 7 - LCD Display Enable             (0=Off, 1=On)
+        private boolean wndTileMapDisplaySelect = false; //Bit 6 - Window Tile Map Display Select (0=9800-9BFF, 1=9C00-9FFF)
+        private boolean wndDisplayEnable = false;        //Bit 5 - Window Display Enable          (0=Off, 1=On)
+        private boolean bgAndWndTileDataSelect = false;  //Bit 4 - BG & Window Tile Data Select   (0=8800-97FF, 1=8000-8FFF)
+        private boolean bgTileMapDisplaySelect = false;  //Bit 3 - BG Tile Map Display Select     (0=9800-9BFF, 1=9C00-9FFF)
+        private boolean tallSpriteMode = false;          //Bit 2 - OBJ (Sprite) Size              (0=8x8, 1=8x16)
+        private boolean spriteDisplayEnable = false;     //Bit 1 - OBJ (Sprite) Display Enable    (0=Off, 1=On)
+        private boolean bgWndDisplayPriority = false;    //Bit 0 - BG/Window Display/Priority     (0=Off, 1=On)
+
+        public void setLcdControl(int value) {
+            lcdEnable =               (value & 0b1000_0000) != 0;
+            wndTileMapDisplaySelect = (value & 0b0100_0000) != 0;
+            wndDisplayEnable =        (value & 0b0010_0000) != 0;
+            bgAndWndTileDataSelect =  (value & 0b0001_0000) != 0;
+            bgTileMapDisplaySelect =  (value & 0b0000_1000) != 0;
+            tallSpriteMode =          (value & 0b0000_0100) != 0;
+            spriteDisplayEnable =     (value & 0b0000_0010) != 0;
+            bgWndDisplayPriority =    (value & 0b0000_0001) != 0;
+        }
+
+        public int getLcdControl() {
+            int value = 0;
+
+            value |= lcdEnable               ? 0b1000_0000 : 0;
+            value |= wndTileMapDisplaySelect ? 0b0100_0000 : 0;
+            value |= wndDisplayEnable        ? 0b0010_0000 : 0;
+            value |= bgAndWndTileDataSelect  ? 0b0001_0000 : 0;
+            value |= bgTileMapDisplaySelect  ? 0b0000_1000 : 0;
+            value |= tallSpriteMode          ? 0b0000_0100 : 0;
+            value |= spriteDisplayEnable     ? 0b0000_0010 : 0;
+            value |= bgWndDisplayPriority    ? 0b0000_0001 : 0;
+
+            return value;
+        }
+    }
 
     enum Mode {
         HBLANK,
@@ -76,8 +113,8 @@ class Gpu extends JPanel {
     private int modeClock;
     public int line;
     public int lyc;
-    public int lcdControl = 0x91;
-    public final LcdStat lcdStatus = new LcdStat();
+    public final LcdStatus lcdStatus = new LcdStatus();
+    public final LcdControl lcdControl = new LcdControl();
     public int scrollX;
     public int scrollY;
     public int[] vram = new int[0x2000]; // 8192
@@ -90,6 +127,7 @@ class Gpu extends JPanel {
     Gpu() {
         modeClock = 0;
         currentMode = Mode.VRAM_ACCESS;
+        lcdControl.setLcdControl(0x91);
     }
     Gpu(Logger.Level level) {
         this();
@@ -152,7 +190,7 @@ class Gpu extends JPanel {
         lcdStatus.processLcdStatus();
     }
 
-    public void updateTile(int address, int value) {
+    public void updateTile(int address) {
 
         // get base address for this tile row
         address &= 0x1FFE;
@@ -177,10 +215,10 @@ class Gpu extends JPanel {
         }
     }
     private void renderScanLine() {
-        boolean bgmap =  ((lcdControl & 0b0000_1000) >> 3) != 0;
-        boolean bgtile = ((lcdControl & 0b0001_0000) >> 4) == 0;
+        boolean bgmap =  lcdControl.bgTileMapDisplaySelect;
+        boolean bgtile = !lcdControl.bgAndWndTileDataSelect;
 
-        int mapoffset = 0x1800; /*bgmap ? 0x1C00 : 0x1800;*/
+        int mapoffset = bgmap ? 0x1C00 : 0x1800;  /* 0x1800; */
         mapoffset += (((line + scrollY) & 0b1111_1111) >> 3) << 5;
 
         int lineoffset = (scrollX >> 3);
@@ -197,15 +235,11 @@ class Gpu extends JPanel {
             tile += 256;
         }
 
-        int[] scanlineRow = new int[160];
-
         for (int i=0; i < 160; i++) {
             colorint = tileset[tile][y][x];
 
             screen[canvasoffset] = backgroundPalette[colorint];
             canvasoffset++;
-
-            scanlineRow[i] = colorint;
 
             x++;
             if (x == 8) {

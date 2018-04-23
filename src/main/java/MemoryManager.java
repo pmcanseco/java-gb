@@ -87,7 +87,7 @@ public class MemoryManager {
                 return oam[address - 0xfe00];
             }
             else if (address == 0xff40) {
-                return gpu.lcdControl;
+                return gpu.lcdControl.getLcdControl();
             }
             else if(address == 0xff41) {
                 return processUnusedBits(address, gpu.lcdStatus.getLcdStat());
@@ -172,7 +172,7 @@ public class MemoryManager {
         else if(address >= 0x8000 && address <= 0x9fff) {
             gpu.vram[address - 0x8000] = value;
             if(address <= 0x97ff) {
-                gpu.updateTile(address, value);
+                gpu.updateTile(address);
                 log.debug(String.format("write %02x updateTile(address,%02x)", address, value));
             }
         }
@@ -191,7 +191,7 @@ public class MemoryManager {
         }
         else if(address >= 0xff00 && address <= 0xff7f) {
             if(address == 0xff40) {
-                gpu.lcdControl = value;
+                gpu.lcdControl.setLcdControl(value);
             }
             else if(address == 0xff41) {
                 gpu.lcdStatus.setLcdStat(value);
