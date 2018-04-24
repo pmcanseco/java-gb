@@ -42,11 +42,13 @@ public class MemoryManager {
     private int[] wram = new int[0x2000]; // 8192
     private int[] hram = new int[0x80];   // 128
 
-    private boolean inBootrom = true;
+    public boolean inBootrom = true;
 
     MemoryManager(MbcManager cart, Gpu gpu) {
         this.cartMbc = cart;
         this.gpu = gpu;
+
+        //this.writeByte(0xff00, 0xcf);
     }
     MemoryManager(MbcManager cart) {
         this(cart, new Gpu(Logger.Level.FATAL));
@@ -105,7 +107,7 @@ public class MemoryManager {
                 return gpu.lyc;
             }
             else if (address == 0xff00) { // JOYPAD
-                return processUnusedBits(address, 0xFF);
+                return Joypad.getInstance().getKeysPressed();
             }
             else if (address >= 0xff01 && address <= 0xffff) {
 
@@ -191,7 +193,11 @@ public class MemoryManager {
             hram[address - 0xff80] = value;
         }
         else if(address >= 0xff00 && address <= 0xff7f) {
-            if(address == 0xff40) {
+            if (address == 0xff00) { // JOYPAD
+                Joypad.getInstance().setJoypadMode(value);
+            }
+
+            else if(address == 0xff40) {
                 gpu.lcdControl.setLcdControl(value);
             }
             else if(address == 0xff41) {
@@ -216,7 +222,7 @@ public class MemoryManager {
                 for(int i = 0; i < 4; i++) gpu.backgroundPalette[i] = gpu.palette[(value >> (i * 2)) & 3];
             }
             else if(address == 0xff48) { // sprite palette 0, write only
-                for(int i = 0; i < 4; i++) gpu.spritePalette[0][i] =gpu.palette[(value >> (i * 2)) & 3];
+                for(int i = 0; i < 4; i++) gpu.spritePalette[0][i] = gpu.palette[(value >> (i * 2)) & 3];
             }
             else if(address == 0xff49) { // sprite palette 1, write only
                 for(int i = 0; i < 4; i++) gpu.spritePalette[1][i] = gpu.palette[(value >> (i * 2)) & 3];
@@ -287,10 +293,10 @@ public class MemoryManager {
     }
 
     private int processUnusedBits(int address, int value) {
-        if (address == 0xff00) {
-            return value |= 0b1100_0000;
-        }
-        else if (address == 0xff02) {
+        //if (address == 0xff00) {
+        //    return value |= 0b1100_0000;
+        //}
+        /*else*/ if (address == 0xff02) {
             return value |= 0b0111_1110;
         }
         else if (address == 0xff07) {

@@ -9,6 +9,10 @@ import helpers.*;
 public class Cpu {
     private final String name = "CPU";
     private Logger log = new Logger(name, Logger.Level.WARN);
+    private static Cpu currentInstance;
+    public static Cpu getCurrentInstance() {
+        return currentInstance;
+    }
 
     // 8-bit registers
     private Register registerA;
@@ -42,6 +46,7 @@ public class Cpu {
 
     private boolean pendingInterruptEnable = false;
     private boolean isHalted = false;
+    public boolean paused = false;
 
     Cpu(MemoryManager memMgr, Gpu gpu) {
         // initialize 8-bit registers
@@ -78,6 +83,7 @@ public class Cpu {
 
         this.mmu = memMgr;
         this.gpu = gpu;
+        currentInstance = this;
         log.debug("initialized.");
     }
     Cpu(MemoryManager memMgr) {
@@ -410,6 +416,7 @@ public class Cpu {
         registerSP.write(0xFFFE);
         registerPC.write(0x0100);
         TimerService.getInstance().setDivBypass(0xAB); // DIV
+        mmu.writeByte(0xFF0F, 0xE1);
         mmu.writeByte(0xFF05, 0x00); // TIMA
         mmu.writeByte(0xFF06, 0x00); // TMA
         mmu.writeByte(0xFF07, 0x00); // TAC
@@ -445,17 +452,17 @@ public class Cpu {
     public void consumeClockCycles(int cycles) {
         for (int i = 0; i < cycles; i++) {
             TimerService.getInstance().tick();
-            gpu.step(1);
         }
+        gpu.step(cycles);
     }
 
     // main loop
     public void main() {
-        if (Main.skipBootrom) {
+        if (Main.skipBootrom && mmu.inBootrom) {
             skipBootrom();
         }
 
-        while (true) {
+        while (!paused) {
             step();
         }
     }

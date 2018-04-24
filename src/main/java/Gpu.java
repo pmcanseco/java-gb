@@ -53,10 +53,10 @@ class Gpu extends JPanel {
             // from The Cycle Accurate Game Boy Document (TCAGBD.pdf)
             if (
                     (isLyLyc && lylycEnable) ||
-                            ((currentMode.ordinal() == 0) && (hblankEnable)) ||
-                            ((currentMode.ordinal() == 2) && (oamAccessEnable)) ||
-                            ((currentMode.ordinal() == 1) && (vblankEnable || oamAccessEnable))
-                    ) {
+                    ((currentMode.ordinal() == 0) && (hblankEnable)) ||
+                    ((currentMode.ordinal() == 2) && (oamAccessEnable)) ||
+                    ((currentMode.ordinal() == 1) && (vblankEnable || oamAccessEnable))
+                ) {
                 if (!isAnyStat) {
                     isAnyStat = true;
                     InterruptManager.getInstance().raiseInterrupt(InterruptManager.InterruptTypes.LCDC_STATUS);
@@ -80,14 +80,29 @@ class Gpu extends JPanel {
         private boolean bgWndDisplayPriority = false;    //Bit 0 - BG/Window Display/Priority     (0=Off, 1=On)
 
         public void setLcdControl(int value) {
-            lcdEnable = (value & 0b1000_0000) != 0;
-            wndTileMapDisplaySelect = (value & 0b0100_0000) != 0;
-            wndDisplayEnable = (value & 0b0010_0000) != 0;
-            bgAndWndTileDataSelect = (value & 0b0001_0000) != 0;
-            bgTileMapDisplaySelect = (value & 0b0000_1000) != 0;
-            tallSpriteMode = (value & 0b0000_0100) != 0;
-            spriteDisplayEnable = (value & 0b0000_0010) != 0;
-            bgWndDisplayPriority = (value & 0b0000_0001) != 0;
+            boolean newLcdEnable = (value & 0b1000_0000) != 0;
+            boolean newWndTileMapDisplaySelect = (value & 0b0100_0000) != 0;
+            boolean newWndDisplayEnable = (value & 0b0010_0000) != 0;
+            boolean newBgAndWndTileDataSelect = (value & 0b0001_0000) != 0;
+            boolean newBgTileMapDisplaySelect = (value & 0b0000_1000) != 0;
+            boolean newTallSpriteMode = (value & 0b0000_0100) != 0;
+            boolean newSpriteDisplayEnable = (value & 0b0000_0010) != 0;
+            boolean newBgWndDisplayPriority = (value & 0b0000_0001) != 0;
+
+            if (!lcdEnable && newLcdEnable) {
+                line = 0;
+                currentMode = Mode.HBLANK;
+                modeClock = 0;
+            }
+
+            lcdEnable = newLcdEnable;
+            wndTileMapDisplaySelect = newWndTileMapDisplaySelect;
+            wndDisplayEnable = newWndDisplayEnable;
+            bgAndWndTileDataSelect = newBgAndWndTileDataSelect;
+            bgTileMapDisplaySelect = newBgTileMapDisplaySelect;
+            tallSpriteMode = newTallSpriteMode;
+            spriteDisplayEnable = newSpriteDisplayEnable;
+            bgWndDisplayPriority = newBgWndDisplayPriority;
         }
 
         public int getLcdControl() {
@@ -105,7 +120,7 @@ class Gpu extends JPanel {
             return value;
         }
 
-        public int getSpriteSize() {
+        private int getSpriteSize() {
             return tallSpriteMode ? 16 : 8;
         }
     }
@@ -119,8 +134,6 @@ class Gpu extends JPanel {
         boolean isXflip = false;
         boolean isPalette1 = false; // false = palette 0, true = palette 1
     }
-
-    private List<Sprite> spriteList = new ArrayList<>();
 
     enum Mode {
         HBLANK,
@@ -143,6 +156,7 @@ class Gpu extends JPanel {
     public int[] backgroundPalette = {0, 3, 3, 3};
     public int[][] spritePalette = {{0, 3, 3, 3}, {0, 3, 3, 3}};
     public int[] palette = {0, 1, 2, 3};
+    private List<Sprite> spriteList = new ArrayList<>();
 
     Gpu() {
         modeClock = 0;
@@ -175,8 +189,7 @@ class Gpu extends JPanel {
                 if (modeClock >= 172) {
                     currentMode = Mode.HBLANK;
                     modeClock = 0;
-                    //log.debug("Entering HBLANK line" + line);
-                    // write line to framebuffer (canvas)
+
                     renderScanLine();
                 }
                 break;
@@ -187,10 +200,11 @@ class Gpu extends JPanel {
 
                     if (line == 143) {
                         currentMode = Mode.VBLANK;
+
                         InterruptManager.getInstance()
                                 .raiseInterrupt(InterruptManager.InterruptTypes.VBLANK);
+
                         Display.getInstance().renderFrame(screen);
-                        //dumpTileData();
                     }
                     else {
                         currentMode = Mode.OAM_ACCESS;
@@ -205,7 +219,6 @@ class Gpu extends JPanel {
                     if (line > 153) {
                         currentMode = Mode.OAM_ACCESS;
                         line = 0;
-                        //log.debug("Entering OAM_ACCESS line" + line);
                     }
                 }
                 break;
@@ -280,6 +293,8 @@ class Gpu extends JPanel {
     }
 
     private void renderSprites(int[] scanrow) {
+        int spriteSize = lcdControl.getSpriteSize();
+
         for(int i = 0; i < 40; i++) {
             Sprite obj = spriteList.get(i);
 
@@ -298,7 +313,7 @@ class Gpu extends JPanel {
                 // If the sprite is Y-flipped,
                 // use the opposite side of the tile
                 if(obj.isYflip) {
-                    tilerow = tileset[obj.tileNumber][7 - (line - obj.y)];
+                    tilerow = tileset[obj.tileNumber][spriteSize - 1 - (line - obj.y)];
                 }
                 else {
                     tilerow = tileset[obj.tileNumber][line - obj.y];
@@ -312,18 +327,18 @@ class Gpu extends JPanel {
                     // if it's not colour 0 (transparent), AND
                     // if this sprite has priority OR shows under the bg
                     // then render the pixel
-                    if(     ((obj.x + x) >= 0) &&
-                            ((obj.x + x) < 160) &&
-                            ( (tilerow[x] != 0) && (obj.belowBackground || scanrow[obj.x + x] <= 0) )
+                    if(     (((obj.x + x) >= 0) && ((obj.x + x) < 160)) &&
+                            (tilerow[x] != 0) &&
+                            (!obj.belowBackground || scanrow[obj.x + x] <= 0)
                     ) {
                         // If the sprite is X-flipped,
                         // write pixels in reverse order
                         color = pal[tilerow[obj.isXflip ? (7-x) : x]];
 
                         screen[canvasoffs] = color;
-
-                        canvasoffs++;
                     }
+
+                    canvasoffs++;
                 }
             }
         }

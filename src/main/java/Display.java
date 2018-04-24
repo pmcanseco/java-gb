@@ -109,6 +109,7 @@ public class Display extends JPanel {
         frame.getContentPane().setLayout(new FlowLayout(FlowLayout.LEFT, 0, 0));
         frame.getContentPane().add(new JLabel(new ImageIcon(canvas)), FlowLayout.LEFT);
         frame.addKeyListener(Joypad.getInstance());
+        frame.addMouseListener(Debugger.getInstance());
 
         log.info("HW Acceleration:       " + canvas.getCapabilities(gc).isAccelerated());
         log.info("Acceleration Priority: " + canvas.getAccelerationPriority());

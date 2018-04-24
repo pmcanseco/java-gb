@@ -12,24 +12,33 @@
 
 | Features          | Status    | Notes    |
 | ------------------|:---------:|----------|
-| ⚔️ Sprites          | ⚠️       | Glitchy sprite rendering, but almost there |
-| 🕹 Joypad            | ❌       |  |
-| 📚 MBC               | ⚠️       | MBC1 and optional RAM implemented. No battery or any other MBC yet. |
-| 🔊 Sound            | ❌       |  |
-| ⏱ Frame Scheduling | ❌       |  |
+| ⚔️Sprites       | ⚠️    | Glitchy sprite rendering, but almost there |
+| 🕹 Joypad          | ❌       |  |
+| 📚 MBC             | ⚠️    | MBC1 and optional RAM implemented. No battery or any other MBC yet. |
+| 🔊 Sound           | ❌       |  |
+| ⏱ Frame Scheduling | ❌      |  |
 
 
 
 | Test Roms                   | Status    | Notes     |
 | ----------------------------|:---------:| ----------|
-| Blargg CPU_INSTRS           | ✔️       |  |
-| Blargg INSTR_TIMING         | ❌       |  |
-| Blargg INTERRUPT_TIME       | ❌       |  |
-| Blargg MEM_TIMING           | ❌       |  |
-| Blargg MEM_TIMING-2         | ❌       |  |
-| Mooneye bits/mem_oam        |          |  |
-| Mooneye bits/reg_f          | ✔️       |  |
-| Mooneye bits/unused_hwio-GS | ✔️       |  |
+| Blargg CPU_INSTRS           | ✔️     |  |
+| Blargg INSTR_TIMING         | ❌        |  |
+| Blargg INTERRUPT_TIME       | ❌        |  |
+| Blargg MEM_TIMING           | ❌        |  |
+| Blargg MEM_TIMING-2         | ❌        |  |
+| Mooneye bits/mem_oam        |           |  |
+| Mooneye bits/reg_f          | ✔️     |  |
+| Mooneye bits/unused_hwio-GS | ️     |  |
+| Mooneye timer/div_write     | ✔️     |  |
+| Mooneye timer/rapid_toggle  | ✔️     |  |
+| Mooneye timer/tim00         | ✔️     |  |
+| Mooneye timer/tim01         | ✔️     |  |
+| Mooneye timer/tim10         | ✔️     |  |
+| Mooneye timer/tim11         | ✔️     |  |
+| Mooneye timer/tima_reload   | ✔️     |  |
+| Mooneye timer/tima_write_reloading  | ✔️     |  |
+| Mooneye timer/tma_write_reloading   | ✔️     |  |
 
 
 **Blargg INSTR_TIMING: ❌**

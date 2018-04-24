@@ -4,8 +4,8 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * This class serves as the entry point for executing the emulator. It also takes care of
- * commandline arguments
+ * This class serves as the entry point for executing the emulator.
+ * It also takes care of commandline arguments.
  */
 public class Main {
 
@@ -18,12 +18,12 @@ public class Main {
         List<String> argsList = Arrays.asList(args);
         skipBootrom = argsList.contains("-sb") || argsList.contains("--skip-bootrom");
         boolean cartParseOnly = argsList.contains("-cpo") || argsList.contains("--cart-parse-only");
-        boolean noAcceleration = argsList.contains("-noaccel") || argsList.contains("--no-hw-acceleration");
+        boolean disableAcceleration = argsList.contains("-noaccel") || argsList.contains("--disable-hw-acceleration");
 
         if (argsList.contains("-h") || argsList.contains("-help") || argsList.contains("--help")) {
             System.out.println("USAGE: java Main [options]");
-            System.out.println("\t -sb      (--skip-bootrom) \t\t\tBegin executing the game immediately, bypassing the Nintendo logo scroll.");
-            System.out.println("\t -noaccel (--no-hw-acceleration) \tDisables the use of Java2D OpenGL.");
+            System.out.println("\t -sb      (--skip-bootrom) \t\t\t\tBegin executing the game immediately, bypassing the Nintendo logo scroll.");
+            System.out.println("\t -noaccel (--disable-hw-acceleration) \tDisables the use of Java2D OpenGL.");
             return;
         }
 
@@ -31,7 +31,7 @@ public class Main {
         log.info("======= CMDLINE PARAMS =======");
         log.info("Skip Bootrom   set to " + skipBootrom);
         log.info("CartParseOnly  set to " + cartParseOnly);
-        log.info("noAcceleration set to " + noAcceleration);
+        log.info("disableAcceleration set to " + disableAcceleration);
         log.info("==============================");
 
 
@@ -78,18 +78,40 @@ public class Main {
         //Cartridge cart = new Cartridge("src/test/resources/mooneye-gb-test-roms/tests/acceptance/timer/tima_write_reloading.gb", true);
         //Cartridge cart = new Cartridge("src/test/resources/mooneye-gb-test-roms/tests/acceptance/timer/tma_write_reloading.gb", true);
 
+        //Cartridge cart = new Cartridge("src/test/resources/mooneye-gb-test-roms/tests/acceptance/ppu/hblank_ly_scx_timing-GS.gb", true);
+        //Cartridge cart = new Cartridge("src/test/resources/mooneye-gb-test-roms/tests/acceptance/ppu/intr_1_2_timing-GS.gb", true);
+        //Cartridge cart = new Cartridge("src/test/resources/mooneye-gb-test-roms/tests/acceptance/ppu/lcdon_timing-dmgABCXmgbS.gb", true);
+        //Cartridge cart = new Cartridge("src/test/resources/mooneye-gb-test-roms/tests/acceptance/ppu/vblank_stat_intr-GS.gb", true);
 
+
+        //Cartridge cart = new Cartridge("src/test/resources/mooneye-gb-test-roms/tests/acceptance/boot_hwio-S.gb", true);
+        //Cartridge cart = new Cartridge("src/test/resources/mooneye-gb-test-roms/tests/acceptance/call_cc_timing.gb", true);
+        //Cartridge cart = new Cartridge("src/test/resources/mooneye-gb-test-roms/tests/acceptance/div_timing.gb", true);
+        //Cartridge cart = new Cartridge("src/test/resources/mooneye-gb-test-roms/tests/acceptance/ei_sequence.gb", true);
+
+        //Cartridge cart = new Cartridge("src/test/resources/mooneye-gb-test-roms/tests/acceptance/ei_timing.gb", true);
+        //Cartridge cart = new Cartridge("src/test/resources/mooneye-gb-test-roms/tests/acceptance/intr_timing.gb", true);
+
+
+        //Cartridge cart = new Cartridge("src/test/resources/mooneye-gb-test-roms/tests/acceptance/jp_cc_timing.gb", true);
+        //Cartridge cart = new Cartridge("src/test/resources/mooneye-gb-test-roms/tests/acceptance/push_timing.gb", true);
+        //Cartridge cart = new Cartridge("src/test/resources/mooneye-gb-test-roms/tests/acceptance/pop_timing.gb", true);
+        //Cartridge cart = new Cartridge("src/test/resources/mooneye-gb-test-roms/tests/acceptance/ret_timing.gb", true);
+
+        // Games
         //Cartridge cart = new Cartridge("src/main/resources/tetris.gb", true);
         //Cartridge cart = new Cartridge("src/main/resources/drmario.gb", true);
         //Cartridge cart = new Cartridge("src/main/resources/pokebluejp.gb", true);
-        Cartridge cart = new Cartridge("src/main/resources/mario.gb", true);
+        Cartridge cart = new Cartridge("src/main/resources/supermarioland.gb", true);
+        //Cartridge cart = new Cartridge("src/main/resources/Final Fantasy Legend III (USA).gb", true);
+        //Cartridge cart = new Cartridge("src/main/resources/Legend of Zelda, The - Link's Awakening (V1.2) (U) [!].gb", true);
 
 
         if (cartParseOnly) {
             return;
         }
 
-        if (!noAcceleration) {
+        if (!disableAcceleration) {
             System.setProperty("sun.java2d.opengl", "true");
         }
         log.info("\"sun.java2d.opengl\" set to " + System.getProperty("sun.java2d.opengl"));
