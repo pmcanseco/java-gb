@@ -12,11 +12,11 @@
 
 | Features          | Status    | Notes    |
 | ------------------|:---------:|----------|
-| Sprites           | ⚠️       | Glitchy sprite rendering, but almost there |
-| Joypad            | ❌       |  |
-| MBC               | ⚠️       | MBC1 and optional RAM implemented. No battery or any other MBC yet. |
-| Sound             | ❌       |  |
-| Frame Scheduling  | ❌       |  |
+| ⚔️ Sprites          | ⚠️       | Glitchy sprite rendering, but almost there |
+| 🕹 Joypad            | ❌       |  |
+| 📚 MBC               | ⚠️       | MBC1 and optional RAM implemented. No battery or any other MBC yet. |
+| 🔊 Sound            | ❌       |  |
+| ⏱ Frame Scheduling | ❌       |  |
 
 
 
