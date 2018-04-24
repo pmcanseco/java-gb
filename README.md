@@ -10,18 +10,27 @@
 ## Progress:
 ![Tetris Main Screen](https://i.imgur.com/6zbdaB3.gif) &nbsp; ![CPU_INSTRS](https://i.imgur.com/rD1P93j.png)
 
-**Blargg CPU_INSTRS: ✅**
-- [X] 01-special
-- [X] 02-interrupts
-- [X] 03-op sp,hl
-- [X] 04-op r,imm
-- [X] 05-op rp
-- [X] 06-ld r,r
-- [X] 07-jr,jp,call,ret,rst
-- [X] 08-misc instrs
-- [X] 09-op r,r
-- [X] 10-bit ops
-- [X] 11-op a,(hl)
+| Features          | Status    | Notes    |
+| ------------------|:---------:|----------|
+| Sprites           | ⚠️       | Glitchy sprite rendering, but almost there |
+| Joypad            | ❌       |  |
+| MBC               | ⚠️       | MBC1 and optional RAM implemented. No battery or any other MBC yet. |
+| Sound             | ❌       |  |
+| Frame Scheduling  | ❌       |  |
+
+
+
+| Test Roms                   | Status    | Notes     |
+| ----------------------------|:---------:| ----------|
+| Blargg CPU_INSTRS           | ✔️       |  |
+| Blargg INSTR_TIMING         | ❌       |  |
+| Blargg INTERRUPT_TIME       | ❌       |  |
+| Blargg MEM_TIMING           | ❌       |  |
+| Blargg MEM_TIMING-2         | ❌       |  |
+| Mooneye bits/mem_oam        |          |  |
+| Mooneye bits/reg_f          | ✔️       |  |
+| Mooneye bits/unused_hwio-GS | ✔️       |  |
+
 
 **Blargg INSTR_TIMING: ❌**
 - Fails with error "FAILED #255" , issue with timer not working right. https://github.com/afishberg/feo-boy/commit/3b2973154671a0cd00b47a81071a5fb85aa4629e has some potentially relevant info.
