@@ -13,7 +13,7 @@
 | Features          | Status    | Notes    |
 | ------------------|:---------:|----------|
 | ⚔️Sprites       | ⚠️    | Glitchy sprite rendering, but almost there |
-| 🕹 Joypad          | ❌       |  |
+| 🕹 Joypad          | ✔️       |  |
 | 📚 MBC             | ⚠️    | MBC1 and optional RAM implemented. No battery or any other MBC yet. |
 | 🔊 Sound           | ❌       |  |
 | ⏱ Frame Scheduling | ❌      |  |
