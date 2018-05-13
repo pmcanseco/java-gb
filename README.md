@@ -1,5 +1,7 @@
 # java-gb [![Build Status](https://travis-ci.org/pmcanseco/java-gb.png?branch=master)](https://travis-ci.org/pmcanseco/java-gb)
 
+![Tetris Main Screen](https://i.imgur.com/6zbdaB3.gif) &nbsp; ![CPU_INSTRS](https://i.imgur.com/rD1P93j.png) &nbsp; ![Super Mario Land](https://i.imgur.com/8BErEun.png) &nbsp; ![Dr. Mario](https://i.imgur.com/8jKMhHN.png) &nbsp; ![Pokemon Blue JP](https://i.imgur.com/dHA67P8.png)
+
 ## Docs
  * http://imrannazar.com/GameBoy-Emulation-in-JavaScript:-The-CPU
  * Gameboy Instruction Set: http://marc.rawer.de/Gameboy/Docs/GBCPU_Instr.html
@@ -8,8 +10,6 @@
 
 
 ## Progress:
-![Tetris Main Screen](https://i.imgur.com/6zbdaB3.gif) &nbsp; ![CPU_INSTRS](https://i.imgur.com/rD1P93j.png) &nbsp; ![Super Mario Land](https://i.imgur.com/8BErEun.png) &nbsp; ![Dr. Mario](https://i.imgur.com/8jKMhHN.png) &nbsp; ![Pokemon Blue JP](https://i.imgur.com/dHA67P8.png)
-
 | Features          | Status    | Notes    |
 | ------------------|:---------:|----------|
 | ⚔️Sprites       | ⚠️    | Glitchy sprite rendering, but almost there |
