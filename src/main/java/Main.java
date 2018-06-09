@@ -101,8 +101,8 @@ public class Main {
         // Games
         //Cartridge cart = new Cartridge("src/main/resources/tetris.gb", true);
         //Cartridge cart = new Cartridge("src/main/resources/drmario.gb", true);
-        //Cartridge cart = new Cartridge("src/main/resources/pokebluejp.gb", true);
-        Cartridge cart = new Cartridge("src/main/resources/supermarioland.gb", true);
+        Cartridge cart = new Cartridge("src/main/resources/pokebluejp.gb", true);
+        //Cartridge cart = new Cartridge("src/main/resources/mario.gb", true);
         //Cartridge cart = new Cartridge("src/main/resources/Final Fantasy Legend III (USA).gb", true);
         //Cartridge cart = new Cartridge("src/main/resources/Legend of Zelda, The - Link's Awakening (V1.2) (U) [!].gb", true);
 

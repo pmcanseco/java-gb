@@ -299,7 +299,7 @@ class Gpu extends JPanel {
             Sprite obj = spriteList.get(i);
 
             // Check if this sprite falls on this scanline
-            if((obj.y <= line) && ((obj.y + 8) > line)) {
+            if((obj.y <= line) && ((obj.y + lcdControl.getSpriteSize()) > line)) {
 
                 // Palette to use for this sprite
                 int[] pal = obj.isPalette1 ? spritePalette[1] : spritePalette[0];

@@ -7,7 +7,7 @@ import java.awt.event.KeyListener;
  * Created by Pablo Canseco on 4/22/2018.
  */
 public class Joypad implements KeyListener {
-    private Logger log = new Logger("PAD", Logger.Level.DEBUG);
+    private Logger log = new Logger("PAD", Logger.Level.WARN);
 
     private static Joypad instance;
     public static Joypad getInstance() {
@@ -91,9 +91,6 @@ public class Joypad implements KeyListener {
         else if(value == 0b0001_0000) {
             //log.debug("set to button mode");
             isDpadMode = false;
-        }
-        else {
-            //log.fatal("joypad set to dpad and button modes at the same time.");
         }
     }
 

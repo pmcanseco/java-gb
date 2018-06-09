@@ -6,9 +6,11 @@ stages:
   - test
 
 build job:
+  image: maven:3-jdk-8
   stage: build
   script: mvn clean compile
 
 test job:
+  image: maven:3-jdk-8
   stage: test
   script: mvn test

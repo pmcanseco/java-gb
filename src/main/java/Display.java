@@ -53,7 +53,7 @@ public class Display extends JPanel {
     private VolatileImage canvas;
     private JFrame frame;
 
-    private final int scaleFactor = 2;
+    private final int scaleFactor = 1;
     private final int frameXoffset = 6;
     private final int frameYoffset = 34;
 
