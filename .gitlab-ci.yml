@@ -1,0 +1,14 @@
+variables:
+  GIT_SUBMODULE_STRATEGY: recursive
+
+stages:
+  - build
+  - test
+
+build job:
+  stage: build
+  script: mvn clean compile
+
+test job:
+  stage: test
+  script: mvn test
