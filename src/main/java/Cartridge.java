@@ -19,7 +19,7 @@ public class Cartridge {
 
     private Logger log = new Logger("CART", Logger.Level.DEBUG);
 
-    private enum Locale {
+    public enum Locale {
         Japanese,
         World,
         Unknown
@@ -86,8 +86,8 @@ public class Cartridge {
     private MbcManager.CartridgeType cartridgeType; // presence of additional hardware like MBC, RAM, BAT, etc.
     private int headerChecksum; // see verifyRom()
     private int expectedHeaderChecksum; // see verifyRom()
-    private int cartridgeLogoChecksum; // see verifyRom()
-    private int bootromLogoChecksum; // see verifyRom()
+    private int cartridgeLogoChecksum; // see verifyLogoChecksums()
+    private int bootromLogoChecksum; // see verifyLogoChecksums()
 
     public Cartridge(String path) {
         loadRomFile(path);
@@ -113,7 +113,7 @@ public class Cartridge {
             setRomSize();
             setCartridgeType();
             verifyHeaderChecksum();
-            calculateCartAndBootromLogoChecksums();
+            verifyLogoChecksums();
         } catch(Exception ex) {
             System.out.println("Exception: " + ex);
             System.out.println("Please enter valid Rom file path: ");
@@ -125,10 +125,18 @@ public class Cartridge {
     private void setTitle() {
         // bytes at 0x0134 through 0x0143 contain the title
         StringBuilder sb = new StringBuilder();
-        for (int i = ADDRESS_TITLE_START; i<= ADDRESS_TITLE_END; i++) {
+        for (int i = ADDRESS_TITLE_START; i <= ADDRESS_TITLE_END; i++) {
+            if (this.rom[i] == 0) { // don't process NUL game chars
+                continue;
+            }
+
             sb.append((char) this.rom[i]);
         }
         this.title = sb.toString();
+    }
+
+    public String getTitle() {
+        return this.title;
     }
 
     private void setLocale() {
@@ -143,6 +151,10 @@ public class Cartridge {
         else {
             locale = Locale.Unknown;
         }
+    }
+
+    public Locale getLocale() {
+        return this.locale;
     }
 
     private void setRamSize() {
@@ -180,7 +192,7 @@ public class Cartridge {
         headerChecksum &= 255; // mask to lower 8 bits
     }
 
-    private void calculateCartAndBootromLogoChecksums() {
+    private void verifyLogoChecksums() {
         //0x0104 through 0x0133 are the Nintendo Logo bitmap bytes.
         //They are verified here by adding up the ones in the bios
         //and comparing them to the ones in the rom.
@@ -193,6 +205,10 @@ public class Cartridge {
             cartridgeLogoChecksum += rom[i];
     }
 
+    public boolean validChecksum() {
+        return bootromLogoChecksum == cartridgeLogoChecksum;
+    }
+
     public String toString() {
         return "Title:\t\t" + title + "\n" +
                "Locale:\t\t" + locale.name() + "\n" +
@@ -202,7 +218,7 @@ public class Cartridge {
                "Header Checksums:\t( " + headerChecksum + " == " + expectedHeaderChecksum + " ) is " +
                (headerChecksum == expectedHeaderChecksum) + "\n" +
                "Logo Checksums:\t\t( " + cartridgeLogoChecksum + " == " + bootromLogoChecksum + " ) is " +
-               (cartridgeLogoChecksum == bootromLogoChecksum);
+               validChecksum();
     }
 
     public int readFromAddress(int address) {
@@ -227,6 +243,31 @@ public class Cartridge {
                 return 8192 * 8; // 8KB * 8
             case Ram128KB:
                 return 8192 * 16; // 8KB * 16
+            default:
+                return 0;
+        }
+    }
+
+    public final int getRomSize() {
+        switch (romSize) {
+            case Rom32KB:
+                return 8192 * 4; // 8KB * 4
+            case Rom64KB:
+                return 8192 * 8; // 8KB * 8
+            case Rom128KB:
+                return 8192 * 16; // 8KB * 16
+            case Rom256KB:
+                return 8192 * 32; // 8KB * 32
+            case Rom512KB:
+                return 8192 * 64; // 8KB * 64
+            case Rom1MB:
+                return 8192 * 128; // 8KB * 128
+            case Rom2MB:
+                return 8192 * 256; // 8KB * 256
+            case Rom4MB:
+                return 8192 * 512; // 8KB * 512
+            case Rom8MB:
+                return 8192 * 1024; // 8KB * 1024
             default:
                 return 0;
         }
