@@ -6,7 +6,9 @@
  * http://imrannazar.com/GameBoy-Emulation-in-JavaScript:-The-CPU
  * Gameboy Instruction Set: http://marc.rawer.de/Gameboy/Docs/GBCPU_Instr.html
  * Gameboy Opcode Summary: http://marc.rawer.de/Gameboy/Docs/Opcodes.htm
- * Gameboy Manual: http://marc.rawer.de/Gameboy/Docs/GBCPUman.pdf
+ * Gameboy Manual (filled with mistakes): http://marc.rawer.de/Gameboy/Docs/GBCPUman.pdf
+ * Official Nintendo Gameboy Programming Manual: https://archive.org/details/GameBoyProgManVer1.1
+ 
 
 
 ## Progress:
