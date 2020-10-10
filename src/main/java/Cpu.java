@@ -70,16 +70,8 @@ public class Cpu {
         // initialize 16-bit registers
         registerPC = new Register("PC", 16, 0);
         registerSP = new Register("SP", 16, 0);
-        //registerI   = new helpers.Register("I",   16, 0);
-        //registerR   = new helpers.Register("R",   16, 0);
-        //registerM   = new helpers.Register("M",   16, 0);
-        //registerT   = new helpers.Register("T",   16, 0);
         sixteenBitRegisters.put("PC", registerPC);
         sixteenBitRegisters.put("SP", registerSP);
-        //sixteenBitRegisters.put("I",  registerI);
-        //sixteenBitRegisters.put("R",  registerR);
-        //sixteenBitRegisters.put("M",  registerM);
-        //sixteenBitRegisters.put("T",  registerT);
 
         this.mmu = memMgr;
         this.gpu = gpu;
